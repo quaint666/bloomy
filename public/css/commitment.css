@@ -1,0 +1,193 @@
+/* ==========================================================================
+   Bloomy — Commitment Page Styles
+   Loads after style.css. Reuses .container, .btn, .breadcrumb,
+   .section-heading, and .value-card (all shared) — this file covers
+   what's unique to Commitment: hero badge, numbered process steps,
+   quality callout.
+   ========================================================================== */
+
+/* ---- Hero (text left, photo right — same order as About) ---- */
+.commitment-hero {
+  padding-block: 32px 64px;
+}
+
+.commitment-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.commitment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 999px;
+  margin-bottom: 20px;
+}
+
+.commitment-hero__heading {
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  font-weight: 500;
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+
+.commitment-hero__heading em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+.commitment-hero__desc {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 28px;
+}
+
+.commitment-hero__image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+/* ---- Four commitments (reuses .value-card from style.css) ---- */
+.commitment-values {
+  padding-block: 48px 8px;
+}
+
+.commitment-values__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* ---- Full-width photo ---- */
+.commitment-photo {
+  padding-block: 48px;
+}
+
+.commitment-photo img {
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+/* ---- Process steps (numbered — different component from .value-card:
+   ghost background number instead of an icon tile) ---- */
+.commitment-process {
+  padding-block: 8px 64px;
+}
+
+.process-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.process-step {
+  background-color: hsl(var(--secondary));
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.process-step__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  color: hsl(var(--primary));
+  margin-bottom: 16px;
+}
+
+.process-step__number {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: hsl(var(--primary) / 0.25);
+}
+
+.process-step__title {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.process-step__desc {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Quality callout (reframed from the mockup's replacement-guarantee
+   banner — see chat notes; same visual shape, different, deliverable claim) ---- */
+.quality-callout {
+  max-width: 720px;
+  margin-inline: auto;
+  text-align: center;
+  background-color: hsl(var(--secondary));
+  border-radius: var(--radius);
+  padding: 48px 40px;
+}
+
+.quality-callout__icon {
+  color: hsl(var(--primary));
+  margin-bottom: 16px;
+}
+
+.quality-callout__heading {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.quality-callout__heading em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+.quality-callout__desc {
+  color: hsl(var(--muted-foreground));
+  line-height: 1.6;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .commitment-hero__grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .commitment-hero__heading {
+    font-size: 2rem;
+  }
+
+  .commitment-values__grid,
+  .process-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .commitment-photo img {
+    aspect-ratio: 4 / 3;
+  }
+
+  .quality-callout {
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .commitment-values__grid,
+  .process-steps {
+    grid-template-columns: 1fr;
+  }
+}

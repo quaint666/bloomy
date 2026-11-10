@@ -1,0 +1,28 @@
+<!-- ============ PAYMENT-WAITING VIEW (ZaloPay only — swapped in after order is created) ============ -->
+<div id="payment-waiting" class="payment-waiting" hidden>
+  <div class="payment-waiting__card">
+    <h1 class="payment-waiting__heading">Quét mã để <em>hoàn tất thanh toán</em></h1>
+    <p class="payment-waiting__subtitle">Mở ứng dụng ZaloPay trên điện thoại, chọn biểu tượng quét mã và hướng camera vào mã bên dưới để thanh toán <strong id="payment-waiting-amount"></strong>.</p>
+
+    <div class="payment-waiting__qr">
+      <img id="zalopay-qr" src="" alt="Mã QR ZaloPay" hidden>
+      <div id="zalopay-qr-loading" class="payment-waiting__qr-loading">Đang tạo mã QR...</div>
+    </div>
+
+    <a
+      id="zalopay-alt-link"
+      href="#"
+      target="_blank"
+      rel="noopener"
+      class="payment-waiting__alt-link"
+      hidden
+      >Không có app ZaloPay? Thanh toán bằng thẻ hoặc tài khoản ngân hàng</a
+    >
+
+    <p id="payment-status-msg" class="payment-waiting__status">Đang chờ xác nhận thanh toán...</p>
+
+    <button type="button" id="verify-payment-btn" class="payment-waiting__manual-btn">Tôi đã thanh toán</button>
+
+    <a href="cart.html" class="payment-waiting__cancel">Huỷ và quay lại giỏ hàng</a>
+  </div>
+</div>

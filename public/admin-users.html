@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nhân sự — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="owner">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Nhân sự</h1>
+    </div>
+    <p class="admin-page__subtitle-note">
+      <strong>Chủ shop</strong>: toàn quyền, gồm Cài đặt và trang này.
+      <strong>Quản lý</strong>: mọi việc hằng ngày (đơn hàng, sản phẩm, kho hoa, thống kê, hoàn tiền), không có Cài đặt và Nhân sự.
+      <strong>Nhân viên</strong>: chỉ bán hàng tại quầy (POS).
+    </p>
+    <p id="admin-users-error" class="admin-page__error" hidden></p>
+
+    <h2 class="admin-page__subtitle">Thêm tài khoản</h2>
+    <form id="admin-user-form" class="admin-user-form" autocomplete="off">
+      <label class="admin-form__label">Tên đăng nhập
+        <input id="new-username" class="admin-form__input" required autocapitalize="none" spellcheck="false">
+      </label>
+      <label class="admin-form__label">Vai trò
+        <select id="new-role" class="admin-form__input"></select>
+      </label>
+      <label class="admin-form__label">Mật khẩu ban đầu
+        <input id="new-password" type="password" class="admin-form__input" required autocomplete="new-password">
+      </label>
+      <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
+    </form>
+    <p id="admin-users-notice" class="admin-form__msg" hidden></p>
+
+    <h2 class="admin-page__subtitle">Danh sách tài khoản</h2>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Tên đăng nhập</th>
+          <th>Vai trò</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody id="admin-users-body"></tbody>
+    </table>
+
+    <!-- Owner types a new password for someone else -->
+    <dialog id="admin-reset-dialog" class="admin-dialog">
+      <form id="admin-reset-form" autocomplete="off">
+        <h3 id="admin-reset-title" class="admin-page__subtitle"></h3>
+        <label class="admin-form__label">Mật khẩu mới
+          <input id="reset-password" type="password" class="admin-form__input" required autocomplete="new-password">
+        </label>
+        <p id="admin-reset-msg" class="admin-form__msg is-error" hidden></p>
+        <div class="admin-dialog__actions">
+          <button type="button" id="admin-reset-cancel" class="btn btn-outline">Hủy</button>
+          <button type="submit" class="btn btn-primary">Đặt lại</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-users.js" defer></script>
+</body>
+</html>

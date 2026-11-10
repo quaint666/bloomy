@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloomy — Nở trọn yêu thương</title>
+  <meta name="description" content="Bloomy — hoa tươi được chọn kỹ, giao đúng ngày và khung giờ bạn chọn. Đặt hoa sinh nhật, hoa cưới, hoa chúc mừng trực tuyến dễ dàng.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Bloomy — Nở trọn yêu thương">
+  <meta property="og:description" content="Bloomy — hoa tươi được chọn kỹ, giao đúng ngày và khung giờ bạn chọn. Đặt hoa sinh nhật, hoa cưới, hoa chúc mừng trực tuyến dễ dàng.">
+  <meta property="og:image" content="https://bloomy.quaintshomelabdomain.uk/images/og-image.jpg">
+  <meta property="og:url" content="https://bloomy.quaintshomelabdomain.uk/">
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+  <!--include:header-->
+
+  <main>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <img class="hero__bg" src="images/hero-bouquet.webp" alt="Bó hoa tươi Bloomy">
+    <div class="hero__scrim hero__scrim--horizontal"></div>
+    <div class="hero__scrim hero__scrim--vertical"></div>
+
+    <div class="container">
+      <div class="hero__content">
+        <span class="hero__badge">Hoa tươi mỗi ngày</span>
+        <h1 class="hero__heading">Nở trọn <em>yêu thương</em></h1>
+        <p class="hero__lead">Những bó hoa tươi được chọn kỹ, thiết kế tay nghề cao và giao đến tận tay đúng khung giờ bạn chọn. Mỗi đóa hoa — một lời gửi gắm chân thành.</p>
+
+        <div class="hero__actions">
+          <a href="products.html" class="btn btn-primary">Đặt hoa ngay →</a>
+          <a href="#featured" class="btn btn-outline">Xem bộ sưu tập</a>
+        </div>
+
+        <div class="hero__stats">
+          <div class="hero__stat">
+            <div class="hero__stat-number">50+</div>
+            <div class="hero__stat-label">Đơn hoa/ngày</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-number">Sáng–Tối</div>
+            <div class="hero__stat-label">Chọn khung giờ</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-number">100+</div>
+            <div class="hero__stat-label">Đánh giá</div>
+          </div>
+        </div>
+
+        <div class="hero__scroll-cue">Cuộn xuống</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CATEGORY QUICK-NAV ============ -->
+  <section class="category-nav">
+    <div class="container">
+      <div class="section-heading">
+        <span class="section-heading__eyebrow">Danh mục nhanh</span>
+        <h2 class="section-heading__title">Cho mỗi dịp <em>trọn vẹn</em></h2>
+        <p class="section-heading__lead">Lựa chọn theo mục đích — để bó hoa nói thay lời bạn muốn gửi.</p>
+      </div>
+
+      <div class="category-nav__grid" data-category-grid>
+        <a href="products.html?category=1" class="category-nav__item">
+          <img src="images/category-hoa-sinh-nhat.webp" alt="Hoa sinh nhật">
+          <span>Hoa sinh nhật</span>
+        </a>
+        <a href="products.html?category=2" class="category-nav__item">
+          <img src="images/category-hoa-cuoi.webp" alt="Hoa cưới">
+          <span>Hoa cưới</span>
+        </a>
+        <a href="products.html?category=3" class="category-nav__item">
+          <img src="images/category-hoa-khai-truong.webp" alt="Hoa khai trương">
+          <span>Hoa khai trương</span>
+        </a>
+        <a href="products.html?category=4" class="category-nav__item">
+          <img src="images/category-hoa-chia-buon.webp" alt="Hoa chia buồn">
+          <span>Hoa chia buồn</span>
+        </a>
+        <a href="products.html?category=5" class="category-nav__item">
+          <img src="images/category-hoa-theo-mua.webp" alt="Hoa theo mùa">
+          <span>Hoa theo mùa</span>
+        </a>
+        <a href="products.html?category=6" class="category-nav__item">
+          <img src="images/category-set-qua-tang.webp" alt="Set quà tặng">
+          <span>Set quà tặng</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CAMPAIGN CARD (empty when no campaign is switched on; built by the server) ============ -->
+  {{campaign_card}}
+
+  <!-- ============ FEATURED PRODUCTS ============ -->
+  <section class="featured" id="featured">
+    <div class="container">
+      <div class="featured__header">
+        <div class="section-heading">
+          <span class="section-heading__eyebrow">Sản phẩm nổi bật</span>
+          <h2 class="section-heading__title">Những bó hoa <em>được yêu nhất</em></h2>
+        </div>
+        <a href="products.html" class="featured__view-all">Xem tất cả →</a>
+      </div>
+
+      <!-- Filled by js/home.js from the products marked "Nổi bật" in admin
+           (discontinued ones are skipped), so prices and picks are never
+           typed into this file. -->
+      <div class="product-grid" data-featured-grid>
+        <!-- grey placeholders until the cards arrive (home.js replaces them) -->
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__image"></div><div class="skeleton-card__line"></div><div class="skeleton-card__line skeleton-card__line--short"></div></div>
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__image"></div><div class="skeleton-card__line"></div><div class="skeleton-card__line skeleton-card__line--short"></div></div>
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__image"></div><div class="skeleton-card__line"></div><div class="skeleton-card__line skeleton-card__line--short"></div></div>
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__image"></div><div class="skeleton-card__line"></div><div class="skeleton-card__line skeleton-card__line--short"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CUSTOM BOUQUET ============ -->
+  <section class="custom-promo" id="custom-promo">
+    <div class="container custom-promo__inner">
+      <div class="custom-promo__text">
+        <span class="section-heading__eyebrow">Bó hoa tùy chỉnh</span>
+        <h2 class="section-heading__title">Tự tay thiết kế <em>bó hoa của bạn</em></h2>
+        <p class="custom-promo__lead">
+          Chọn loại hoa, số cành và kiểu gói theo ý mình. Giá hiện ngay khi bạn chọn;
+          Bloomy sẽ liên hệ xác nhận trước khi giao.
+        </p>
+        <ol class="custom-promo__steps">
+          <li>Chọn hoa và số cành</li>
+          <li>Chọn kiểu gói: bó giấy, giỏ hoặc hộp</li>
+          <li>Bloomy xác nhận với bạn qua Zalo hoặc điện thoại</li>
+        </ol>
+        <a href="custom-bouquet.html" class="btn btn-primary">Thiết kế bó hoa của bạn</a>
+      </div>
+      <img class="custom-promo__image" src="images/custom-bouquet.webp" width="1200" height="800"
+           alt="Hoa dahlia hồng, kéo cắt hoa và bàn làm hoa của Bloomy" loading="lazy">
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ("Vì sao chọn Bloomy") ============ -->
+  <section class="features">
+    <div class="container">
+      <div class="section-heading">
+        <span class="section-heading__eyebrow">Vì sao chọn Bloomy</span>
+        <h2 class="section-heading__title">Tận tâm từ <em>đóa hoa</em> đến tay người</h2>
+      </div>
+
+      <div class="features__grid">
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="3.5"/><circle cx="7.5" cy="12" r="3.5"/><circle cx="16.5" cy="12" r="3.5"/><circle cx="12" cy="16.5" r="3.5"/><circle cx="12" cy="12" r="1.5"/></svg>
+          </div>
+          <div class="feature-card__title">Hoa tươi mỗi ngày</div>
+          <p class="feature-card__desc">Nhập hoa mới về cửa hàng mỗi sáng, đảm bảo độ tươi tối đa khi đến tay bạn.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="feature-card__title">Giao theo khung giờ</div>
+          <p class="feature-card__desc">Chọn khung giờ sáng, chiều hoặc tối — bó hoa đến đúng lúc bạn mong đợi.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41L13.42 20.58a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </div>
+          <div class="feature-card__title">Đóng gói cẩn thận</div>
+          <p class="feature-card__desc">Mỗi bó hoa được gói thủ công, giữ dáng và bảo vệ cánh hoa trên đường đi.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          </div>
+          <div class="feature-card__title">Tận tâm với từng đơn</div>
+          <p class="feature-card__desc">Mỗi bó hoa được chăm chút tỉ mỉ, gửi trao yêu thương trọn vẹn đến người nhận.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TESTIMONIALS ============ -->
+  <!-- Filled by js/home.js with the newest approved reviews; hidden when there are none -->
+  <section class="testimonials" id="testimonials" hidden>
+    <div class="container">
+      <div class="section-heading">
+        <span class="section-heading__eyebrow">Khách hàng nói gì</span>
+        <h2 class="section-heading__title">Hàng ngàn lời <em>yêu thương</em> đã gửi đi</h2>
+      </div>
+
+      <div class="testimonials__grid" id="testimonials-grid"></div>
+    </div>
+  </section>
+
+  </main>
+
+  <!--include:footer-->
+
+  <!--include:floating-contact-->
+
+  <script src="js/main.js" defer></script>
+  <script src="js/home.js" defer></script>
+</body>
+</html>

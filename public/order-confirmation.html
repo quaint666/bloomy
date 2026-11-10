@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xác nhận đơn hàng — Bloomy</title>
+  <meta name="description" content="Xác nhận đơn hàng Bloomy — xem chi tiết đơn hàng, trạng thái thanh toán và thông tin giao hàng.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Xác nhận đơn hàng — Bloomy">
+  <meta property="og:description" content="Xác nhận đơn hàng Bloomy — xem chi tiết đơn hàng, trạng thái thanh toán và thông tin giao hàng.">
+  <meta property="og:image" content="https://bloomy.quaintshomelabdomain.uk/images/og-image.jpg">
+  <meta property="og:url" content="https://bloomy.quaintshomelabdomain.uk/order-confirmation.html">
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/confirmation.css">
+</head>
+<body class="defer-footer">
+
+  <!--include:header-->
+
+  <main>
+
+  <div class="container confirmation-page">
+
+    <p class="breadcrumb"><a href="index.html">Trang chủ</a> <span>›</span> <a href="cart.html">Giỏ hàng</a> <span>›</span> Xác nhận đơn hàng</p>
+
+    <!-- ============ NOT-FOUND STATE (missing/invalid token) ============ -->
+    <div id="confirmation-not-found" class="cart-empty" hidden>
+      <div class="cart-empty__icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h1 class="cart-empty__heading">Không tìm thấy <em>đơn hàng</em></h1>
+      <p class="cart-empty__subtitle">Liên kết này không hợp lệ hoặc đã hết hạn. Vui lòng kiểm tra lại email/tin nhắn xác nhận.</p>
+      <a href="index.html" class="btn btn-primary">Về trang chủ</a>
+    </div>
+
+    <!-- ============ CONFIRMATION CONTENT (populated by confirmation.js) ============ -->
+    <div id="confirmation-content" hidden>
+
+      <div class="confirmation-hero">
+        <div id="confirmation-hero-icon" class="confirmation-hero__icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 9 11 15 8 12"/></svg>
+        </div>
+        <p id="confirmation-hero-eyebrow" class="confirmation-hero__eyebrow">Đặt hàng thành công</p>
+        <h1 id="confirmation-hero-heading" class="confirmation-hero__heading">Cảm ơn bạn — <em>hoa đang trên đường!</em></h1>
+        <p id="confirmation-hero-subtitle" class="confirmation-hero__subtitle">Bloomy đã nhận được đơn hàng của bạn. Chúng tôi sẽ liên hệ xác nhận và giao hoa đúng ngày &amp; khung giờ bạn đã chọn.</p>
+
+        <div class="order-code-chip">
+          <span class="order-code-chip__label">MÃ ĐƠN HÀNG</span>
+          <span id="order-code" class="order-code-chip__value"></span>
+          <button type="button" id="copy-order-code-btn" aria-label="Sao chép mã đơn hàng">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+        </div>
+        <!-- Shown once the shop has handed the order to GHTK -->
+        <p id="confirmation-tracking" class="confirmation-tracking" hidden>Mã vận đơn GHTK: <strong id="confirmation-tracking-code"></strong></p>
+      </div>
+
+      <div class="confirmation-layout">
+        <div class="confirmation-details">
+
+          <section class="confirmation-card">
+            <h2 class="confirmation-card__title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <span id="confirmation-place-title">Thông tin giao hàng</span>
+            </h2>
+
+            <div class="confirmation-info-row">
+              <div class="confirmation-info-box">
+                <span class="confirmation-info-box__label">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <span id="confirmation-date-label">Ngày giao</span>
+                </span>
+                <span id="confirmation-date" class="confirmation-info-box__value"></span>
+              </div>
+              <div class="confirmation-info-box">
+                <span class="confirmation-info-box__label">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Khung giờ
+                </span>
+                <span id="confirmation-window" class="confirmation-info-box__value"></span>
+                <span id="confirmation-window-time" class="confirmation-info-box__sub"></span>
+              </div>
+            </div>
+
+            <div class="confirmation-info-box confirmation-info-box--full">
+              <span class="confirmation-info-box__label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Người nhận
+              </span>
+              <span id="confirmation-recipient-name" class="confirmation-info-box__value"></span>
+              <span id="confirmation-recipient-phone" class="confirmation-info-box__sub"></span>
+            </div>
+
+            <div class="confirmation-info-box confirmation-info-box--full">
+              <span class="confirmation-info-box__label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span id="confirmation-address-label">Địa chỉ giao hàng</span>
+              </span>
+              <span id="confirmation-address" class="confirmation-info-box__value"></span>
+            </div>
+
+            <p class="confirmation-sender-line">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Người gửi: <span id="confirmation-sender-name"></span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+              <span id="confirmation-sender-phone"></span>
+            </p>
+
+            <p id="confirmation-fulfillment" class="confirmation-fulfillment-line"></p>
+          </section>
+
+          <section class="confirmation-card">
+            <h2 class="confirmation-card__title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              Trạng thái thanh toán
+            </h2>
+
+            <div class="payment-status-box">
+              <div id="payment-status-icon" class="payment-status-box__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </div>
+              <div class="payment-status-box__text">
+                <span id="payment-status-title" class="payment-status-box__title"></span>
+                <span id="payment-status-desc" class="payment-status-box__desc"></span>
+              </div>
+            </div>
+            <p id="confirmation-email-note" class="confirmation-email-note" hidden></p>
+            <p id="confirmation-invoice-note" class="confirmation-email-note" hidden></p>
+            <button type="button" id="retry-zalopay-btn" class="btn btn-primary payment-status-box__retry-btn" hidden>Thử lại thanh toán</button>
+          </section>
+
+        </div>
+
+        <aside class="checkout-summary">
+          <h2 class="checkout-summary__title">Tóm tắt đơn hàng</h2>
+
+          <div id="confirmation-items" class="checkout-summary__items"></div>
+
+          <div class="checkout-summary__row">
+            <span>Tiền sản phẩm</span>
+            <span id="confirmation-subtotal"></span>
+          </div>
+          <div class="checkout-summary__row" id="confirmation-discount-row" hidden>
+            <span id="confirmation-discount-label">Giảm giá</span>
+            <span id="confirmation-discount"></span>
+          </div>
+          <div class="checkout-summary__row">
+            <span>Phí giao hàng</span>
+            <span id="confirmation-shipping"></span>
+          </div>
+
+          <div class="checkout-summary__total">
+            <span>Tổng cộng</span>
+            <span id="confirmation-total"></span>
+          </div>
+
+          <ul class="checkout-summary__notes">
+            <li>Giá đã bao gồm VAT <span id="confirmation-vat-rate"></span>%</li>
+            <li>Giao hoặc nhận theo khung giờ sáng / chiều / tối</li>
+            <li>Cam kết hoa tươi 100%</li>
+          </ul>
+        </aside>
+      </div>
+
+      <!-- ============ ZALOPAY RETRY-PAYMENT VIEW (shown after clicking
+           "Thử lại thanh toán" — same markup/behavior as Checkout's own
+           payment-waiting view, since this is the exact same QR/poll flow,
+           just entered from Confirmation instead of Checkout) ============ -->
+      <div id="payment-waiting" class="payment-waiting" hidden>
+        <div class="payment-waiting__card">
+          <h1 class="payment-waiting__heading">Quét mã để <em>hoàn tất thanh toán</em></h1>
+          <p class="payment-waiting__subtitle">Mở ứng dụng ZaloPay trên điện thoại, chọn biểu tượng quét mã và hướng camera vào mã bên dưới để thanh toán <strong id="payment-waiting-amount"></strong>.</p>
+
+          <div class="payment-waiting__qr">
+            <img id="zalopay-qr" src="" alt="Mã QR ZaloPay" hidden>
+            <div id="zalopay-qr-loading" class="payment-waiting__qr-loading">Đang tạo mã QR...</div>
+          </div>
+
+          <a
+            id="zalopay-alt-link"
+            href="#"
+            target="_blank"
+            rel="noopener"
+            class="payment-waiting__alt-link"
+            hidden
+            >Không có app ZaloPay? Thanh toán bằng thẻ hoặc tài khoản ngân hàng</a
+          >
+
+          <p id="payment-status-msg" class="payment-waiting__status">Đang chờ xác nhận thanh toán...</p>
+
+          <button type="button" id="verify-payment-btn" class="payment-waiting__manual-btn">Tôi đã thanh toán</button>
+        </div>
+      </div>
+
+      <div class="confirmation-continue">
+        <a href="products.html" class="btn btn-primary">
+          Tiếp tục mua sắm
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  </main>
+
+  <!--include:footer-->
+
+  <!--include:floating-contact-->
+
+  <script src="js/main.js" defer></script>
+  <script src="js/confirmation.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đổi mật khẩu — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin-twofa.css">
+</head>
+<body data-min-role="employee">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Đổi mật khẩu</h1>
+    </div>
+    <p class="admin-page__subtitle-note">Sau khi đổi, các thiết bị khác đang đăng nhập bằng tài khoản này sẽ bị đăng xuất.</p>
+
+    <form id="admin-account-form" class="admin-account-form" autocomplete="off">
+      <label class="admin-form__label">Mật khẩu hiện tại
+        <input id="current-password" type="password" class="admin-form__input" required autocomplete="current-password">
+      </label>
+      <label class="admin-form__label">Mật khẩu mới
+        <input id="new-password" type="password" class="admin-form__input" required autocomplete="new-password">
+      </label>
+      <label class="admin-form__label">Nhập lại mật khẩu mới
+        <input id="confirm-password" type="password" class="admin-form__input" required autocomplete="new-password">
+      </label>
+      <button type="submit" class="btn btn-primary">Đổi mật khẩu</button>
+    </form>
+    <p id="admin-account-msg" class="admin-form__msg" hidden></p>
+
+    <!-- ============ TWO-FACTOR LOGIN (owner only; js/admin-account.js shows it when the server says the person is the owner) ============ -->
+    <section id="twofa" class="admin-twofa" aria-labelledby="twofa-title" hidden>
+      <h2 id="twofa-title" class="admin-page__subtitle">Xác thực hai bước</h2>
+      <p id="twofa-status" class="admin-page__subtitle-note"></p>
+
+      <!-- Off, step 1: the password again, then the QR code -->
+      <form id="twofa-start-form" class="admin-account-form" autocomplete="off" hidden>
+        <p class="admin-note">Cần một ứng dụng xác thực trên điện thoại, ví dụ Aegis hoặc Google Authenticator. Sau khi bật, mỗi lần đăng nhập bạn nhập thêm một mã 6 số từ ứng dụng đó.</p>
+        <label class="admin-form__label">Mật khẩu hiện tại
+          <input id="twofa-start-password" type="password" class="admin-form__input" required autocomplete="current-password">
+        </label>
+        <button type="submit" class="btn btn-primary">Bật xác thực hai bước</button>
+      </form>
+
+      <!-- Off, step 2: scan, then prove the phone has it by typing the first code -->
+      <form id="twofa-enable-form" class="admin-account-form" autocomplete="off" hidden>
+        <p>Quét mã QR bằng ứng dụng xác thực, rồi nhập mã 6 số đang hiện trong ứng dụng.</p>
+        <img id="twofa-qr" class="admin-twofa__qr" width="240" height="240" alt="Mã QR để thêm Bloomy vào ứng dụng xác thực">
+        <p class="admin-note">Không quét được? Trong ứng dụng, chọn nhập thủ công và gõ khóa này:
+          <code id="twofa-secret" class="admin-twofa__secret"></code>
+        </p>
+        <label class="admin-form__label">Mã 6 số
+          <input id="twofa-enable-code" type="text" class="admin-form__input" required inputmode="numeric" autocomplete="one-time-code" maxlength="7">
+        </label>
+        <button type="submit" class="btn btn-primary">Xác nhận và bật</button>
+      </form>
+
+      <!-- The recovery codes, shown once -->
+      <div id="twofa-codes" hidden>
+        <p class="admin-note admin-note--warn"><strong>Lưu các mã khôi phục này ngay bây giờ.</strong> Mỗi mã dùng được một lần, để đăng nhập khi bạn mất điện thoại. Mã chỉ hiện lần này, sau đó không xem lại được.</p>
+        <ul id="twofa-codes-list" class="admin-twofa__codes"></ul>
+        <div class="admin-twofa__actions">
+          <button type="button" id="twofa-codes-copy" class="btn btn-outline">Sao chép</button>
+          <button type="button" id="twofa-codes-done" class="btn btn-primary">Tôi đã lưu các mã</button>
+        </div>
+      </div>
+
+      <!-- On: replace the recovery codes, or turn it off. Both ask for a current code. -->
+      <div id="twofa-on" hidden>
+        <form id="twofa-regen-form" class="admin-account-form admin-twofa__block" autocomplete="off">
+          <h3 class="admin-twofa__heading">Tạo lại mã khôi phục</h3>
+          <p class="admin-page__subtitle-note">Các mã cũ sẽ không dùng được nữa.</p>
+          <label class="admin-form__label">Mã 6 số (hoặc một mã khôi phục)
+            <input id="twofa-regen-code" type="text" class="admin-form__input" required autocomplete="one-time-code" maxlength="24">
+          </label>
+          <button type="submit" class="btn btn-outline">Tạo mã khôi phục mới</button>
+        </form>
+        <form id="twofa-disable-form" class="admin-account-form admin-twofa__block" autocomplete="off">
+          <h3 class="admin-twofa__heading">Tắt xác thực hai bước</h3>
+          <p class="admin-page__subtitle-note">Đăng nhập sẽ chỉ cần mật khẩu.</p>
+          <label class="admin-form__label">Mã 6 số (hoặc một mã khôi phục)
+            <input id="twofa-disable-code" type="text" class="admin-form__input" required autocomplete="one-time-code" maxlength="24">
+          </label>
+          <button type="submit" class="btn btn-outline admin-twofa__danger">Tắt xác thực hai bước</button>
+        </form>
+      </div>
+
+      <p id="twofa-msg" class="admin-form__msg" hidden></p>
+    </section>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-account.js" defer></script>
+</body>
+</html>

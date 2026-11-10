@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "es2023",
+    "module": "nodenext",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts", "routes/**/*.ts"],
+  "exclude": ["node_modules", "public", "tests"]
+}

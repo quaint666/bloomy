@@ -1,0 +1,392 @@
+/* ==========================================================================
+   Bloomy — Cart page styles.
+   Loads after style.css. Reuses .container, .btn, .breadcrumb, .qty-stepper,
+   and .status-badge/.status-badge--discontinued from style.css.
+   ========================================================================== */
+
+.cart-page {
+  padding-block: 32px 80px;
+}
+
+/* ---- Empty state — promoted to style.css, now used by Checkout and
+   Order Confirmation too (as the empty-cart guard and the not-found
+   state, respectively), same "promote on 2nd/3rd use" rule as everything
+   else in that file. ---- */
+
+/* ---- Hero (page title, left-aligned — different from Listing's hero,
+   which sits on a colored band; Cart's is plain, matches the mockup) ---- */
+.cart-hero {
+  margin-bottom: 32px;
+}
+
+.cart-hero__eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  margin-bottom: 12px;
+}
+
+.cart-hero__heading {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.cart-hero__heading em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+.cart-hero__subtitle {
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Two-column layout: items left, summary right ---- */
+.cart-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+/* ---- Line items ---- */
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background-color: hsl(var(--secondary));
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.cart-item__image {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.cart-item__link {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-item__link:hover .cart-item__name {
+  color: hsl(var(--primary));
+}
+
+.cart-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-item__name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.cart-item__composition {
+  font-size: 0.82rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+
+/* Size dropdown: its own cell between the product link and the stepper */
+.cart-item__size-select {
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+  max-width: 100%;
+}
+
+.cart-item__price {
+  font-size: 0.9rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.cart-item__line-subtotal {
+  text-align: right;
+  min-width: 96px;
+}
+
+.cart-item__line-subtotal-label {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 2px;
+}
+
+.cart-item__line-subtotal-value {
+  font-weight: 600;
+  color: hsl(var(--primary));
+}
+
+.cart-item__remove {
+  background: none;
+  border: none;
+  color: hsl(var(--muted-foreground));
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cart-item__remove:hover {
+  background-color: hsl(var(--background));
+  color: hsl(var(--destructive));
+}
+
+/* Discontinued flag — reuses .status-badge--discontinued from style.css,
+   just adds the row-level dimming */
+.cart-item.is-discontinued {
+  opacity: 0.6;
+}
+
+.cart-item__badge-row {
+  margin-bottom: 4px;
+}
+
+.cart-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.cart-continue {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.cart-continue:hover {
+  color: hsl(var(--primary));
+}
+
+.cart-clear {
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.cart-clear:hover {
+  color: hsl(var(--destructive));
+}
+
+/* ---- Order summary panel ---- */
+.cart-summary {
+  background-color: hsl(var(--secondary));
+  border-radius: var(--radius);
+  padding: 28px;
+  position: sticky;
+  top: calc(var(--nav-height, 73px) + 24px);
+}
+
+.cart-summary__title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.cart-summary__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.92rem;
+  margin-bottom: 14px;
+  color: hsl(var(--muted-foreground));
+}
+
+.cart-summary__free {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.cart-summary__muted {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.85rem;
+}
+
+.cart-summary__row[hidden] {
+  display: none;
+}
+
+/* ---- Coupon box ---- */
+.cart-coupon {
+  margin-block: 12px 16px;
+}
+
+.cart-coupon__label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.cart-coupon__row {
+  display: flex;
+  gap: 8px;
+}
+
+.cart-coupon__input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid hsl(var(--input));
+  border-radius: 12px;
+  font: inherit;
+  text-transform: uppercase;
+}
+
+.cart-coupon__btn {
+  padding-inline: 16px;
+  white-space: nowrap;
+}
+
+.cart-coupon__msg {
+  font-size: 0.8rem;
+  margin-top: 6px;
+  color: hsl(var(--muted-foreground));
+}
+
+.cart-coupon__msg.is-ok {
+  color: hsl(var(--primary));
+}
+
+.cart-coupon__msg.is-error {
+  color: hsl(var(--destructive));
+}
+
+.cart-coupon__msg[hidden] {
+  display: none;
+}
+
+/* Flowers the shop doesn't have enough of for this line */
+.cart-item__short {
+  font-size: 0.8rem;
+  color: hsl(var(--destructive));
+  margin-bottom: 6px;
+}
+
+.cart-summary__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 16px;
+  border-top: 1px solid hsl(var(--border));
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.cart-summary__total span:last-child {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: hsl(var(--primary));
+}
+
+.cart-checkout-btn {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.cart-checkout-blocked {
+  font-size: 0.8rem;
+  color: hsl(var(--destructive));
+  margin-bottom: 16px;
+}
+
+.cart-summary__notes {
+  font-size: 0.82rem;
+  color: hsl(var(--muted-foreground));
+  padding-top: 16px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.cart-summary__notes li {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 900px) {
+  .cart-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-summary {
+    position: static;
+  }
+
+  .cart-item {
+    flex-wrap: wrap;
+  }
+
+  .cart-item__line-subtotal {
+    order: 1;
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .cart-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "link  link"
+      "qty   size"
+      "price remove";
+    row-gap: 12px;
+    align-items: center;
+  }
+
+  .cart-item__link {
+    grid-area: link;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .cart-item__image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .qty-stepper {
+    grid-area: qty;
+    justify-self: start;
+  }
+
+  .cart-item__size {
+    grid-area: size;
+    justify-self: end;
+  }
+
+  .cart-item__line-subtotal {
+    grid-area: price;
+    justify-self: start;
+    text-align: left;
+    margin-left: 0;   /* clears the 900px block's margin-left: auto */
+    order: 0;         /* clears the 900px block's order: 1 */
+  }
+
+  .cart-item__remove {
+    grid-area: remove;
+    justify-self: end;
+    align-self: center;
+  }
+}

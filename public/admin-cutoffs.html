@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giờ chốt đơn đặc biệt — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="manager">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <h1 class="admin-page__title">Giờ chốt đơn đặc biệt</h1>
+    <p class="admin-page__subtitle-note">
+      Mặc định, đơn giao trong ngày đóng lúc 14:00. Thêm một ngày ở đây để đóng sớm hơn —
+      ví dụ ngày lễ, khi shop thường ngừng nhận đơn từ tối hôm trước.
+    </p>
+    <p id="admin-cutoffs-error" class="admin-page__error" hidden></p>
+
+    <form id="admin-cutoffs-form" class="admin-form">
+      <div class="admin-form__field">
+        <label for="cutoff-date" class="admin-form__label">Ngày giao hàng</label>
+        <input type="date" id="cutoff-date" class="admin-form__input" required>
+      </div>
+      <div class="admin-form__field">
+        <label for="cutoff-deadline" class="admin-form__label">Hạn nhận đơn</label>
+        <input type="datetime-local" id="cutoff-deadline" class="admin-form__input" required>
+      </div>
+      <div class="admin-form__field">
+        <label for="cutoff-note" class="admin-form__label">Ghi chú (tuỳ chọn)</label>
+        <input type="text" id="cutoff-note" class="admin-form__input" maxlength="100" placeholder="VD: Valentine">
+        <span class="admin-form__hint">Khách hàng sẽ thấy ghi chú này trên trang sản phẩm.</span>
+      </div>
+      <button type="submit" class="btn btn-primary">Thêm</button>
+    </form>
+
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Ngày giao hàng</th>
+          <th>Hạn nhận đơn</th>
+          <th>Ghi chú</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="admin-cutoffs-body"></tbody>
+    </table>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-cutoffs.js" defer></script>
+</body>
+</html>

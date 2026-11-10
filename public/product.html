@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- The server (render.js) fills the product_ values from the product named in ?id=, using its own SEO
+       fields when it has them. With no id, an unknown id, or the database down, it falls back to the
+       generic wording. A discontinued product gets a "noindex" line (product_robots). -->
+  <title>{{product_title}}</title>
+  <meta name="description" content="{{product_description}}">
+  <link rel="canonical" href="{{product_canonical}}">
+  {{product_robots}}
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{product_title}}">
+  <meta property="og:description" content="{{product_description}}">
+  {{product_og_images}}
+  <meta property="og:url" content="{{product_canonical}}">
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/product.css">
+</head>
+<body class="defer-footer">
+
+  <!--include:header-->
+
+  <main>
+
+  <div class="container product-detail-page">
+
+    <!-- ============ BREADCRUMB (last crumb filled by JS) ============ -->
+    <p class="breadcrumb">
+      <a href="index.html">Trang chủ</a> <span>›</span>
+      <a href="products.html">Sản phẩm</a> <span>›</span>
+      <span id="breadcrumb-name"></span>
+    </p>
+
+    <!-- ============ NOT-FOUND STATE (hidden unless the id is invalid) ============ -->
+    <div id="not-found" class="not-found" hidden>
+      <p>Không tìm thấy sản phẩm này.</p>
+      <a href="products.html" class="btn btn-primary">Xem tất cả sản phẩm</a>
+    </div>
+
+    <!-- ============ PRODUCT DETAIL (populated by product.js) ============ -->
+    <section id="product-detail" class="product-detail" hidden>
+      <div class="product-detail__gallery">
+        <img id="product-image" class="product-detail__image" src="" alt="" fetchpriority="high">
+        <!-- Extra photos (product_images), only when the product has some -->
+        <div id="gallery-thumbs" class="gallery-thumbs" role="group" aria-label="Ảnh sản phẩm" hidden></div>
+      </div>
+
+      <div class="product-detail__info">
+        <div class="product-detail__title-row">
+          <h1 id="product-name" class="product-detail__name"></h1>
+          <span id="status-badge" class="status-badge status-badge--discontinued" hidden>Ngừng kinh doanh</span>
+        </div>
+
+        <p id="product-short" class="product-detail__short" hidden></p>
+
+        <!-- Size buttons, only for products with more than one size -->
+        <div id="size-picker" class="size-picker" role="radiogroup" aria-label="Chọn size" hidden></div>
+
+        <p id="product-price" class="product-detail__price"></p>
+        <p class="product-detail__tax-note">Giá đã bao gồm VAT <span>{{vat_rate}}</span>%</p>
+
+        <p id="sold-out-advisory" class="sold-out-advisory" hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Không thể giao trong hôm nay — vẫn có thể đặt cho ngày khác.
+        </p>
+
+        <p id="holiday-advisory" class="sold-out-advisory" hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </p>
+
+        <div class="product-detail__actions">
+          <div class="qty-stepper">
+            <button type="button" id="qty-minus" aria-label="Giảm số lượng">−</button>
+            <span id="qty-value">1</span>
+            <button type="button" id="qty-plus" aria-label="Tăng số lượng">+</button>
+          </div>
+
+          <!-- External products (sold on another site) show this instead of the cart controls -->
+          <a id="external-buy" class="btn btn-primary" href="#" target="_blank" rel="noopener" hidden></a>
+
+          <button type="button" id="add-to-cart" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            <span id="add-to-cart-label">Thêm vào giỏ</span>
+          </button>
+
+          <!-- Share: the phone's own share sheet where the browser has one (Zalo is in it), otherwise this small menu -->
+          <div class="product-share">
+            <button type="button" id="share-button" class="btn btn-outline" aria-expanded="false" aria-controls="share-menu">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
+              <span>Chia sẻ</span>
+            </button>
+            <div id="share-menu" class="share-menu" hidden>
+              <button type="button" id="share-copy" class="share-menu__item">Sao chép liên kết</button>
+              <a id="share-facebook" class="share-menu__item" href="https://www.facebook.com/sharer/sharer.php" target="_blank" rel="noopener noreferrer">Chia sẻ lên Facebook</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-features">
+          <div class="detail-feature">
+            <p class="detail-feature__title">Hoa tươi mỗi ngày</p>
+            <p class="detail-feature__desc">Nhập về mỗi sáng</p>
+          </div>
+          <div class="detail-feature">
+            <p class="detail-feature__title">Giao theo khung giờ</p>
+            <p class="detail-feature__desc">Sáng / Chiều / Tối</p>
+          </div>
+          <div class="detail-feature">
+            <p class="detail-feature__title">Khu vực giao hàng</p>
+            <p class="detail-feature__desc">TP.HCM cũ</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TABS (filled by product-extras.js; the flower list follows the chosen size) ============ -->
+    <section id="product-tabs" class="product-tabs" hidden>
+      <div class="product-tabs__list" role="tablist" aria-label="Thông tin sản phẩm">
+        <button type="button" role="tab" id="tab-desc" aria-controls="panel-desc" aria-selected="true">Mô tả</button>
+        <button type="button" role="tab" id="tab-comp" aria-controls="panel-comp" aria-selected="false" tabindex="-1">Thành phần</button>
+        <button type="button" role="tab" id="tab-care" aria-controls="panel-care" aria-selected="false" tabindex="-1">Chăm sóc</button>
+        <button type="button" role="tab" id="tab-ship" aria-controls="panel-ship" aria-selected="false" tabindex="-1">Giao hàng &amp; đổi trả</button>
+        <button type="button" role="tab" id="tab-reviews" aria-controls="panel-reviews" aria-selected="false" tabindex="-1">Đánh giá <span id="tab-reviews-count"></span></button>
+      </div>
+
+      <div role="tabpanel" id="panel-desc" aria-labelledby="tab-desc" class="product-tabs__panel" tabindex="0">
+        <p id="product-description" class="product-detail__description"></p>
+        <dl id="product-attributes" class="product-attributes"></dl>
+      </div>
+
+      <div role="tabpanel" id="panel-comp" aria-labelledby="tab-comp" class="product-tabs__panel" tabindex="0" hidden>
+        <div id="composition-box" class="composition-box" hidden>
+          <p id="composition-label" class="composition-box__label">Thành phần bó hoa</p>
+          <p id="product-composition" class="composition-box__text"></p>
+        </div>
+        <p id="composition-empty" class="product-tabs__empty" hidden>Sản phẩm này không có danh sách hoa.</p>
+      </div>
+
+      <div role="tabpanel" id="panel-care" aria-labelledby="tab-care" class="product-tabs__panel" tabindex="0" hidden>
+        <ul class="product-tabs__list-text">
+          <li>Cắt chéo 1–2 cm phần cuối cành bằng kéo sạch, rồi đặt hoa vào nước ngay.</li>
+          <li>Bỏ những lá nằm dưới mặt nước để giữ nước sạch và hạn chế lá bị úng.</li>
+          <li>Thay nước mỗi 1–2 ngày và cắt lại một chút phần cuối cành mỗi lần thay.</li>
+          <li>Đặt hoa ở nơi mát, thoáng, tránh nắng trực tiếp, luồng gió máy lạnh, bếp nóng và trái cây chín.</li>
+          <li>Với hoa ly, ngắt phần nhị để phấn hoa không làm bẩn cánh hoa và bề mặt xung quanh.</li>
+          <li>Chăm đúng cách, hoa có thể giữ được độ tươi khoảng 5 ngày.</li>
+        </ul>
+      </div>
+
+      <div role="tabpanel" id="panel-ship" aria-labelledby="tab-ship" class="product-tabs__panel" tabindex="0" hidden>
+        <ul class="product-tabs__list-text">
+          <li>Giao tận nơi trong TP.HCM (khu vực cũ), phí <span>{{min_fee}}</span> – <span>{{max_fee}}</span> tùy phường. Nhận tại shop miễn phí.</li>
+          <li>Giao theo khung giờ sáng, chiều hoặc tối mà bạn chọn khi đặt hàng.</li>
+          <li>Hoa tươi không đổi trả khi đổi ý. Nếu hoa giao sai hoặc hư hỏng, hãy gửi ảnh cho Bloomy qua Zalo ngay khi nhận hoa — xem <a href="terms.html#doi-tra">chính sách đổi trả</a>.</li>
+          <li>Chi tiết về phí và thời gian: <a href="terms.html#van-chuyen">chính sách giao hàng</a>.</li>
+        </ul>
+      </div>
+
+      <div role="tabpanel" id="panel-reviews" aria-labelledby="tab-reviews" class="product-tabs__panel" tabindex="0" hidden>
+        <p id="reviews-summary" class="reviews-summary"></p>
+        <ul id="reviews-list" class="reviews-list"></ul>
+
+        <form id="review-form" class="review-form" autocomplete="off" novalidate>
+          <h3 class="review-form__title">Viết đánh giá của bạn</h3>
+          <label class="review-form__field">Tên của bạn
+            <input id="review-name" type="text" required>
+          </label>
+          <fieldset class="review-stars">
+            <legend>Số sao</legend>
+            <div class="review-stars__row" id="review-stars"></div>
+          </fieldset>
+          <label class="review-form__field">Nhận xét
+            <textarea id="review-comment" rows="4" required></textarea>
+          </label>
+          <p id="review-hint" class="review-form__hint"></p>
+          <!-- Honeypot: people never see or fill it; a bot that does is ignored -->
+          <input type="text" id="review-website" class="review-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button type="submit" id="review-submit" class="btn btn-primary">Gửi đánh giá</button>
+          <p id="review-msg" class="review-form__msg" role="status" hidden></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ RELATED PRODUCTS (populated by product.js) ============ -->
+    <section id="related-products" class="related-products" hidden>
+      <div class="section-heading">
+        <span class="section-heading__eyebrow">Gợi ý cho bạn</span>
+        <h2 class="section-heading__title">Có thể bạn cũng <em>thích</em></h2>
+      </div>
+      <div class="product-grid" id="related-grid"></div>
+    </section>
+
+    <!-- ============ RECENTLY VIEWED (this browser only; filled by product.js) ============ -->
+    <section id="recent-viewed" class="recent-viewed" aria-labelledby="recent-title" hidden>
+      <h2 id="recent-title" class="recent-viewed__title">Bạn đã xem gần đây</h2>
+      <ul id="recent-list" class="recent-viewed__list"></ul>
+    </section>
+
+  </div>
+
+  </main>
+
+  <!--include:footer-->
+
+  <!--include:floating-contact-->
+
+  <script src="js/main.js" defer></script>
+  <script src="js/product-extras.js" defer></script>
+  <script src="js/product.js" defer></script>
+</body>
+</html>

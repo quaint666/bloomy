@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- The page lives at /blog and its posts at /blog/<slug>; <base> keeps every relative link and file path
+       (css/, js/, images/, products.html, the shared header and footer) working from there. -->
+  <base href="/">
+  <title>Blog — Bloomy</title>
+  <meta name="description" content="Gợi ý chọn hoa, cách chăm hoa và ý nghĩa của các loại hoa từ Bloomy.">
+  <link rel="canonical" href="{{site_base}}/blog">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Blog — Bloomy">
+  <meta property="og:description" content="Gợi ý chọn hoa, cách chăm hoa và ý nghĩa của các loại hoa từ Bloomy.">
+  <meta property="og:image" content="{{site_base}}/images/og-image.jpg">
+  <meta property="og:url" content="{{site_base}}/blog">
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/blog.css">
+</head>
+<body>
+
+  <!--include:header-->
+
+  <main class="container blog-page">
+    <p class="breadcrumb"><a href="index.html">Trang chủ</a> <span>›</span> Blog</p>
+
+    <header class="blog-hero">
+      <h1 class="blog-hero__heading">Blog <em>Bloomy</em></h1>
+      <p class="blog-hero__sub">Gợi ý chọn hoa, cách chăm hoa và những điều nhỏ giúp món quà hoa thêm ý nghĩa.</p>
+    </header>
+
+    <ul class="blog-list">
+      {{blog_list}}
+    </ul>
+  </main>
+
+  <!--include:footer-->
+
+  <!--include:floating-contact-->
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>

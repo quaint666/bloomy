@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kho hoa — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="manager">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Kho hoa</h1>
+      <input type="text" id="admin-flowers-search" class="admin-page__search" placeholder="Tìm loại hoa...">
+    </div>
+    <p class="admin-page__subtitle-note">
+      Số cành hiện có trong shop. Đơn hàng tự trừ hoa khi đặt; huỷ đơn khi còn "Mới" thì hoa được trả lại.
+      Nhập hàng, hoa hỏng hay kiểm kê thì chỉnh tay ở đây. Dòng tô màu là loại hoa còn dưới 20 cành.
+    </p>
+    <p id="admin-flowers-error" class="admin-page__error" hidden></p>
+
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Loại hoa</th>
+          <th>Giá / cành</th>
+          <th>Tồn kho</th>
+          <th>Điều chỉnh</th>
+        </tr>
+      </thead>
+      <tbody id="admin-flowers-body"></tbody>
+    </table>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-flowers.js" defer></script>
+</body>
+</html>

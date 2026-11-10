@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bó hoa tùy chỉnh — Bloomy</title>
+  <meta name="description" content="Tự thiết kế bó hoa của bạn tại Bloomy: chọn loại hoa, số cành và kiểu gói. Bloomy tính giá ngay và liên hệ xác nhận trước khi giao.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Bó hoa tùy chỉnh — Bloomy">
+  <meta property="og:description" content="Tự thiết kế bó hoa của bạn tại Bloomy: chọn loại hoa, số cành và kiểu gói. Bloomy tính giá ngay và liên hệ xác nhận trước khi giao.">
+  <meta property="og:image" content="https://bloomy.quaintshomelabdomain.uk/images/og-image.jpg">
+  <meta property="og:url" content="https://bloomy.quaintshomelabdomain.uk/custom-bouquet.html">
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="defer-footer">
+
+  <!--include:header-->
+
+  <main>
+  <!-- ============ INTRO ============ -->
+  <section class="custom-hero">
+    <div class="container">
+      <span class="section-heading__eyebrow">Bó hoa tùy chỉnh</span>
+      <h1 class="custom-hero__title">Tự thiết kế <em>bó hoa của bạn</em></h1>
+      <p class="custom-hero__lead">
+        Chọn loại hoa và số cành, chọn kiểu gói, rồi thêm lời nhắn nếu bạn muốn. Giá hiện ngay khi bạn chọn.
+        Sau khi bạn đặt hàng, Bloomy sẽ liên hệ qua Zalo hoặc điện thoại
+        <a href="{{tel_url}}"><span>{{contact_phone_display}}</span></a>
+        để xác nhận bó hoa trước khi giao.
+      </p>
+    </div>
+  </section>
+
+  <p id="custom-error" class="custom-error container" role="alert" hidden></p>
+
+  <div class="container custom-layout">
+    <!-- ============ 1. FLOWERS ============ -->
+    <section class="custom-flowers" aria-labelledby="custom-flowers-title">
+      <h2 id="custom-flowers-title" class="custom-step__title"><span class="custom-step__num">1</span> Chọn hoa</h2>
+      <div id="custom-families"></div>
+    </section>
+
+    <!-- ============ YOUR BOUQUET ============ -->
+    <aside class="custom-summary" aria-labelledby="custom-summary-title">
+      <h2 id="custom-summary-title" class="custom-step__title">Bó hoa của bạn</h2>
+      <p id="custom-empty" class="custom-summary__hint">Chưa chọn hoa nào. Bấm + ở danh sách bên cạnh.</p>
+      <ul id="custom-chosen" class="custom-chosen"></ul>
+      <p id="custom-count" class="custom-count" aria-live="polite"></p>
+
+      <h3 class="custom-step__sub"><span class="custom-step__num">2</span> Kiểu gói</h3>
+      <div id="custom-styles" class="custom-styles" role="radiogroup" aria-label="Kiểu gói"></div>
+
+      <h3 class="custom-step__sub"><span class="custom-step__num">3</span> Lời nhắn hoặc yêu cầu</h3>
+      <label class="custom-note">
+        <span class="visually-hidden">Lời nhắn hoặc yêu cầu</span>
+        <textarea id="custom-note" rows="3" placeholder="VD: thiệp chúc mừng sinh nhật, màu giấy gói…"></textarea>
+      </label>
+      <p id="custom-note-count" class="custom-note__count"></p>
+
+      <div class="custom-price">
+        <div class="custom-price__row"><span>Tiền hoa</span><span id="custom-flowers-total">—</span></div>
+        <div class="custom-price__row"><span id="custom-style-label">Kiểu gói</span><span id="custom-style-fee">—</span></div>
+        <div class="custom-price__row custom-price__row--total"><span>Giá mỗi bó</span><span id="custom-unit">—</span></div>
+        <div class="custom-qty">
+          <span>Số bó</span>
+          <div class="qty-stepper">
+            <button type="button" id="custom-qty-minus" aria-label="Giảm số bó">−</button>
+            <span id="custom-qty" aria-live="polite">1</span>
+            <button type="button" id="custom-qty-plus" aria-label="Tăng số bó">+</button>
+          </div>
+        </div>
+        <div class="custom-price__row custom-price__row--grand"><span id="custom-line-label">Tạm tính</span><span id="custom-line-total">—</span></div>
+        <p class="custom-price__vat">Giá đã bao gồm VAT <span>{{vat_rate}}</span>%</p>
+      </div>
+
+      <p id="custom-message" class="custom-message" role="status" hidden></p>
+      <button type="button" id="custom-add" class="btn btn-primary custom-add" disabled>Thêm vào giỏ hàng</button>
+      <p id="custom-added" class="custom-added" role="status" hidden>
+        Đã thêm vào giỏ hàng. <a href="cart.html">Xem giỏ hàng</a> hoặc tiếp tục chọn bó hoa khác.
+      </p>
+    </aside>
+  </div>
+  </main>
+
+  <!--include:footer-->
+
+  <!--include:floating-contact-->
+
+  <script src="js/main.js" defer></script>
+  <script src="js/custom-bouquet.js" defer></script>
+</body>
+</html>

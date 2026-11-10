@@ -1,0 +1,178 @@
+/* ==========================================================================
+   Bloomy — Story Page Styles
+   Loads after style.css. Reuses .container, .btn, .breadcrumb,
+   .section-heading, and .value-card (all shared in style.css) — this
+   file only covers what's unique to Story: hero split, timeline,
+   full-width photo, CTA.
+   ========================================================================== */
+
+/* ---- Hero (photo left, text right — reverse of About's order) ---- */
+.story-hero {
+  padding-block: 32px 64px;
+}
+
+.story-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.story-hero__image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.story-hero__eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  margin-bottom: 12px;
+}
+
+.story-hero__heading {
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  font-weight: 500;
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+
+.story-hero__heading em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+.story-hero__desc {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Timeline ---- */
+.story-timeline {
+  padding-block: 48px;
+}
+
+.timeline {
+  max-width: 640px;
+  margin-inline: auto;
+  position: relative;
+  padding-left: 32px;
+}
+
+/* Connecting vertical line behind the dots */
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background-color: hsl(var(--border));
+}
+
+.timeline__item {
+  position: relative;
+  padding-bottom: 36px;
+}
+
+.timeline__item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline__dot {
+  position: absolute;
+  left: -32px;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: hsl(var(--primary));
+  border: 3px solid hsl(var(--primary) / 0.2);
+}
+
+.timeline__year {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: hsl(var(--primary));
+  margin-bottom: 4px;
+}
+
+.timeline__title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.timeline__desc {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Full-width photo ---- */
+.story-photo {
+  padding-block: 16px 48px;
+}
+
+.story-photo img {
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+/* ---- Philosophy (3-card grid — same .value-card component as About) ---- */
+.story-philosophy {
+  padding-block: 48px;
+  background-color: hsl(var(--secondary));
+}
+
+.story-philosophy__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* ---- CTA ---- */
+.story-cta {
+  padding-block: 64px;
+  text-align: center;
+}
+
+.story-cta__heading {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 500;
+  margin-bottom: 28px;
+}
+
+.story-cta__heading em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .story-hero__grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .story-hero__heading {
+    font-size: 2rem;
+  }
+
+  .story-philosophy__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .story-photo img {
+    aspect-ratio: 4 / 3;
+  }
+}

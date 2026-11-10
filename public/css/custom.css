@@ -1,0 +1,300 @@
+/* Bloomy — custom bouquet builder (custom-bouquet.html). Shares the site's
+   tokens (colours, radius, fonts) from style.css. */
+
+.custom-hero {
+  padding-block: 56px 24px;
+  background-color: hsl(var(--secondary));
+}
+
+.custom-hero__title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin-block: 8px 12px;
+}
+
+/* Same soft pink as the other headings' emphasis, but upright. */
+.custom-hero__title em {
+  color: hsl(var(--primary));
+  font-style: normal;
+}
+
+.custom-hero__lead {
+  max-width: 62ch;
+  color: hsl(var(--muted-foreground));
+}
+
+.custom-hero__lead a {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.custom-error {
+  margin-top: 16px;
+  color: hsl(var(--destructive));
+}
+
+.custom-error[hidden] {
+  display: none;
+}
+
+.custom-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
+  gap: 40px;
+  align-items: start;
+  padding-block: 32px 80px;
+}
+
+.custom-step__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+}
+
+.custom-step__sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  margin: 22px 0 10px;
+}
+
+.custom-step__num {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* ---- flower list ---- */
+.custom-family {
+  margin-bottom: 24px;
+}
+
+.custom-family__title {
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 8px;
+}
+
+.custom-flower {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  margin-bottom: 8px;
+  background-color: hsl(var(--background));
+}
+
+.custom-flower.is-picked {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--secondary));
+}
+
+.custom-flower.is-out {
+  opacity: 0.5;
+}
+
+.custom-flower__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.custom-flower__name {
+  font-weight: 600;
+}
+
+.custom-flower__price,
+.custom-flower__out {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.custom-flower__stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.custom-flower__stepper button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.custom-flower__stepper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.custom-flower__count {
+  min-width: 1.6em;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* ---- your bouquet ---- */
+.custom-summary {
+  position: sticky;
+  top: 90px;
+  padding: 24px;
+  border-radius: var(--radius);
+  background-color: hsl(var(--secondary));
+}
+
+.custom-summary__hint {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+}
+
+.custom-summary__hint[hidden] {
+  display: none;
+}
+
+.custom-chosen li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 4px;
+  border-bottom: 1px solid hsl(var(--border));
+  font-size: 0.9rem;
+}
+
+.custom-count {
+  margin-top: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.custom-styles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.custom-style {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background-color: hsl(var(--background));
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.custom-note textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  font: inherit;
+  resize: vertical;
+}
+
+.custom-note__count {
+  text-align: right;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.custom-price {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.custom-price__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 3px;
+}
+
+.custom-price__row--total {
+  font-weight: 600;
+}
+
+.custom-price__row--grand {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid hsl(var(--border));
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.custom-price__vat {
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.custom-qty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 8px;
+}
+
+.custom-message {
+  margin-top: 12px;
+  font-size: 0.88rem;
+  color: hsl(var(--destructive));
+}
+
+.custom-message[hidden],
+.custom-added[hidden] {
+  display: none;
+}
+
+.custom-add {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.custom-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.custom-added {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: hsl(var(--primary));
+}
+
+.custom-added a {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .custom-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .custom-summary {
+    position: static;
+  }
+}

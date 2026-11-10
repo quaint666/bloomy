@@ -1,0 +1,412 @@
+/* ==========================================================================
+   Bloomy — Product Listing Styles
+   Loads after style.css. Reuses .product-card, .container, .btn, and the
+   color tokens from style.css — this file only covers what's unique to
+   Listing: hero text block, search bar, category pills, sort control.
+   ========================================================================== */
+
+/* ---- Hero (text only — no photo, unlike Homepage's hero) ---- */
+.listing-hero {
+  padding-block: 32px 40px;
+  background-color: hsl(var(--secondary));
+}
+
+.listing-hero__eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  margin-bottom: 12px;
+}
+
+.listing-hero__heading {
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  font-weight: 500;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.listing-hero__heading em {
+  color: hsl(var(--primary));
+}
+
+.listing-hero__subtitle {
+  font-size: 1rem;
+  color: hsl(var(--muted-foreground));
+  max-width: 560px;
+  margin-bottom: 28px;
+}
+
+.listing-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 480px;
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  padding: 14px 20px;
+}
+
+.listing-search svg {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+}
+
+.listing-search input {
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 0.95rem;
+  color: hsl(var(--foreground));
+  width: 100%;
+}
+
+.listing-search input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Category tabs ----
+   Only this row (and the sub-row under it) is sticky below the nav; the tag
+   filters live in the collapsible panel further down and scroll away. The
+   background is solid on purpose: a translucent blurred bar showed the page
+   content smudged through it. Text tabs with an underline instead of filled
+   capsules; the active tab uses the dark text colour + the primary underline
+   (primary-coloured text on white is only ~3:1 contrast). */
+.listing-filters {
+  position: sticky;
+  top: var(--nav-height, 73px);
+  z-index: 40;
+  /* Same see-through, blurred glass as the header above it (.site-nav in style.css). */
+  background-color: hsl(var(--background) / 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+
+.pill {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  padding: 16px 2px 13px; /* one pixel less below: the underline is 3px now, the bar keeps its height */
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.pill:hover {
+  color: hsl(var(--foreground));
+  border-bottom-color: hsl(var(--border));
+}
+
+.pill.is-active,
+.pill.is-active:hover {
+  color: hsl(var(--foreground));
+  border-bottom-color: hsl(var(--primary));
+}
+
+/* ---- Result count + sort ---- */
+.listing-meta {
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.listing-meta__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding-block: 16px;
+}
+
+/* The toggle for the tag panel (Loại hoa / Màu sắc). Square-ish, not a capsule. */
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.filter-toggle[hidden] {
+  display: none;
+}
+
+.filter-toggle:hover {
+  border-color: hsl(var(--muted-foreground));
+}
+
+/* Chevron: points down when closed, up when open. */
+.filter-toggle::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.filter-toggle[aria-expanded="true"]::after {
+  transform: translateY(1px) rotate(225deg);
+}
+
+.filter-toggle__count {
+  min-width: 18px;
+  padding-inline: 5px;
+  border-radius: 9px;
+  background-color: hsl(var(--foreground));
+  color: hsl(var(--background));
+  font-size: 0.7rem;
+  line-height: 18px;
+  text-align: center;
+}
+
+.filter-toggle__count[hidden] {
+  display: none;
+}
+
+.listing-meta__count {
+  font-size: 0.9rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.listing-meta__count span {
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.sort-control label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.sort-control select {
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+  cursor: pointer;
+}
+
+/* ---- Product grid section ---- */
+.listing-grid-section {
+  padding-block: 40px 64px;
+}
+
+/* .product-grid and .product-card are both defined in style.css and
+   reused as-is — Listing's cards are the exact same shape as Homepage's
+   featured cards (image, name, price — no badges/rating/sold-count). */
+
+.listing-empty {
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  padding-block: 48px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .listing-hero__heading {
+    font-size: 2rem;
+  }
+
+  /* Wrapping rows don't work once the bar is stuck to the top — a
+     multi-row block would permanently eat screen space while pinned.
+     Single line, horizontal scroll instead, with a soft fade on the right
+     edge as the "there is more" hint (the end padding keeps the last tab
+     clear of the fade when scrolled all the way). */
+  .category-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    padding-inline-end: 28px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+
+  .category-pills::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Brave */
+  }
+
+  .pill {
+    flex-shrink: 0; /* stop tabs squishing/wrapping in the scroll row */
+  }
+}
+
+/* ---- Entry to the custom bouquet builder ---- */
+.listing-custom {
+  padding-block: 14px 0;
+}
+
+.listing-custom .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.listing-custom__text {
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Sub-pills, tag chips and "Xóa bộ lọc" (built by listing.js) ---- */
+.category-pills--sub {
+  gap: 22px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.category-pills--sub[hidden] {
+  display: none;
+}
+
+.category-pills--sub .pill {
+  font-size: 0.82rem;
+  padding-block: 10px 7px;
+}
+
+/* ---- Collapsible tag panel (Loại hoa / Màu sắc, built by listing.js) ----
+   Not sticky: it scrolls away with the page. Each group is a label column plus
+   a wrapping chip area; each chip is a checkbox-style option (a square that
+   fills when selected), still a <button aria-pressed>. */
+.tag-filters {
+  display: grid;
+  gap: 14px;
+  padding-block: 4px 20px;
+}
+
+.tag-filters[hidden] {
+  display: none;
+}
+
+.tag-group {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 4px 16px;
+  align-items: start;
+}
+
+.tag-group__label {
+  padding-top: 9px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.tag-group__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 22px;
+}
+
+.tag-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  color: hsl(var(--foreground));
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* the square */
+.tag-chip::before {
+  content: "";
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid hsl(var(--muted-foreground));
+  border-radius: 4px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+/* the tick (drawn with borders, so no image is needed) */
+.tag-chip::after {
+  content: "";
+  position: absolute;
+  left: 5.5px;
+  top: 50%;
+  width: 4px;
+  height: 8px;
+  border-right: 2px solid hsl(var(--primary-foreground));
+  border-bottom: 2px solid hsl(var(--primary-foreground));
+  transform: translateY(-65%) rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.tag-chip:hover::before {
+  border-color: hsl(var(--primary));
+}
+
+.tag-chip[aria-pressed="true"]::before {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--primary));
+}
+
+.tag-chip[aria-pressed="true"]::after {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .tag-group {
+    grid-template-columns: 1fr;
+  }
+
+  .tag-group__label {
+    padding-top: 0;
+  }
+}
+
+.listing-clear {
+  padding: 0;
+  border: none;
+  background: none;
+  color: hsl(var(--primary));
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.listing-clear[hidden] {
+  display: none;
+}

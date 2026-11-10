@@ -1,0 +1,10 @@
+-- Bloomy — sample reviews (demo data; the team writes the text).
+-- Loaded after seed-products.sql, so product ids exist. Each review is one row:
+-- product by id, a name, 1-5 stars, a comment of 10-500 characters (the same
+-- limits as the review form), approved = true so it shows straight away.
+-- created_at is spread over past days so "mới nhất" on the homepage looks natural.
+-- The homepage shows the 3 newest approved reviews across products.
+--
+-- INSERT INTO reviews (product_id, name, stars, comment, approved, created_at) VALUES
+-- (9,  'Minh Anh',   5, 'Viết nhận xét của bạn vào đây (tối thiểu 10 ký tự).', true, now() - interval '9 days'),
+-- (5,  'Hoàng Long', 4, 'Một nhận xét khác.',                                  true, now() - interval '6 days');

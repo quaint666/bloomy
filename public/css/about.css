@@ -1,0 +1,247 @@
+/* ==========================================================================
+   Bloomy — About Page Styles
+   Loads after style.css. Reuses .container, .btn, .breadcrumb, and
+   .section-heading (the last one currently lives in home.css — see note
+   below) — this file only covers what's unique to About.
+   ========================================================================== */
+
+/* .section-heading is now shared in style.css — moved there when About
+   became the second page to use it (same fix as .product-grid, footer,
+   and .breadcrumb before it). */
+
+/* ---- Hero (split: text left, photo right) ---- */
+.about-hero {
+  padding-block: 32px 64px;
+}
+
+.about-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.about-hero__eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  margin-bottom: 12px;
+}
+
+.about-hero__heading {
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  font-weight: 500;
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+
+.about-hero__heading em {
+  color: hsl(var(--primary));
+}
+
+.about-hero__desc {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 28px;
+}
+
+.about-hero__actions {
+  display: flex;
+  gap: 14px;
+}
+
+.about-hero__image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+/* ---- Stats bar ---- */
+.about-stats {
+  padding-block: 8px 48px;
+}
+
+.about-stats__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.about-stat {
+  background-color: hsl(var(--secondary));
+  border-radius: var(--radius);
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.about-stat__number {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: hsl(var(--primary));
+  margin-bottom: 6px;
+}
+
+.about-stat__label {
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Core values ---- */
+.about-values {
+  padding-block: 48px;
+  background-color: hsl(var(--secondary));
+}
+
+.about-values__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* .value-card is now shared in style.css — moved there when Story became
+   the second page to use this icon/title/desc card pattern. */
+
+/* ---- More about Bloomy: links to the Story and Commitment pages ---- */
+.about-more {
+  padding-block: 56px 0;
+}
+
+.about-more__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.about-more__card {
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background-color: hsl(var(--background));
+  transition: border-color 0.2s;
+}
+
+.about-more__card:hover {
+  border-color: hsl(var(--primary) / 0.6);
+}
+
+.about-more__card:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+
+.about-more__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+}
+
+.about-more__desc {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 16px;
+}
+
+/* Dark text, not the pink: pink on white is only about 3:1 contrast. */
+.about-more__cta {
+  margin-top: auto; /* both cards' links line up at the bottom, whatever the text length */
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.about-more__card:hover .about-more__cta {
+  text-decoration: underline;
+}
+
+/* ---- Mission quote ---- */
+.about-mission {
+  padding-block: 64px;
+}
+
+.about-mission__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.about-mission__image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.about-mission__eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  margin-bottom: 16px;
+}
+
+.about-mission__quote {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  line-height: 1.4;
+  font-style: normal;
+  margin-bottom: 20px;
+}
+
+.about-mission__quote em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+.about-mission__author {
+  font-size: 0.9rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .about-hero__grid,
+  .about-mission__grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .about-mission__image {
+    order: -1;
+  }
+
+  .about-hero__heading {
+    font-size: 2rem;
+  }
+
+  .about-stats__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .about-values__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .about-more__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-stats__grid,
+  .about-values__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-hero__actions {
+    flex-direction: column;
+  }
+}

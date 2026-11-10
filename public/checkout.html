@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thanh toán — Bloomy</title>
+  <meta name="description" content="Hoàn tất đơn hàng hoa tươi tại Bloomy — chọn ngày, khung giờ giao hàng và phương thức thanh toán phù hợp.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Thanh toán — Bloomy">
+  <meta property="og:description" content="Hoàn tất đơn hàng hoa tươi tại Bloomy — chọn ngày, khung giờ giao hàng và phương thức thanh toán phù hợp.">
+  <meta property="og:image" content="https://bloomy.quaintshomelabdomain.uk/images/og-image.jpg">
+  <meta property="og:url" content="https://bloomy.quaintshomelabdomain.uk/checkout.html">
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/checkout.css">
+</head>
+<body class="defer-footer">
+
+  <!--include:header-->
+
+  <main>
+
+  <div class="container checkout-page">
+
+    <p class="breadcrumb"><a href="index.html">Trang chủ</a> <span>›</span> <a href="cart.html">Giỏ hàng</a> <span>›</span> Thanh toán</p>
+
+    <!-- ============ EMPTY-CART GUARD (direct visit with nothing in cart) ============ -->
+    <div id="checkout-empty" class="cart-empty" hidden>
+      <div class="cart-empty__icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      </div>
+      <h1 class="cart-empty__heading">Giỏ hàng <em>đang trống</em></h1>
+      <p class="cart-empty__subtitle">Chưa có gì để thanh toán — hãy chọn hoa trước nhé.</p>
+      <a href="products.html" class="btn btn-primary">
+        Khám phá hoa tươi
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+
+    <!-- ============ MAIN CHECKOUT VIEW (form + summary) ============ -->
+    <div id="checkout-form-view" hidden>
+
+      <div class="checkout-hero">
+        <p class="checkout-hero__eyebrow">Thanh toán</p>
+        <h1 class="checkout-hero__heading">Hoàn tất <em>đơn hàng của bạn</em></h1>
+        <p class="checkout-hero__subtitle">Vui lòng xác nhận ngày &amp; khung giờ giao và điền đủ thông tin để Bloomy giao hoa đúng lúc.</p>
+      </div>
+
+      <!--include:checkout-form-->
+    </div>
+
+    <!--include:checkout-payment-->
+
+  </div>
+
+  </main>
+
+  <!--include:footer-->
+
+  <!--include:floating-contact-->
+
+  <script src="js/main.js" defer></script>
+  <script src="js/checkout.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giỏ hàng — Bloomy</title>
+  <meta name="description" content="Xem giỏ hàng của bạn tại Bloomy — kiểm tra số lượng và tổng tiền trước khi tiến hành thanh toán.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Giỏ hàng — Bloomy">
+  <meta property="og:description" content="Xem giỏ hàng của bạn tại Bloomy — kiểm tra số lượng và tổng tiền trước khi tiến hành thanh toán.">
+  <meta property="og:image" content="https://bloomy.quaintshomelabdomain.uk/images/og-image.jpg">
+  <meta property="og:url" content="https://bloomy.quaintshomelabdomain.uk/cart.html">
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/cart.css">
+</head>
+<body class="defer-footer">
+
+  <!--include:header-->
+
+  <main>
+
+  <div class="container cart-page">
+
+    <p class="breadcrumb"><a href="index.html">Trang chủ</a> <span>›</span> Giỏ hàng</p>
+
+    <!-- ============ EMPTY STATE (per your mockup) ============ -->
+    <div id="cart-empty" class="cart-empty" hidden>
+      <div class="cart-empty__icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      </div>
+      <h1 class="cart-empty__heading">Giỏ hàng <em>đang trống</em></h1>
+      <p class="cart-empty__subtitle">Chưa có đóa hoa nào được chọn — hãy để Bloomy gói cho bạn một bó thật xinh nhé.</p>
+      <a href="products.html" class="btn btn-primary">
+        Khám phá hoa tươi
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+
+    <!-- ============ CART CONTENTS (populated by cart.js) ============ -->
+    <div id="cart-contents" class="cart-contents" hidden>
+      <div class="cart-hero">
+        <p class="cart-hero__eyebrow">Giỏ hàng</p>
+        <h1 class="cart-hero__heading">Những đóa hoa <em>bạn đã chọn</em></h1>
+        <p class="cart-hero__subtitle" id="cart-item-count"></p>
+      </div>
+
+      <div class="cart-layout">
+        <div class="cart-items">
+          <div id="cart-items-list"></div>
+
+          <div class="cart-actions-row">
+            <a href="products.html" class="cart-continue">← Tiếp tục chọn hoa</a>
+            <button type="button" id="clear-cart" class="cart-clear">Xóa tất cả</button>
+          </div>
+        </div>
+
+        <div class="cart-summary">
+          <h2 class="cart-summary__title">Đơn hàng</h2>
+
+          <div class="cart-summary__row">
+            <span id="cart-summary-label">Tạm tính</span>
+            <span id="cart-subtotal"></span>
+          </div>
+
+          <!-- Coupon: only the code is kept; the server decides the discount -->
+          <div class="cart-coupon">
+            <label for="coupon-input" class="cart-coupon__label">Mã giảm giá</label>
+            <div class="cart-coupon__row">
+              <input type="text" id="coupon-input" class="cart-coupon__input" maxlength="40" autocomplete="off" placeholder="Nhập mã">
+              <button type="button" id="coupon-apply" class="btn btn-outline cart-coupon__btn">Áp dụng</button>
+            </div>
+            <p id="coupon-msg" class="cart-coupon__msg" hidden></p>
+          </div>
+
+          <div class="cart-summary__row" id="cart-discount-row" hidden>
+            <span id="cart-discount-label">Giảm giá</span>
+            <span id="cart-discount"></span>
+          </div>
+          <div class="cart-summary__row">
+            <span>Phí giao hàng</span>
+            <span class="cart-summary__muted">Tính ở bước đặt hàng</span>
+          </div>
+
+          <div class="cart-summary__total">
+            <span>Tổng cộng</span>
+            <span id="cart-total"></span>
+          </div>
+
+          <button type="button" id="checkout-btn" class="btn btn-primary cart-checkout-btn">
+            Tiến hành đặt hàng
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+          <p id="checkout-blocked-msg" class="cart-checkout-blocked" hidden></p>
+
+          <ul class="cart-summary__notes">
+            <li>Giá đã bao gồm VAT <span>{{vat_rate}}</span>%</li>
+            <li>Giao theo khung giờ sáng / chiều / tối</li>
+            <li>Giao trong khu vực TP.HCM cũ</li>
+            <li>Cam kết hoa tươi 100%</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </main>
+
+  <!--include:footer-->
+
+  <!--include:floating-contact-->
+
+  <script src="js/main.js" defer></script>
+  <script src="js/cart.js" defer></script>
+</body>
+</html>

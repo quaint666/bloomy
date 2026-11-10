@@ -1,0 +1,1564 @@
+/* ==========================================================================
+   Bloomy — Global Stylesheet
+   Color tokens, reset, and shared components (nav bar) used on every
+   customer-facing page. Page-specific styles live in their own files
+   (home.css, listing.css, etc.) and load AFTER this one.
+   ========================================================================== */
+
+/* ---- Self-hosted fonts — replaces the Google Fonts <link> that used to
+   sit in every page's <head>. Same-origin means no separate DNS/TLS
+   connection to fonts.gstatic.com before the files can even start
+   downloading, which was the real cause of the font-swap layout shift
+   found via Lighthouse (Cart/Checkout/Confirmation/Products/Product
+   Detail all scored "poor" CLS, traced directly to "Web font loaded"
+   as the shift's cause). Only the weights actually used by --font-body/
+   --font-heading (400/500/600/700) and --font-display (500, incl. its
+   italic for the <em> accents) are included — no 400-weight Lora files,
+   since nothing on the site ever requests that weight. ---- */
+@font-face {
+  font-family: "Be Vietnam Pro";
+  src: url("../fonts/be-vietnam-pro-v12-latin_vietnamese-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Be Vietnam Pro";
+  src: url("../fonts/be-vietnam-pro-v12-latin_vietnamese-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Be Vietnam Pro";
+  src: url("../fonts/be-vietnam-pro-v12-latin_vietnamese-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Be Vietnam Pro";
+  src: url("../fonts/be-vietnam-pro-v12-latin_vietnamese-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lora";
+  src: url("../fonts/lora-v37-latin_vietnamese-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lora";
+  src: url("../fonts/lora-v37-latin_vietnamese-500italic.woff2") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 30 8% 16%;
+  --primary: 350 33% 64%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 24 47% 98%;
+  --secondary-foreground: 30 8% 16%;
+  --muted: 24 47% 98%;
+  --muted-foreground: 30 8% 40%;
+  --accent: 251 20% 62%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 24 30% 92%;
+  --input: 24 30% 92%;
+  --ring: 350 33% 64%;
+  --radius: 1.25rem;
+
+  --font-heading: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Lora", ui-serif, Georgia, serif;
+}
+
+/* ---- Reset ---- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "kern";
+  line-height: 1.5;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+/* The hidden attribute must always win. Without this, any element whose class sets `display`
+   (a .btn, a grid, a flex row...) stays visible with hidden set, because an author `display`
+   beats the browser's built-in [hidden] rule. That quietly broke the admin menu and a delete
+   button; this is the standard fix. Pages and scripts use hidden everywhere. */
+[hidden] {
+  display: none !important;
+}
+
+/* Respect reduced-motion preference site-wide */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Visible keyboard focus everywhere (buttons, links, inputs) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+
+/* Any anchor-jump target (e.g. #featured) needs this, or the sticky nav
+   covers its top ~73px, making the landing spot look like it's still on
+   the previous section. */
+[id] {
+  scroll-margin-top: var(--nav-height, 73px);
+}
+
+/* ---- Shared layout container ---- */
+.container {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+/* ---- Shared buttons (used across every page, not just the hero) ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.btn-primary:hover {
+  background-color: hsl(var(--primary) / 0.9);
+}
+
+.btn-outline {
+  background-color: hsl(var(--background) / 0.7);
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+
+.btn-outline:hover {
+  background-color: hsl(var(--background));
+}
+
+/* ==========================================================================
+   Site nav — shared across Homepage, Listing, Detail, Cart, Checkout,
+   Order Confirmation. Sticky so it stays visible on scroll (matches every
+   mockup screenshot, which shows it identically positioned at different
+   scroll depths).
+   ========================================================================== */
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: hsl(var(--background) / 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+}
+
+/* Applied via JS once the page scrolls past the hero — subtle separation
+   from content instead of the nav floating with no edge. */
+.site-nav.is-scrolled {
+  border-bottom-color: hsl(var(--border));
+}
+
+.site-nav .container {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding-block: 14px;
+}
+
+.site-nav__logo {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.75rem;
+  color: hsl(var(--foreground));
+  flex-shrink: 0;
+}
+
+.site-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex: 1;
+}
+
+.site-nav__links a {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+}
+
+.site-nav__links a:hover {
+  color: hsl(var(--primary));
+}
+
+.site-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.site-nav__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  padding: 10px 16px;
+  width: 220px;
+}
+
+.site-nav__search svg {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+}
+
+.site-nav__search input {
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 0.85rem;
+  color: hsl(var(--foreground));
+  width: 100%;
+}
+
+.site-nav__search input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+.site-nav__search {
+  position: relative; /* anchor for the dropdown below */
+}
+
+.site-nav__search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  box-shadow: 0 16px 32px hsl(var(--foreground) / 0.12);
+  padding: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 60; /* above .site-nav's z-index: 50 */
+}
+
+.site-nav__search-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.site-nav__search-result:hover {
+  background-color: hsl(var(--secondary));
+}
+
+.site-nav__search-result img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.site-nav__search-result-name {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-nav__search-result-price {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+}
+
+.site-nav__search-empty {
+  padding: 12px 8px;
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+}
+
+.site-nav__cart {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.site-nav__cart-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 3px;
+}
+
+/* Hide the count badge entirely when the cart is empty (toggled via JS,
+   not display:none by default — 0 items still needs the icon to render) */
+.site-nav__cart-count[hidden] {
+  display: none;
+}
+
+/* Mobile menu panel + backdrop are hidden by default at every width.
+   The @media block below only handles showing them again (and only once
+   .is-open is also present) under 900px — without this base rule they
+   fell back to the browser default (block), rendering unstyled on desktop. */
+.site-nav__backdrop,
+.site-nav__mobile-panel {
+  display: none;
+}
+
+/* ---- Shared product card (used on Homepage's featured grid and will be
+   reused on Listing's product grid — kept here, not in home.css, so both
+   pages reference the same styles instead of duplicating them) ---- */
+.product-card__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.product-card:hover .product-card__image {
+  transform: scale(1.04);
+  box-shadow: 0 0 32px 4px hsl(var(--primary) / 0.22);
+}
+
+.product-card__name {
+  font-weight: 600;
+  margin-bottom: 4px;
+  transition: color 0.2s ease;
+}
+
+.product-card:hover .product-card__name {
+  color: hsl(var(--primary));
+}
+
+.product-card__price {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+}
+
+/* ---- Shared product grid (used by Homepage's featured grid and
+   Listing's product grid — same reasoning as .product-card above) ---- */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---- Shared breadcrumb (used on Listing, About, and any inner page
+   with a "Trang chủ › X" trail — moved here once a second page needed
+   it, same reasoning as .product-grid and the footer) ---- */
+.breadcrumb {
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 24px;
+}
+
+.breadcrumb a:hover {
+  color: hsl(var(--primary));
+}
+
+.breadcrumb span {
+  margin-inline: 4px;
+}
+
+/* ---- Shared section heading (eyebrow/title/lead pattern used by
+   Homepage's category-nav/featured/features/testimonials and by About's
+   value-cards heading) — moved here once a second page needed it ---- */
+.section-heading {
+  text-align: center;
+  max-width: 640px;
+  margin-inline: auto;
+  margin-bottom: 48px;
+}
+
+.section-heading__eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  margin-bottom: 12px;
+}
+
+.section-heading__title {
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.section-heading__title em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+.section-heading__lead {
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Mobile nav ---- */
+.site-nav__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: hsl(var(--foreground));
+  width: 40px;
+  height: 40px;
+}
+
+/* Toggle button holds both icons; JS swaps which is visible by adding
+   .is-open to .site-nav (not the button) so the backdrop/panel below can
+   key off the same class. */
+.site-nav__toggle .icon-close {
+  display: none;
+}
+
+.site-nav.is-open .site-nav__toggle .icon-menu {
+  display: none;
+}
+
+.site-nav.is-open .site-nav__toggle .icon-close {
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .site-nav .container {
+    padding-block: 14px;
+  }
+
+  .site-nav__links {
+    display: none;
+  }
+
+  .site-nav__search {
+    display: none;
+  }
+
+  .site-nav__actions {
+    margin-left: auto;
+  }
+
+  .site-nav__toggle {
+    display: flex;
+  }
+
+  /* Dimmed backdrop behind the dropdown panel. Visual only — deliberately
+     no click-to-close handler; the X button is the only way to close.
+     pointer-events left enabled so it still blocks accidental taps on
+     whatever's underneath while the menu is open. */
+  .site-nav__backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    top: var(--nav-height, 73px);
+    background-color: hsl(var(--foreground) / 0.35);
+    z-index: 40;
+  }
+
+  .site-nav.is-open .site-nav__backdrop {
+    display: block;
+  }
+
+  /* Mobile menu panel: overlays the page (doesn't push content), anchored
+     directly under the fixed header. */
+  .site-nav__mobile-panel {
+    display: none;
+    position: fixed;
+    top: var(--nav-height, 73px);
+    left: 0;
+    right: 0;
+    z-index: 41;
+    background-color: hsl(var(--background) / 0.9);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 16px 32px hsl(var(--foreground) / 0.12);
+    padding: 12px 16px 16px;
+    flex-direction: column;
+    max-height: calc(100vh - var(--nav-height, 73px));
+    overflow-y: auto;
+  }
+
+  .site-nav.is-open .site-nav__mobile-panel {
+    display: flex;
+  }
+
+  .site-nav__mobile-panel .site-nav__search {
+    display: flex;
+    width: 100%;
+    margin-bottom: 2px;
+    padding: 8px 14px;
+  }
+
+  .site-nav__mobile-panel a {
+    display: block;
+    padding: 11px 4px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .site-nav__mobile-panel a:last-child {
+    border-bottom: none;
+  }
+}
+/* ==========================================================================
+   Shared footer — identical markup on every customer-facing page, moved
+   here from home.css (same reasoning as .product-grid: shared markup
+   needs shared CSS, or pages loading only their own page-specific file
+   render it completely unstyled).
+   ========================================================================== */
+.site-footer {
+  background-color: hsl(var(--foreground));
+  color: hsl(var(--background) / 0.7);
+  padding-block: 64px 32px;
+}
+
+.site-footer .container {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+
+.site-footer__brand-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: hsl(var(--background));
+  margin-bottom: 16px;
+}
+
+.site-footer__desc {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  max-width: 32ch;
+}
+
+.site-footer__social {
+  display: flex;
+  gap: 12px;
+}
+
+.site-footer__social a {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid hsl(var(--background) / 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--background));
+}
+
+.site-footer__col h3 {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--background) / 0.5);
+  margin-bottom: 16px;
+}
+
+.site-footer__col ul li {
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.site-footer__col ul li a:hover {
+  color: hsl(var(--background));
+}
+
+.site-footer__contact li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.site-footer__bottom {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 40px;
+  padding-top: 24px;
+  border-top: 1px solid hsl(var(--background) / 0.15);
+  font-size: 0.8rem;
+}
+
+/* Copyright text is the last child in the row — placed in the grid's
+   4th column so it lines up under "Chính sách" above it. */
+.site-footer__bottom > *:last-child {
+  grid-column: 4;
+}
+
+.payment-badges {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.payment-badge {
+  padding: 6px 14px;
+  border: 1px solid hsl(var(--background) / 0.25);
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .site-footer .container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .site-footer .container {
+    grid-template-columns: 1fr;
+  }
+
+  .site-footer__bottom {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .site-footer__bottom > *:last-child {
+    grid-column: 1;
+  }
+}
+
+/* ---- Shared icon/title/desc card (About's value cards, Story's
+   philosophy cards — same component, moved here on 2nd real use) ---- */
+.value-card {
+  background-color: hsl(var(--background));
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.value-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.value-card__title {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.value-card__desc {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Shared quantity stepper (Product Detail's quantity selector, now
+   also Cart's per-line-item control — promoted here on Cart's need, same
+   "promote on 2nd real use" rule as .product-grid/.breadcrumb/.value-card
+   above) ---- */
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  padding: 6px;
+}
+
+.qty-stepper button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: hsl(var(--foreground));
+}
+
+.qty-stepper button:hover {
+  background-color: hsl(var(--secondary));
+}
+
+.qty-stepper span {
+  width: 28px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* ---- Shared status badge (Product Detail's discontinued badge, Cart's
+   discontinued-item flag — promoted on 2nd use) ---- */
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-badge--discontinued {
+  background-color: hsl(var(--foreground) / 0.85);
+  color: hsl(var(--background));
+}
+
+/* ---- Shared disabled-button state (Add to cart when discontinued,
+   Checkout CTA when a discontinued item is in the cart — generalized
+   from what was a one-off #add-to-cart:disabled rule in product.css) ---- */
+.btn-primary:disabled,
+.btn-primary:disabled:hover {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  color: hsl(var(--background));
+  cursor: not-allowed;
+}
+
+/* ---- Shared empty/not-found state (Cart's empty-cart view, now also
+   Checkout's empty-cart guard and Order Confirmation's invalid-token
+   state — promoted here on the 3rd real use, same rule as everything
+   else in this section) ---- */
+.cart-empty {
+  text-align: center;
+  max-width: 440px;
+  margin-inline: auto;
+  padding-block: 96px;
+}
+
+.cart-empty__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.cart-empty__heading {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.cart-empty__heading em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+.cart-empty__subtitle {
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 28px;
+}
+
+/* ---- Shared order-summary sidebar (Checkout's order total, now also
+   Order Confirmation's order recap — promoted here on Confirmation's
+   need, same "promote on 2nd real use" rule as everything above).
+   Checkout-only pieces (submit button, its help text, the error message)
+   stay local to checkout.css, since Confirmation has no equivalent. ---- */
+.checkout-summary {
+  background-color: hsl(var(--secondary));
+  border-radius: var(--radius);
+  padding: 28px;
+  position: sticky;
+  top: calc(var(--nav-height, 73px) + 24px);
+}
+
+.checkout-summary__title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.checkout-summary__items {
+  margin-bottom: 4px;
+}
+
+.checkout-summary__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.checkout-summary__item img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.checkout-summary__item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.checkout-summary__item-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkout-summary__item-qty {
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.checkout-summary__item-total {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.checkout-summary__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.92rem;
+  margin-bottom: 14px;
+  color: hsl(var(--muted-foreground));
+  padding-top: 16px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.checkout-summary__items + .checkout-summary__row {
+  padding-top: 16px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.checkout-summary__free {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.checkout-summary__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 16px;
+  border-top: 1px solid hsl(var(--border));
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.checkout-summary__total span:last-child {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: hsl(var(--primary));
+}
+
+.checkout-summary__notes {
+  font-size: 0.82rem;
+  color: hsl(var(--muted-foreground));
+  padding-top: 16px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.checkout-summary__notes li {
+  margin-bottom: 8px;
+}
+
+/* Un-stick once the host page's own 2-column layout collapses to 1 —
+   both Checkout and Order Confirmation collapse at the same 900px, so
+   this lives here instead of being duplicated in both page stylesheets. */
+@media (max-width: 900px) {
+  .checkout-summary {
+    position: static;
+  }
+}
+
+/* ==========================================================================
+   Floating contact widget — Zalo chat bubble + hotline pill, fixed in the
+   bottom-right corner on every customer-facing page. The Zalo link and the
+   hotline both come from the shop's phone number in the settings, the same
+   one the footer shows — one source of truth, not a second contact channel.
+   ========================================================================== */
+.floating-contact {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 30; /* below the mobile nav backdrop (40) and panel (41), so it
+                  doesn't float over the open mobile menu */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.floating-contact__zalo {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px hsl(var(--foreground) / 0.25);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.floating-contact__zalo:hover {
+  background-color: hsl(var(--primary) / 0.9);
+  transform: scale(1.06);
+}
+
+.floating-contact__hotline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px hsl(var(--foreground) / 0.18);
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.floating-contact__hotline:hover {
+  background-color: hsl(var(--secondary));
+}
+
+@media (max-width: 600px) {
+  .floating-contact {
+    right: 14px;
+    bottom: 14px;
+  }
+
+  .floating-contact__zalo {
+    width: 46px;
+    height: 46px;
+  }
+
+  .floating-contact__hotline {
+    font-size: 0.75rem;
+    padding: 7px 12px;
+  }
+}
+
+/* ==========================================================================
+   Payment-waiting view (ZaloPay QR) — promoted here from checkout.css now
+   that Order Confirmation is its second real user (retry-payment flow),
+   same "shared markup needs shared CSS" rule already applied to
+   .cart-empty, .checkout-summary, etc. Checkout's own checkout.css no
+   longer defines these rules — removed from there in this same change.
+   ========================================================================== */
+.payment-waiting {
+  display: flex;
+  justify-content: center;
+  padding-block: 48px 80px;
+}
+
+/* [hidden] and this class's own `display: flex` have equal specificity —
+   without this, source order lets `display: flex` win and the element
+   stays visible even while marked hidden. */
+.payment-waiting[hidden] {
+  display: none;
+}
+
+.payment-waiting__card {
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  background-color: hsl(var(--secondary));
+  border-radius: var(--radius);
+  padding: 40px 32px;
+}
+
+.payment-waiting__heading {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.payment-waiting__heading em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+.payment-waiting__subtitle {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.payment-waiting__qr {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 20px;
+  background-color: hsl(var(--background));
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.payment-waiting__qr img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.payment-waiting__qr-loading {
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.payment-waiting__status {
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 16px;
+}
+
+.payment-waiting__manual-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.payment-waiting__manual-btn:hover {
+  background-color: hsl(var(--muted));
+  border-color: hsl(var(--primary));
+}
+
+.payment-waiting__manual-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.payment-waiting__alt-link {
+  display: block;
+  font-size: 0.82rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+}
+
+.payment-waiting__alt-link:hover {
+  color: hsl(var(--primary));
+}
+
+.payment-waiting__cancel {
+  font-size: 0.82rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.site-footer__legal {
+  font-size: 0.82rem;
+  color: hsl(var(--background) / 0.7);
+}
+
+.site-footer__legal a {
+  color: inherit;
+}
+
+.site-footer__legal a:hover {
+  color: hsl(var(--background));
+}
+
+.payment-waiting__cancel:hover {
+  color: hsl(var(--destructive));
+}
+
+/* ---- Visually hidden (screen-reader only) — for semantic elements
+   (e.g. a heading needed for valid document structure) that shouldn't
+   be visible, without removing them from the accessibility tree the
+   way display:none would. ---- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Pages whose content is filled in by JS (defer-footer) keep the footer
+   invisible until the JS adds .is-ready, so it never visibly jumps down as the
+   content arrives. The animation is a failsafe: if the JS never runs, the
+   footer still shows after 3s. ---- */
+body.defer-footer:not(.is-ready) .site-footer {
+  visibility: hidden;
+  animation: footer-failsafe 0s 3s forwards;
+}
+
+@keyframes footer-failsafe {
+  to { visibility: visible; }
+}
+
+/* Keep the scrollbar's space reserved so content doesn't nudge sideways
+   when a page grows taller than the window. */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Student-project notice at the very bottom of the footer (added by main.js).
+   .site-footer .container is a 4-column grid, so this one opts out of it. */
+.site-footer .container.site-footer__notice {
+  display: block;
+  grid-template-columns: none;
+  padding-top: 20px;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: hsl(var(--background) / 0.55);
+}
+
+/* ---- Campaign coupon chip (homepage card + landing hero): the code, then what it gives ---- */
+.campaign-chip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 6px 16px 6px 6px;
+  border: 1px solid hsl(var(--primary) / 0.45);
+  border-radius: 999px;
+  background-color: hsl(var(--background));
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.campaign-chip__code {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background-color: hsl(var(--primary) / 0.14);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.campaign-chip__text {
+  color: hsl(var(--muted-foreground));
+}
+
+/* ==== Shared pieces added by main.js and the page templates (customer pages) ==== */
+
+/* Toast: one message, bottom centre (Bloomy.toast in main.js). */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: min(560px, calc(100% - 32px));
+  padding: 12px 14px 12px 18px;
+  border-radius: 14px;
+  background-color: hsl(var(--foreground));
+  color: hsl(var(--background));
+  box-shadow: 0 12px 32px hsl(0 0% 0% / 0.25);
+  font-size: 0.9rem;
+}
+
+.toast.is-visible {
+  animation: bloomy-toast-in 0.25s ease;
+}
+
+@keyframes bloomy-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.toast__links {
+  display: flex;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.toast__links a {
+  font-weight: 700;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.toast__close {
+  padding: 2px 8px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.3rem;
+  line-height: 1;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.toast__close:hover {
+  opacity: 1;
+}
+
+/* Back to top: bottom left (the contact buttons are bottom right). */
+.back-to-top {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 55;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: 50%;
+  background-color: hsl(var(--background) / 0.9);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px hsl(0 0% 0% / 0.12);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.back-to-top:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px hsl(0 0% 0% / 0.18);
+}
+
+.back-to-top__arrow {
+  width: 10px;
+  height: 10px;
+  border-left: 2px solid hsl(var(--foreground));
+  border-top: 2px solid hsl(var(--foreground));
+  transform: translateY(3px) rotate(45deg);
+}
+
+/* Skeleton cards: grey placeholders the size of a product card while the list loads (they are
+   replaced when the cards arrive). The shimmer is switched off by the reduced-motion rule above. */
+.skeleton-card__image,
+.skeleton-card__line {
+  background: linear-gradient(90deg, hsl(var(--secondary)) 25%, hsl(var(--background)) 50%, hsl(var(--secondary)) 75%);
+  background-size: 200% 100%;
+  animation: bloomy-shimmer 1.4s linear infinite;
+}
+
+.skeleton-card__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+
+.skeleton-card__line {
+  height: 14px;
+  width: 80%;
+  margin-bottom: 8px;
+  border-radius: 7px;
+}
+
+.skeleton-card__line--short {
+  width: 40%;
+}
+
+@keyframes bloomy-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* The copy button inside a coupon chip. */
+.campaign-chip__copy {
+  padding: 4px 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background-color: hsl(var(--background));
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.12s ease;
+}
+
+.campaign-chip__copy:hover {
+  background-color: hsl(var(--secondary));
+}
+
+.campaign-chip__copy:active {
+  transform: scale(0.95);
+}
+
+.campaign-chip__copy.is-added {
+  animation: bloomy-pop 0.35s ease;
+}
+
+/* On a narrow screen the three parts no longer fit on one line. A fully rounded (999px) box that grows
+   taller curves into its own text, so below 600px the chip becomes a rounded card with two rows: the code
+   with the copy button at the right, then the wording across the full width. The markup order is code,
+   text, button; `order` puts the button next to the code. */
+@media (max-width: 600px) {
+  .campaign-chip {
+    display: flex;
+    align-self: stretch;
+    gap: 8px 10px;
+    padding: 12px 14px;
+    border-radius: 18px;
+  }
+
+  .campaign-chip__code {
+    order: 1;
+  }
+
+  .campaign-chip__copy {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .campaign-chip__text {
+    order: 3;
+    flex-basis: 100%;
+  }
+}
+
+/* ==== Motion (customer pages only) ====
+   Small rewards for touching things: buttons that lift and press, a nav underline that draws,
+   a cart badge that pops when something is added, cards that rise into place. Everything here
+   is scoped to the customer side (admin pages have data-min-role on <body>, the login page its
+   own class), kept short, and covered by the reduced-motion rule near the top of this file.
+   Cards start at 40% opacity, not 0: an element at opacity 0 does not count as painted, which
+   would push the page's Largest Contentful Paint later. */
+/* Only for people who have not asked for less motion: this comes after the reduced-motion rule
+   near the top of the file and would otherwise override its scroll-behavior: auto. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@keyframes bloomy-rise {
+  from { opacity: 0.4; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes bloomy-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes bloomy-badge {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+
+body:not([data-min-role]):not(.admin-login-page) .btn {
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+body:not([data-min-role]):not(.admin-login-page) .btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+body:not([data-min-role]):not(.admin-login-page) .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 18px hsl(var(--primary) / 0.35);
+}
+
+body:not([data-min-role]):not(.admin-login-page) .btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.05s;
+}
+
+/* "Đã thêm ✓": the add button pops once (class set by product.js and landing.js). */
+body:not([data-min-role]):not(.admin-login-page) .btn.is-added {
+  animation: bloomy-pop 0.35s ease;
+}
+
+/* The cart count in the header pops when it goes UP (class set by main.js). */
+body:not([data-min-role]):not(.admin-login-page) [data-cart-count].is-bumped {
+  animation: bloomy-badge 0.4s ease;
+}
+
+/* Header links: a line draws in from the left. */
+body:not([data-min-role]):not(.admin-login-page) .site-nav__links a {
+  padding-block: 4px;
+  background-image: linear-gradient(hsl(var(--primary)), hsl(var(--primary)));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0 2px;
+  transition: background-size 0.25s ease;
+}
+
+body:not([data-min-role]):not(.admin-login-page) .site-nav__links a:hover,
+body:not([data-min-role]):not(.admin-login-page) .site-nav__links a:focus-visible {
+  background-size: 100% 2px;
+}
+
+/* Product cards rise in, one after another (the first eight; the rest arrive together). */
+body:not([data-min-role]):not(.admin-login-page) .product-card,
+body:not([data-min-role]):not(.admin-login-page) .landing-card {
+  animation: bloomy-rise 0.4s ease both;
+}
+
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(2) { animation-delay: 40ms; }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(3) { animation-delay: 80ms; }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(4) { animation-delay: 120ms; }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(5) { animation-delay: 160ms; }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(6) { animation-delay: 200ms; }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(7) { animation-delay: 240ms; }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(8) { animation-delay: 280ms; }
+
+/* Small presses: quantity buttons, size chips, the floating contact buttons. */
+body:not([data-min-role]):not(.admin-login-page) .qty-stepper button {
+  transition: transform 0.12s ease, background-color 0.15s ease;
+}
+
+body:not([data-min-role]):not(.admin-login-page) .qty-stepper button:hover:not(:disabled) {
+  background-color: hsl(var(--secondary));
+}
+
+body:not([data-min-role]):not(.admin-login-page) .qty-stepper button:active:not(:disabled) {
+  transform: scale(0.85);
+}
+
+body:not([data-min-role]):not(.admin-login-page) .floating-contact__zalo,
+body:not([data-min-role]):not(.admin-login-page) .floating-contact__hotline {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body:not([data-min-role]):not(.admin-login-page) .floating-contact__zalo:hover,
+body:not([data-min-role]):not(.admin-login-page) .floating-contact__hotline:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px hsl(0 0% 0% / 0.15);
+}
+
+/* Soft cross-fade between pages in browsers that support it (the header stays put). Only for people who
+   have not asked for less motion: with reduced motion the pages do not opt in at all. To switch this
+   off entirely, delete this block. */
+/* @media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.2s;
+  }
+
+  .site-nav {
+    view-transition-name: site-nav;
+  }
+}*/

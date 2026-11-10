@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bán tại quầy — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="employee">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page admin-pos">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Bán tại quầy</h1>
+      <!-- Web pickup orders waiting at the counter: closed by default, the number shows without opening it -->
+      <button type="button" id="pos-pickups-toggle" class="btn btn-outline pos-pickups-toggle" aria-expanded="false" aria-controls="pos-pickups">
+        <span>Đơn nhận tại shop</span>
+        <span id="pos-pickups-count" class="pos-pickups-toggle__count" hidden>0</span>
+        <span class="pos-pickups-toggle__chevron" aria-hidden="true"></span>
+      </button>
+    </div>
+    <!-- A new web pickup order turned up: shown for 10 seconds, top right, whatever the scroll position -->
+    <div id="pos-new-pickup" class="pos-new-pickup" role="status" hidden>
+      <span id="pos-new-pickup-text"></span>
+      <button type="button" id="pos-new-pickup-open" class="btn btn-outline">Xem</button>
+      <button type="button" id="pos-new-pickup-close" class="pos-new-pickup__close" aria-label="Đóng thông báo">×</button>
+    </div>
+    <p id="pos-notice" class="admin-form__msg" hidden></p>
+    <p id="pos-error" class="admin-page__error" hidden></p>
+
+    <!-- ============ Web pickup orders waiting at the counter (opened with the button above) ============ -->
+    <section id="pos-pickups" class="pos-pickups" hidden>
+      <div class="admin-page__header">
+        <h2 class="admin-page__subtitle">Đơn nhận tại shop</h2>
+        <button type="button" id="pos-pickups-refresh" class="btn btn-outline">Làm mới</button>
+      </div>
+      <p id="pos-pickups-empty" class="admin-order-detail__text" hidden>Không có đơn nhận tại shop đang chờ.</p>
+      <table class="admin-table">
+        <thead>
+          <tr><th>Mã đơn</th><th>Người nhận</th><th>Sản phẩm</th><th>Ngày nhận</th><th>Thanh toán</th><th></th></tr>
+        </thead>
+        <tbody id="pos-pickups-body"></tbody>
+      </table>
+    </section>
+
+    <!-- ============ Selling: catalog + ticket ============ -->
+    <div id="pos-layout" class="pos-layout">
+      <section>
+        <input type="text" id="pos-search" class="admin-page__search" placeholder="Tìm sản phẩm... (nhấn / để tìm nhanh)">
+        <div id="pos-products" class="pos-products"></div>
+      </section>
+
+      <form id="pos-form" class="pos-ticket" autocomplete="off">
+        <h2 class="admin-page__subtitle">Phiếu bán hàng</h2>
+        <p id="pos-empty" class="admin-order-detail__text">Chưa có sản phẩm. Chọn sản phẩm bên trái.</p>
+        <div id="pos-lines"></div>
+
+        <div class="pos-coupon">
+          <input type="text" id="pos-coupon" class="admin-form__input" maxlength="40" placeholder="Mã giảm giá">
+          <button type="button" id="pos-coupon-apply" class="btn btn-outline">Áp dụng</button>
+        </div>
+        <p id="pos-coupon-msg" class="admin-form__msg" hidden></p>
+
+        <div class="pos-totals">
+          <div class="admin-order-detail__money-row"><span>Tạm tính</span><span id="pos-subtotal">0đ</span></div>
+          <div class="admin-order-detail__money-row" id="pos-discount-row" hidden><span id="pos-discount-label">Giảm giá</span><span id="pos-discount"></span></div>
+          <div class="admin-order-detail__money-row is-total"><span>Tổng cộng</span><span id="pos-total">0đ</span></div>
+          <p class="admin-table__sub">Đã bao gồm VAT <span id="pos-vat">…</span>%</p>
+        </div>
+        <p id="pos-short" class="admin-form__msg is-error" hidden></p>
+
+        <label class="admin-form__label">Tên khách
+          <input id="pos-name" class="admin-form__input" required maxlength="100">
+        </label>
+        <label class="admin-form__label">Số điện thoại
+          <input id="pos-phone" class="admin-form__input" required inputmode="tel" maxlength="20">
+        </label>
+        <label class="pos-check"><input type="checkbox" id="pos-same" checked> Người nhận là người đặt</label>
+        <div id="pos-recipient" hidden>
+          <label class="admin-form__label">Tên người nhận
+            <input id="pos-rname" class="admin-form__input" maxlength="100">
+          </label>
+          <label class="admin-form__label">SĐT người nhận
+            <input id="pos-rphone" class="admin-form__input" inputmode="tel" maxlength="20">
+          </label>
+        </div>
+        <label class="admin-form__label">Email (không bắt buộc)
+          <input id="pos-email" type="email" class="admin-form__input" maxlength="254">
+        </label>
+
+        <div class="pos-pay">
+          <label><input type="radio" name="pos-pay" value="cash" checked> Tiền mặt</label>
+          <label><input type="radio" name="pos-pay" value="zalopay"> ZaloPay</label>
+        </div>
+
+        <button type="submit" id="pos-submit" class="btn btn-primary" disabled>Đã thu tiền mặt</button>
+        <button type="button" id="pos-clear" class="btn btn-outline">Xóa phiếu</button>
+      </form>
+    </div>
+
+    <!-- ============ ZaloPay QR waiting ============ -->
+    <section id="pos-qr-panel" class="pos-qr" hidden>
+      <h2 class="admin-page__subtitle">Quét mã ZaloPay để thanh toán</h2>
+      <p class="pos-qr__amount" id="pos-qr-amount"></p>
+      <img id="pos-qr-img" class="pos-qr__img" alt="Mã QR ZaloPay" hidden>
+      <p id="pos-qr-status" class="admin-form__msg"></p>
+      <div class="pos-qr__actions">
+        <button type="button" id="pos-qr-verify" class="btn btn-outline">Xác minh lại</button>
+        <button type="button" id="pos-qr-retry" class="btn btn-outline">Tạo lại mã QR</button>
+        <button type="button" id="pos-qr-cancel" class="btn btn-outline">Hủy đơn</button>
+      </div>
+    </section>
+
+    <!-- ============ Receipt (the only thing that prints) ============ -->
+    <section id="pos-receipt-panel" class="pos-receipt-panel" hidden>
+      <div id="pos-receipt" class="pos-receipt"></div>
+      <div class="pos-receipt__actions">
+        <button type="button" id="pos-print" class="btn btn-primary">In hóa đơn</button>
+        <button type="button" id="pos-new" class="btn btn-outline">Bán đơn mới</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-pos.js" defer></script>
+</body>
+</html>

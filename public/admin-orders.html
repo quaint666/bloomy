@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đơn hàng — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="manager">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Đơn hàng</h1>
+      <div class="admin-page__header-actions">
+        <select id="admin-orders-status-filter" class="admin-page__filter">
+          <option value="all">Tất cả</option>
+          <option value="pending">Chưa thanh toán</option>
+          <option value="paid">Đã thanh toán</option>
+          <option value="failed">Thất bại</option>
+          <option value="refunded">Đã hoàn tiền</option>
+        </select>
+        <input type="text" id="admin-orders-search" class="admin-page__search" placeholder="Tìm theo mã đơn, tên, SĐT, mã vận đơn...">
+        <a href="/api/admin/orders/orders.csv" class="btn btn-outline" download>Xuất CSV</a>
+        <button id="admin-sheet-toggle" class="btn btn-outline">Phiếu giao hàng</button>
+      </div>
+    </div>
+
+    <div id="admin-orders-table-wrap">
+      <p id="admin-orders-error" class="admin-page__error" hidden></p>
+
+      <p class="admin-page__subtitle-note">Bấm vào mã đơn để xem sản phẩm, tiền, ghi chú, hóa đơn và nhập mã vận đơn GHTK.</p>
+      <table class="admin-table" id="admin-orders-table">
+        <colgroup>
+          <col style="width: 14%">
+          <col style="width: 20%">
+          <col style="width: 24%">
+          <col style="width: 12%">
+          <col style="width: 15%">
+          <col style="width: 15%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Mã đơn</th>
+            <th>Người gửi / nhận</th>
+            <th>Giao đến · Ngày</th>
+            <th>Tổng tiền</th>
+            <th>Thanh toán</th>
+            <th>Giao / nhận</th>
+          </tr>
+        </thead>
+        <tbody id="admin-orders-body"></tbody>
+      </table>
+    </div>
+
+    <!-- ============ DELIVERY SHEET (toggled in via JS, hidden by default) ============ -->
+    <section id="admin-delivery-sheet" class="admin-delivery-sheet" hidden>
+      <div class="admin-delivery-sheet__header">
+        <label for="admin-sheet-date" class="admin-form__label">Ngày giao</label>
+        <input type="date" id="admin-sheet-date" class="admin-form__input">
+        <button id="admin-sheet-print" class="btn btn-outline">In</button>
+      </div>
+      <h2 id="admin-sheet-title" class="admin-page__subtitle"></h2>
+      <p id="admin-sheet-pending-note" class="admin-page__error" hidden></p>
+      <div id="admin-sheet-windows"></div>
+    </section>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-orders.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "name": "production",
+  "version": "1.0.0",
+  "description": "Bloomy: a Vietnamese flower shop (Node, Express 5, PostgreSQL, TypeScript server, plain HTML/CSS/JS front end)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quaint666/bloomy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "express-session": "^1.19.0",
+    "helmet": "^8.3.0",
+    "pg": "^8.23.0",
+    "qrcode": "^1.5.4",
+    "zod": "^4.6.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "6.0.0",
+    "@types/connect-pg-simple": "7.0.3",
+    "@types/express": "5.0.6",
+    "@types/express-session": "1.19.0",
+    "@types/node": "26.6.6",
+    "@types/pg": "8.23.1",
+    "@types/qrcode": "1.5.6",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2"
+  }
+}

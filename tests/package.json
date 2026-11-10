@@ -1,0 +1,8 @@
+{
+  "name": "bloomy-tests",
+  "private": true,
+  "description": "Checks for the Bloomy site. Run from the repo root, e.g. node tests/render_test.mjs (needs the server running).",
+  "dependencies": {
+    "jsdom": "^30.1.2"
+  }
+}

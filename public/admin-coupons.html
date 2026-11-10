@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mã giảm giá — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="manager">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Mã giảm giá</h1>
+    </div>
+    <p class="admin-page__subtitle-note">
+      Mỗi đơn dùng tối đa một mã, chỉ giảm tiền hoa (không giảm phí giao). Ngày áp dụng tính theo ngày giao / nhận hoa.
+      Sau khi tạo, chỉ bật/tắt và đổi ngày được; muốn đổi mức giảm hãy tạo mã mới. Mã không bị xóa.
+    </p>
+    <p id="admin-coupons-error" class="admin-page__error" hidden></p>
+
+    <h2 class="admin-page__subtitle">Thêm mã</h2>
+    <form id="admin-coupon-form" class="admin-user-form" autocomplete="off">
+      <label class="admin-form__label">Mã
+        <input id="coupon-code" class="admin-form__input" required autocapitalize="characters" spellcheck="false">
+      </label>
+      <label class="admin-form__label">Loại
+        <select id="coupon-type" class="admin-form__input"></select>
+      </label>
+      <label class="admin-form__label"><span id="coupon-value-label">Mức giảm</span>
+        <input id="coupon-value" type="number" min="1" step="1" class="admin-form__input" required>
+      </label>
+      <label class="admin-form__label">Đơn tối thiểu (đ)
+        <input id="coupon-min" type="number" min="0" step="1000" class="admin-form__input" placeholder="0">
+      </label>
+      <label class="admin-form__label">Từ ngày giao
+        <input id="coupon-from" type="date" class="admin-form__input">
+      </label>
+      <label class="admin-form__label">Đến ngày giao
+        <input id="coupon-to" type="date" class="admin-form__input">
+      </label>
+      <button type="submit" class="btn btn-primary">Tạo mã</button>
+    </form>
+    <p id="admin-coupons-notice" class="admin-form__msg" hidden></p>
+
+    <h2 class="admin-page__subtitle">Danh sách mã</h2>
+    <table class="admin-table">
+      <thead>
+        <tr><th>Mã</th><th>Giảm</th><th>Đơn tối thiểu</th><th>Ngày giao áp dụng</th><th>Trạng thái</th><th>Thao tác</th></tr>
+      </thead>
+      <tbody id="admin-coupons-body"></tbody>
+    </table>
+
+    <dialog id="admin-coupon-dialog" class="admin-dialog">
+      <form id="admin-coupon-dialog-form">
+        <h3 id="admin-coupon-dialog-title" class="admin-page__subtitle"></h3>
+        <label class="admin-form__label">Từ ngày giao (để trống = không giới hạn)
+          <input id="edit-from" type="date" class="admin-form__input">
+        </label>
+        <label class="admin-form__label">Đến ngày giao (để trống = không giới hạn)
+          <input id="edit-to" type="date" class="admin-form__input">
+        </label>
+        <p id="admin-coupon-dialog-msg" class="admin-form__msg is-error" hidden></p>
+        <div class="admin-dialog__actions">
+          <button type="button" id="admin-coupon-dialog-cancel" class="btn btn-outline">Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-coupons.js" defer></script>
+</body>
+</html>

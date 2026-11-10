@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chiến dịch — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="manager">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Chiến dịch</h1>
+      <button type="button" id="camp-new" class="btn btn-primary">Chiến dịch mới</button>
+    </div>
+    <p class="admin-page__subtitle-note">
+      Mỗi chiến dịch là trang ưu đãi của một dịp (ví dụ 20/10): lời giới thiệu, mã giảm giá, ảnh và danh sách sản phẩm.
+      Mã giảm giá tạo ở mục “Mã giảm giá” (mã được đọc trực tiếp, đổi ngày áp dụng ở đó là trang đổi theo ngay).
+      Ảnh chọn từ các ảnh có sẵn trong thư mục images của website. Chủ shop bật một chiến dịch trong Cài đặt;
+      chiến dịch cần ít nhất một sản phẩm đang bán mới bật được.
+    </p>
+    <p id="camp-error" class="admin-page__error" hidden></p>
+
+    <div class="admin-seo">
+      <section class="admin-seo__list" aria-label="Danh sách chiến dịch">
+        <ul id="camp-list" class="admin-seo__products"></ul>
+      </section>
+
+      <section id="camp-panel" class="admin-seo__panel" aria-label="Sửa chiến dịch" hidden>
+        <h2 id="camp-title" class="admin-page__subtitle"></h2>
+        <p id="camp-active-note" class="admin-camp__active" hidden>
+          Đang chạy trên website. <a href="landing" target="_blank" rel="noopener">Xem trang ưu đãi</a>
+        </p>
+
+        <form id="camp-form" class="admin-seo__form" autocomplete="off">
+          <label class="admin-form__label">Tên chiến dịch (tên nhỏ phía trên tiêu đề) <span id="camp-name-count" class="admin-seo__count"></span>
+            <input id="camp-name" class="admin-form__input" maxlength="80" required>
+          </label>
+          <label class="admin-form__label">Tiêu đề lớn <span id="camp-headline-count" class="admin-seo__count"></span>
+            <input id="camp-headline" class="admin-form__input" maxlength="120" required>
+          </label>
+          <label class="admin-form__label">Dòng giới thiệu (không bắt buộc) <span id="camp-sub-count" class="admin-seo__count"></span>
+            <textarea id="camp-sub" class="admin-form__input" rows="2" maxlength="200"></textarea>
+          </label>
+          <label class="admin-form__label">Mã giảm giá
+            <select id="camp-coupon" class="admin-form__input"></select>
+          </label>
+
+          <div class="admin-form__label">Ảnh bên cạnh tiêu đề
+            <div class="admin-camp__image">
+              <div class="admin-camp__image-box" id="camp-image-box"></div>
+              <div class="admin-camp__image-actions">
+                <button type="button" id="camp-image-choose" class="btn btn-outline">Chọn ảnh</button>
+                <button type="button" id="camp-image-clear" class="btn btn-outline">Bỏ ảnh</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-form__label">
+            <span id="camp-products-heading">Sản phẩm</span>
+            <ol id="camp-products" class="admin-camp__products" aria-labelledby="camp-products-heading"></ol>
+            <p id="camp-products-hint" class="admin-note admin-note--warn" hidden></p>
+            <div class="admin-camp__add">
+              <select id="camp-add-select" class="admin-form__input" aria-label="Chọn sản phẩm để thêm"></select>
+              <button type="button" id="camp-add" class="btn btn-outline">Thêm</button>
+            </div>
+          </div>
+
+          <div class="admin-seo__actions">
+            <button type="submit" id="camp-save" class="btn btn-primary">Lưu</button>
+            <button type="button" id="camp-delete" class="btn btn-outline">Xóa chiến dịch</button>
+            <p id="camp-notice" class="admin-form__msg" role="status" hidden></p>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <dialog id="camp-image-dialog" class="admin-dialog admin-dialog--wide">
+      <h3 class="admin-page__subtitle">Chọn ảnh</h3>
+      <input id="camp-image-search" type="search" class="admin-form__input" placeholder="Tìm theo tên file..." aria-label="Tìm ảnh theo tên file">
+      <ul id="camp-image-grid" class="admin-camp__images"></ul>
+      <p id="camp-image-empty" class="admin-note" hidden>Không có ảnh nào. Ảnh được lấy từ thư mục images của website.</p>
+      <div class="admin-dialog__actions">
+        <button type="button" id="camp-image-cancel" class="btn btn-outline">Đóng</button>
+      </div>
+    </dialog>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-campaigns.js" defer></script>
+</body>
+</html>

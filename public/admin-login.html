@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập quản trị — Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin-twofa.css">
+</head>
+<body class="admin-login-page">
+
+  <main class="admin-login">
+    <div class="admin-login__icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+    </div>
+    <h1 class="admin-login__title">Quản trị Bloomy</h1>
+    <p class="admin-login__subtitle">Đăng nhập để tiếp tục</p>
+
+    <form id="admin-login-form" class="admin-login__card">
+      <label class="admin-login__label" for="username">Tên đăng nhập</label>
+      <input class="admin-login__input" type="text" id="username" name="username" required autocomplete="username">
+
+      <label class="admin-login__label" for="password">Mật khẩu</label>
+      <input class="admin-login__input" type="password" id="password" name="password" required autocomplete="current-password">
+
+      <!-- Shown only when the account has two-factor login on (js/admin-login.js): the server answers the
+           first try with needs_code, and the page then asks for the code and sends all three together. -->
+      <label class="admin-login__label" for="code" id="admin-login-code-label" hidden>Mã xác thực</label>
+      <input class="admin-login__input" type="text" id="code" name="code" autocomplete="one-time-code" inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="24" hidden>
+      <p class="admin-login__hint" id="admin-login-code-hint" hidden>Nhập mã 6 số trong ứng dụng xác thực (ví dụ Aegis), hoặc một mã khôi phục.</p>
+
+      <p id="admin-login-error" class="admin-login__error" hidden></p>
+
+      <button type="submit" class="btn btn-primary admin-login__submit">Đăng nhập</button>
+      <button type="button" class="admin-login__back" id="admin-login-back" hidden>← Đổi tài khoản</button>
+    </form>
+  </main>
+
+  <script src="js/admin-login.js" defer></script>
+</body>
+</html>

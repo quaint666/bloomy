@@ -1,0 +1,7 @@
+.env
+node_modules/
+local-db-setup.md
+CLAUDE.local.md
+# Emitted by tsc next to each .ts source (npm run build); never edit or commit these
+/*.js
+/routes/*.js

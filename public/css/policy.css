@@ -1,0 +1,62 @@
+/* ==========================================================================
+   Policy pages (privacy.html, terms.html) — shared stylesheet.
+   One file for both rather than one each, since both are the same shape
+   (heading + numbered sections + prose) unlike About/Story/Commitment,
+   which each have genuinely distinct bespoke layouts.
+   ========================================================================== */
+
+.policy-hero {
+  padding-block: 48px 16px;
+}
+
+.policy-hero__heading {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.policy-hero__updated {
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.policy-content {
+  padding-block: 16px 64px;
+}
+
+.policy-content .container {
+  max-width: 760px;
+}
+
+.policy-section {
+  margin-bottom: 36px;
+}
+
+.policy-section h2 {
+  font-size: 1.15rem;
+  margin-bottom: 12px;
+}
+
+.policy-section p {
+  margin-bottom: 12px;
+  color: hsl(var(--foreground) / 0.85);
+}
+
+.policy-section ul {
+  margin: 0 0 12px 20px;
+  color: hsl(var(--foreground) / 0.85);
+  list-style: disc;
+}
+
+.policy-section li {
+  margin-bottom: 6px;
+}
+
+.policy-section a {
+  color: hsl(var(--primary));
+}
+
+.policy-section a:hover {
+  text-decoration: underline;
+}

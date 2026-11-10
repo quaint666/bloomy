@@ -1,0 +1,563 @@
+/* ==========================================================================
+   Bloomy — Checkout page styles.
+   Loads after style.css. Reuses .container, .btn, .breadcrumb, and
+   .btn-primary:disabled from style.css. Mirrors cart.css's card/summary
+   conventions closely — this page is Cart's direct continuation.
+   ========================================================================== */
+
+.checkout-page {
+  padding-block: 32px 80px;
+}
+
+/* ---- Empty-cart guard — same visual treatment as Cart's own empty state,
+   .cart-empty is already shared via style.css's promote-on-2nd-use rule ---- */
+
+/* ---- Hero (left-aligned, same pattern as cart-hero) ---- */
+.checkout-hero {
+  margin-bottom: 32px;
+  max-width: 640px;
+}
+
+.checkout-hero__eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  margin-bottom: 12px;
+}
+
+.checkout-hero__heading {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.checkout-hero__heading em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+.checkout-hero__subtitle {
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Two-column layout: form sections left, summary right — same grid
+   shape as .cart-layout ---- */
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* min-width:0 is the standard grid-item overflow fix — without it, a grid
+   track won't shrink below its content's natural width, which can push
+   the summary column off on narrow-but-not-yet-collapsed viewports. */
+.checkout-sections {
+  min-width: 0;
+}
+
+/* ---- Section cards ---- */
+.checkout-section {
+  background-color: hsl(var(--secondary));
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.checkout-section__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.checkout-section__number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.checkout-section__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  flex: 1;
+}
+
+.tag-required {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.12);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ---- Cutoff notice banner ---- */
+.checkout-cutoff-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background-color: hsl(var(--primary) / 0.08);
+  border: 1px solid hsl(var(--primary) / 0.25);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+
+.checkout-cutoff-notice svg {
+  flex-shrink: 0;
+  color: hsl(var(--primary));
+  margin-top: 1px;
+}
+
+/* ---- Form fields ---- */
+.checkout-field {
+  margin-bottom: 20px;
+}
+
+.checkout-field:last-child {
+  margin-bottom: 0;
+}
+
+.checkout-field label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 8px;
+}
+
+.checkout-field__optional {
+  text-transform: none;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.checkout-field__error {
+  display: block;
+  font-size: 0.78rem;
+  color: hsl(var(--destructive));
+  margin-top: 6px;
+}
+
+.checkout-consent {
+  margin-bottom: 20px;
+}
+
+.checkout-consent__label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: hsl(var(--foreground) / 0.85);
+  cursor: pointer;
+}
+
+.checkout-consent__label input[type="checkbox"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.checkout-consent__label a {
+  color: hsl(var(--primary));
+}
+
+.checkout-consent__label a:hover {
+  text-decoration: underline;
+}
+
+.checkout-field__error[hidden] {
+  display: none;
+}
+
+/* ---- Delivery-area note under the address field — same muted, non-error
+   treatment as .checkout-field__error but without the destructive color,
+   since this is informational, not a validation problem. ---- */
+.checkout-field__note {
+  display: block;
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 6px;
+}
+
+.checkout-field input[type="text"],
+.checkout-field input[type="tel"],
+.checkout-field input[type="email"],
+.checkout-field input[type="date"],
+.checkout-field select,
+.checkout-field textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  font-size: 0.95rem;
+  background-color: hsl(var(--background));
+  font-family: inherit;
+}
+
+.checkout-field textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.checkout-field input:focus-visible,
+.checkout-field select:focus-visible,
+.checkout-field textarea:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 1px;
+}
+
+.checkout-field-row {
+  display: flex;
+  gap: 16px;
+}
+
+.checkout-field-row > .checkout-field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- Delivery window / payment method — shared "radio card" pattern.
+   The native radio stays functionally real (keyboard/screen-reader
+   friendly, drives :required natively) but is visually hidden; the label
+   itself is the visible card, styled off the input's own :checked state
+   via :has() rather than a JS-toggled class. ---- */
+.window-picker,
+.payment-picker {
+  display: flex;
+  gap: 12px;
+}
+
+.window-picker > .window-option,
+.payment-picker > .payment-option {
+  flex: 1;
+  min-width: 0;
+}
+
+.window-option input,
+.payment-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.window-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  background-color: hsl(var(--background));
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.window-option:has(input:checked) {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.08);
+}
+
+.window-option:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.window-option__icon {
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+}
+
+.window-option:has(input:checked) .window-option__icon {
+  color: hsl(var(--primary));
+}
+
+.window-option__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.window-option__label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-transform: none;
+  color: hsl(var(--foreground));
+}
+
+.window-option:has(input:checked) .window-option__label {
+  color: hsl(var(--primary));
+}
+
+.window-option__time {
+  display: block;
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.payment-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  background-color: hsl(var(--background));
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.payment-option:has(input:checked) {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.08);
+}
+
+.payment-option__icon {
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+}
+
+.payment-option:has(input:checked) .payment-option__icon {
+  color: hsl(var(--primary));
+}
+
+.payment-option__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.payment-option__title {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.payment-option__desc {
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.payment-option__check {
+  color: hsl(var(--primary));
+  opacity: 0;
+  flex-shrink: 0;
+}
+
+.payment-option:has(input:checked) .payment-option__check {
+  opacity: 1;
+}
+
+/* ---- Order summary (sticky sidebar) — promoted to style.css, since
+   Order Confirmation now reuses the identical component. Checkout-only
+   bits (submit button, its help text, and the error message) stay here. ---- */
+
+.checkout-submit-btn {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.checkout-submit-help {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 16px;
+}
+
+.checkout-error {
+  font-size: 0.8rem;
+  color: hsl(var(--destructive));
+  margin-bottom: 16px;
+}
+
+/* ---- Payment-waiting view (ZaloPay QR) — promoted to style.css now that
+   Order Confirmation is its second real user (retry-payment flow). Not
+   duplicated here anymore. ---- */
+
+@media (max-width: 900px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .checkout-field-row {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 600px) {
+  .window-picker {
+    flex-direction: column;
+  }
+
+  .payment-picker {
+    flex-direction: column;
+  }
+
+  .checkout-section {
+    padding: 20px;
+  }
+}
+
+/* ---- Optional invoice request (checkbox + details revealed under it) ---- */
+.checkout-invoice {
+  margin-top: 4px;
+}
+
+.checkout-invoice__toggle {
+  margin-bottom: 12px;
+}
+
+.checkout-invoice__fields {
+  padding: 16px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  background-color: hsl(var(--secondary) / 0.5);
+}
+
+.checkout-invoice__fields[hidden] {
+  display: none;
+}
+
+.checkout-invoice__fields a {
+  color: hsl(var(--primary));
+}
+
+.checkout-invoice__fields a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Delivery / pickup (added with sizes, wards and pickup) ---- */
+
+/* Options that don't apply to the chosen fulfillment type are hidden;
+   .payment-option sets its own display, so [hidden] needs restating. */
+.payment-picker > .payment-option[hidden] {
+  display: none;
+}
+
+#delivery-fields[hidden],
+.checkout-same-person[hidden] {
+  display: none;
+}
+
+.checkout-same-person {
+  margin-bottom: 16px;
+}
+
+.checkout-pickup-info {
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  padding: 14px 16px;
+  background-color: hsl(var(--secondary));
+  margin-bottom: 20px;
+}
+
+.checkout-pickup-info[hidden] {
+  display: none;
+}
+
+.checkout-pickup-info__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 4px;
+}
+
+.checkout-pickup-info__address a {
+  color: hsl(var(--primary));
+}
+
+.checkout-summary__coupon-msg {
+  font-size: 0.8rem;
+  color: hsl(var(--destructive));
+  margin-bottom: 8px;
+}
+
+.checkout-summary__coupon-msg[hidden],
+.checkout-summary__row[hidden] {
+  display: none;
+}
+
+/* Missing-flower note under a summary line */
+.checkout-summary__item-short {
+  font-size: 0.78rem;
+  color: hsl(var(--destructive));
+}
+
+/* What a custom bouquet is made of, under its name (summary + confirmation) */
+.checkout-summary__item-detail {
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
+  overflow-wrap: anywhere;
+}
+
+/* + / − / Xóa under each summary line: the same cart as the cart page */
+.checkout-summary__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.checkout-summary__controls .qty-stepper {
+  padding: 2px;
+}
+
+.checkout-summary__controls .qty-stepper button {
+  width: 28px;
+  height: 28px;
+  font-size: 1rem;
+}
+
+.checkout-summary__controls .qty-stepper span {
+  width: 24px;
+  font-size: 0.85rem;
+}
+
+.checkout-summary__remove {
+  background: none;
+  border: none;
+  padding: 4px 2px;
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.checkout-summary__remove:hover {
+  color: hsl(var(--destructive));
+}
+
+.checkout-summary__remove:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: 4px;
+}

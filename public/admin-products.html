@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sản phẩm — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="manager">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Sản phẩm</h1>
+      <input type="text" id="admin-products-search" class="admin-page__search" placeholder="Tìm sản phẩm...">
+      <a href="/api/admin/products/products.csv" class="btn btn-outline" download>Xuất CSV</a>
+    </div>
+    <p id="admin-products-error" class="admin-page__error" hidden></p>
+    <p class="admin-page__subtitle-note" id="admin-featured-note"></p>
+
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>SKU</th>
+          <th>Tên</th>
+          <th>Danh mục</th>
+          <th>Giá</th>
+          <th>Size</th>
+          <th>Trạng thái</th>
+          <th>Nổi bật</th>
+        </tr>
+      </thead>
+      <tbody id="admin-products-body"></tbody>
+    </table>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-products.js" defer></script>
+</body>
+</html>

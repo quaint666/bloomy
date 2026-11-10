@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEO sản phẩm — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="manager">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">SEO sản phẩm</h1>
+    </div>
+    <p class="admin-page__subtitle-note">
+      Chọn một sản phẩm để viết từ khóa chính, tiêu đề và mô tả hiển thị trên Google và khi chia sẻ link.
+      Để trống thì trang dùng tên và mô tả của sản phẩm. Phần xem trước và các kiểm tra cập nhật khi bạn gõ
+      (chưa lưu thì chưa thay đổi gì trên trang). Sản phẩm ngừng bán tự động được ẩn khỏi Google.
+    </p>
+    <p id="admin-seo-error" class="admin-page__error" hidden></p>
+
+    <div class="admin-seo">
+      <section class="admin-seo__list" aria-label="Danh sách sản phẩm">
+        <input id="seo-search" type="search" class="admin-form__input" placeholder="Tìm sản phẩm hoặc từ khóa..." aria-label="Tìm sản phẩm hoặc từ khóa">
+        <ul id="seo-products" class="admin-seo__products"></ul>
+      </section>
+
+      <section id="seo-panel" class="admin-seo__panel" aria-label="Chỉnh SEO" hidden>
+        <h2 id="seo-product-name" class="admin-page__subtitle"></h2>
+        <p id="seo-robots-note" class="admin-note admin-note--warn" hidden>Sản phẩm này đang ngừng bán: trang được đánh dấu “noindex”, nên sẽ không hiện trên Google.</p>
+
+        <form id="seo-form" class="admin-seo__form" autocomplete="off">
+          <label class="admin-form__label">Từ khóa chính
+            <input id="seo-keyword" class="admin-form__input" maxlength="60" spellcheck="false">
+          </label>
+          <label class="admin-form__label">Tiêu đề SEO <span id="seo-title-count" class="admin-seo__count"></span>
+            <input id="seo-title" class="admin-form__input" maxlength="70">
+          </label>
+          <label class="admin-form__label">Mô tả (meta description) <span id="seo-description-count" class="admin-seo__count"></span>
+            <textarea id="seo-description" class="admin-form__input" rows="3" maxlength="200"></textarea>
+          </label>
+          <div class="admin-seo__actions">
+            <button type="submit" class="btn btn-primary" id="seo-save">Lưu</button>
+            <p id="seo-notice" class="admin-form__msg" role="status" hidden></p>
+          </div>
+        </form>
+
+        <h3 class="admin-seo__heading">Xem trước trên Google</h3>
+        <div class="admin-seo__preview" aria-label="Xem trước kết quả tìm kiếm">
+          <div id="seo-prev-url" class="admin-seo__prev-url"></div>
+          <div id="seo-prev-title" class="admin-seo__prev-title"></div>
+          <div id="seo-prev-desc" class="admin-seo__prev-desc"></div>
+        </div>
+
+        <h3 class="admin-seo__heading">Kiểm tra</h3>
+        <ul id="seo-checks" class="admin-seo__checks"></ul>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-seo.js" defer></script>
+</body>
+</html>

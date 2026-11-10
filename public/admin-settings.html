@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cài đặt — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="owner">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Cài đặt</h1>
+    </div>
+    <p class="admin-page__subtitle-note">
+      Địa chỉ, số điện thoại / Zalo và email hiện trên mọi trang của website. Thuế VAT và phí giao hàng được ghi vào từng đơn lúc đặt:
+      đơn đã đặt giữ nguyên mức cũ, thay đổi ở đây chỉ áp dụng cho đơn mới.
+      Chiến dịch đang chạy quyết định trang ưu đãi theo dịp (ví dụ 20/10): chọn “Không có” thì trang ưu đãi được ẩn.
+    </p>
+    <p id="admin-settings-error" class="admin-page__error" hidden></p>
+
+    <form id="admin-settings-form" class="admin-account-form" autocomplete="off">
+      <label class="admin-form__label">Địa chỉ shop
+        <input id="set-address" class="admin-form__input" required maxlength="200">
+      </label>
+      <label class="admin-form__label">Số điện thoại / Zalo (chỉ chữ số)
+        <input id="set-phone" class="admin-form__input" required inputmode="tel">
+      </label>
+      <label class="admin-form__label">Email liên hệ
+        <input id="set-email" type="email" class="admin-form__input" required>
+      </label>
+      <label class="admin-form__label">Thuế VAT (%)
+        <input id="set-vat" type="number" min="0" max="100" step="1" class="admin-form__input" required>
+      </label>
+      <label class="admin-form__label">Phí giao hàng, vòng 1 — gần shop (đ)
+        <input id="set-ring1" type="number" min="0" step="1000" class="admin-form__input" required>
+      </label>
+      <label class="admin-form__label">Phí giao hàng, vòng 2 (đ)
+        <input id="set-ring2" type="number" min="0" step="1000" class="admin-form__input" required>
+      </label>
+      <label class="admin-form__label">Phí giao hàng, vòng 3 — xa nhất (đ)
+        <input id="set-ring3" type="number" min="0" step="1000" class="admin-form__input" required>
+      </label>
+      <!-- Style fees for the custom bouquet: one field per style, labelled from GET /api/flowers -->
+      <div id="set-styles" class="admin-fieldgroup"></div>
+      <label class="admin-form__label">Chiến dịch đang chạy (trang ưu đãi)
+        <select id="set-campaign" class="admin-form__input">
+          <option value="">Không có</option>
+        </select>
+      </label>
+      <button type="submit" class="btn btn-primary">Lưu cài đặt</button>
+    </form>
+    <p id="admin-settings-msg" class="admin-form__msg" hidden></p>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-settings.js" defer></script>
+</body>
+</html>

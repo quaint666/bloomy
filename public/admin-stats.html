@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thống kê — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="manager">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Thống kê</h1>
+      <div class="admin-page__header-actions">
+        <select id="admin-stats-range" class="admin-page__filter" aria-label="Khoảng thời gian">
+          <option value="all">Tất cả thời gian</option>
+          <option value="7">7 ngày qua</option>
+          <option value="30">30 ngày qua</option>
+        </select>
+      </div>
+    </div>
+    <p id="admin-stats-error" class="admin-page__error" hidden></p>
+
+    <h2 class="admin-page__subtitle">Đơn hàng</h2>
+    <table class="admin-table admin-stats__metrics">
+      <tbody>
+        <tr>
+          <td>Đơn đã đặt (gồm đơn huỷ)</td>
+          <td id="stat-total-orders"></td>
+        </tr>
+        <tr>
+          <td>– Mới</td>
+          <td id="stat-status-new"></td>
+        </tr>
+        <tr>
+          <td>– Đang giao</td>
+          <td id="stat-status-delivering"></td>
+        </tr>
+        <tr>
+          <td>– Đã giao</td>
+          <td id="stat-status-delivered"></td>
+        </tr>
+        <tr>
+          <td>– Đã huỷ</td>
+          <td id="stat-cancelled-orders"></td>
+        </tr>
+        <tr>
+          <td>Tỷ lệ huỷ</td>
+          <td id="stat-cancellation-rate"></td>
+        </tr>
+        <tr>
+          <td>Đơn đã hoàn tiền</td>
+          <td id="stat-refunded-orders"></td>
+        </tr>
+        <tr>
+          <td>Đơn đã huỷ nhưng chưa hoàn tiền (cần hoàn)</td>
+          <td id="stat-cancelled-unrefunded"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 class="admin-page__subtitle">Doanh thu</h2>
+    <p class="admin-page__subtitle-note">Đơn hợp lệ là đơn không bị huỷ và không bị hoàn tiền. Doanh thu = tiền hoa sau mã giảm giá, không tính phí giao hàng.</p>
+    <table class="admin-table admin-stats__metrics">
+      <tbody>
+        <tr>
+          <td>Doanh thu dự kiến (đơn hợp lệ)</td>
+          <td id="stat-total-revenue"></td>
+        </tr>
+        <tr>
+          <td>Doanh thu đã nhận (đã thanh toán)</td>
+          <td id="stat-paid-revenue"></td>
+        </tr>
+        <tr>
+          <td>Giá trị trung bình mỗi đơn</td>
+          <td id="stat-average-order-value"></td>
+        </tr>
+        <tr>
+          <td>VAT trong các đơn hợp lệ (giá đã gồm VAT)</td>
+          <td id="stat-vat-total"></td>
+        </tr>
+        <tr>
+          <td>Tiền đã hoàn lại</td>
+          <td id="stat-refunded-amount"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 class="admin-page__subtitle">Đơn theo hình thức</h2>
+    <table class="admin-table admin-stats__table">
+      <thead>
+        <tr>
+          <th>Hình thức</th>
+          <th>Số đơn hợp lệ</th>
+          <th>Doanh thu</th>
+        </tr>
+      </thead>
+      <tbody id="admin-stats-channel-breakdown"></tbody>
+    </table>
+
+    <h2 class="admin-page__subtitle">Thanh toán ZaloPay</h2>
+    <table class="admin-table admin-stats__metrics">
+      <tbody>
+        <tr>
+          <td>Đơn ZaloPay chờ thanh toán</td>
+          <td id="stat-unpaid-zalopay-orders"></td>
+        </tr>
+        <tr>
+          <td>Giá trị đang chờ</td>
+          <td id="stat-unpaid-zalopay-amount"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 class="admin-page__subtitle">Đặt hàng bị chặn</h2>
+    <p class="admin-page__subtitle-note">Mỗi sản phẩm trong giỏ tính là 1 lượt kiểm tra.</p>
+    <table class="admin-table admin-stats__metrics">
+      <tbody>
+        <tr>
+          <td>Tỷ lệ lượt kiểm tra bị chặn</td>
+          <td id="stat-rejection-rate"></td>
+        </tr>
+        <tr>
+          <td>– Quá giờ chốt đơn</td>
+          <td id="stat-cutoff-hits"></td>
+        </tr>
+        <tr>
+          <td>– Hết hàng hôm nay</td>
+          <td id="stat-sold-out-today"></td>
+        </tr>
+        <tr>
+          <td>– Sản phẩm ngừng bán</td>
+          <td id="stat-discontinued-hits"></td>
+        </tr>
+        <tr>
+          <td>– Khung giờ giao đã qua</td>
+          <td id="stat-window-passed-hits"></td>
+        </tr>
+        <tr>
+          <td>– Thiếu hoa trong kho</td>
+          <td id="stat-flower-shortage-hits"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 class="admin-page__subtitle">Hành trình đặt hàng</h2>
+    <p class="admin-page__subtitle-note">Mỗi bước đếm số lượt truy cập (mỗi tab trình duyệt là một lượt) đã đi qua bước đó. Các bước được đếm riêng nên không nhất thiết lồng vào nhau.</p>
+    <table class="admin-table admin-stats__table">
+      <thead>
+        <tr>
+          <th>Bước</th>
+          <th>Số lượt</th>
+          <th>So với lượt truy cập</th>
+        </tr>
+      </thead>
+      <tbody id="admin-stats-funnel"></tbody>
+    </table>
+
+    <h2 class="admin-page__subtitle">Top 5 sản phẩm bán chạy</h2>
+    <table class="admin-table admin-stats__table">
+      <thead>
+        <tr>
+          <th>Sản phẩm (theo size)</th>
+          <th>Số lượng bán</th>
+        </tr>
+      </thead>
+      <tbody id="admin-stats-top-products"></tbody>
+    </table>
+
+    <h2 class="admin-page__subtitle">Đơn theo nguồn truy cập</h2>
+    <p class="admin-page__subtitle-note">Chỉ đơn đặt trên website; đơn bán tại quầy không có nguồn truy cập.</p>
+    <table class="admin-table admin-stats__table">
+      <thead>
+        <tr>
+          <th>Nguồn</th>
+          <th>Số đơn hợp lệ</th>
+          <th>Doanh thu</th>
+        </tr>
+      </thead>
+      <tbody id="admin-stats-source-breakdown"></tbody>
+    </table>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-stats.js" defer></script>
+</body>
+</html>

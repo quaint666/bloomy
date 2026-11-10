@@ -1,0 +1,24 @@
+# Keeps the build context small and secrets out of it.
+# Second layer of defence: the Dockerfile already uses an explicit COPY list.
+
+# secrets / local config
+.env
+.env.*
+
+# VCS and dependencies (node_modules is rebuilt inside the image by npm ci)
+.git
+node_modules
+
+# deploy-side files, not app code
+optimize-images.sh
+tests/
+
+# SQL stays out of the context, except schema.sql and the seed files, which only
+# Dockerfile.schema copies (the schema image carries the database tools). The app
+# image never copies SQL: its COPY list is explicit.
+*.sql
+!schema.sql
+!seed-*.sql
+
+# docs
+*.md

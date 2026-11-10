@@ -1,0 +1,49 @@
+# Bloomy — schema image.
+#
+# Carries schema.sql next to pgschema so the compose one-shot service can run
+# `plan` / `apply` against the database on the compose network. schema.sql
+# stays single-sourced in this repo; deployment tooling never copies it. The seed files and
+# seed.sh ride here too, for loading an empty database by hand: database content is provisioned
+# with the database tools, never with the app image.
+#
+# Built by CI with the same commit tag as the app image, so a deploy pins one
+# tag for both.
+#
+# The entrypoint (pgschema) and the non-root user (pgschema) come from the
+# base image, so compose passes arguments only, for example:
+#   plan --file /schema.sql --host db --db bloomy --user quaint --schema public
+# with the database password in the PGPASSWORD environment variable.
+#
+# Pinned to the release tag that the round-trip spike was re-run against
+# (a database built from schema.sql, then `plan`: "No changes detected.").
+# Bump it deliberately and re-run that spike; don't switch to a floating tag.
+FROM pgplex/pgschema:1.13.1
+
+# plan and apply start an embedded PostgreSQL to check schema.sql against, and the base image does not
+# contain one: every run (each in a fresh container) would download it from Maven Central, and fail
+# wherever there is no internet. Fetch it here instead, once per image build, under the file name the
+# library looks for. The checksum is the one Maven Central publishes for the jar. When the FROM line
+# is bumped, check which PostgreSQL the new pgschema bundles and change the version and the checksum
+# with it; CI plans from the built image on a network without internet, so a mismatch fails there.
+# This step comes before COPY so that editing schema.sql does not repeat the download.
+RUN set -eu; \
+    V=17.5.0; \
+    U=https://repo1.maven.org/maven2/io/zonky/test/postgres/embedded-postgres-binaries-linux-amd64-alpine/$V/embedded-postgres-binaries-linux-amd64-alpine-$V.jar; \
+    wget -q -O /tmp/pg.jar "$U"; \
+    echo "7122386c7f7a089568f05720ada63448093d4065abbc0a89e6dc660851a53e3c  /tmp/pg.jar" | sha256sum -c -; \
+    mkdir -p "$HOME/.embedded-postgres-go"; \
+    unzip -p /tmp/pg.jar postgres-linux-x86_64-alpine_linux.txz \
+      > "$HOME/.embedded-postgres-go/embedded-postgres-binaries-linux-amd64-alpine-$V.txz"; \
+    rm /tmp/pg.jar
+
+# psql, for seed.sh below. The base image is Alpine 3.20, which has no postgresql17-client; the 16 client loads plain
+# SQL into the 17 server without trouble. Installed as root, then back to the base image's user.
+USER root
+RUN apk add --no-cache postgresql-client
+USER pgschema
+
+COPY schema.sql /schema.sql
+
+# The demo data and the script that loads it into an EMPTY database, all or nothing (see seed.sh).
+COPY --chmod=0755 seed.sh /seed.sh
+COPY seed-*.sql /seeds/

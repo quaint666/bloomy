@@ -1,0 +1,275 @@
+<form id="checkout-form" class="checkout-layout" novalidate>
+  <div class="checkout-sections">
+
+    <!-- ============ SECTION 1 — Delivery or pickup ============ -->
+    <!-- Decides the rest of the form: address + ward and COD for delivery;
+         the shop address and cash at the shop for pickup. -->
+    <section class="checkout-section">
+      <div class="checkout-section__header">
+        <span class="checkout-section__number">1</span>
+        <h2 class="checkout-section__title">Hình thức nhận hoa</h2>
+      </div>
+
+      <div class="payment-picker fulfillment-picker" role="radiogroup" aria-label="Hình thức nhận hoa">
+        <label class="payment-option">
+          <input type="radio" name="fulfillment_type" value="delivery" required checked>
+          <svg class="payment-option__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <span class="payment-option__text">
+            <span class="payment-option__title">Giao tận nơi</span>
+            <span class="payment-option__desc">Phí <span>{{min_fee}}</span> – <span>{{max_fee}}</span> tùy phường</span>
+          </span>
+          <svg class="payment-option__check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="fulfillment_type" value="pickup" required>
+          <svg class="payment-option__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span class="payment-option__text">
+            <span class="payment-option__title">Nhận tại shop</span>
+            <span class="payment-option__desc">Miễn phí, nhận theo khung giờ bạn chọn</span>
+          </span>
+          <svg class="payment-option__check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </label>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 2 — Date & window ============ -->
+    <section class="checkout-section">
+      <div class="checkout-section__header">
+        <span class="checkout-section__number">2</span>
+        <h2 class="checkout-section__title" id="date-section-title">Chọn ngày &amp; khung giờ giao</h2>
+        <span class="tag-required">BẮT BUỘC</span>
+      </div>
+
+      <div id="checkout-cutoff-notice" class="checkout-cutoff-notice">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>Đặt trước <strong>14:00</strong> để được giao trong ngày, sau giờ này đơn sẽ giao vào ngày hôm sau.</span>
+      </div>
+
+      <div class="checkout-field">
+        <label for="delivery-date" id="delivery-date-label">NGÀY GIAO HÀNG</label>
+        <input type="date" id="delivery-date" name="delivery_date" required>
+      </div>
+
+      <div class="checkout-field">
+        <label id="delivery-window-label">KHUNG GIỜ GIAO</label>
+        <div class="window-picker" role="radiogroup" aria-label="Khung giờ giao">
+          <label class="window-option">
+            <input type="radio" name="delivery_window" value="morning" required>
+            <svg class="window-option__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="window-option__text">
+              <span class="window-option__label">Buổi sáng</span>
+              <span class="window-option__time">8:00 – 11:30</span>
+            </span>
+          </label>
+          <label class="window-option">
+            <input type="radio" name="delivery_window" value="afternoon" required>
+            <svg class="window-option__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="window-option__text">
+              <span class="window-option__label">Buổi chiều</span>
+              <span class="window-option__time">13:00 – 17:00</span>
+            </span>
+          </label>
+          <label class="window-option">
+            <input type="radio" name="delivery_window" value="evening" required>
+            <svg class="window-option__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="window-option__text">
+              <span class="window-option__label">Buổi tối</span>
+              <span class="window-option__time">18:00 – 21:00</span>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 3 — Sender ============ -->
+    <section class="checkout-section">
+      <div class="checkout-section__header">
+        <span class="checkout-section__number">3</span>
+        <h2 class="checkout-section__title">Thông tin người gửi</h2>
+      </div>
+
+      <div class="checkout-field-row">
+        <div class="checkout-field">
+          <label for="sender-name">HỌ VÀ TÊN</label>
+          <input type="text" id="sender-name" name="sender_name" placeholder="Nguyễn Văn A" required>
+        </div>
+        <div class="checkout-field">
+          <label for="sender-phone">SỐ ĐIỆN THOẠI</label>
+          <input type="tel" id="sender-phone" name="sender_phone" placeholder="09xx xxx xxx" inputmode="numeric" required>
+          <span class="checkout-field__error" id="sender-phone-error" hidden>Chỉ nhập số, 9–12 chữ số.</span>
+        </div>
+      </div>
+
+      <div class="checkout-field">
+        <label for="sender-email">EMAIL <span class="checkout-field__optional" id="sender-email-optional">(không bắt buộc)</span></label>
+        <input type="email" id="sender-email" name="customer_email" placeholder="ban@email.com" maxlength="254" autocomplete="email">
+        <span class="checkout-field__note">Bloomy sẽ gửi xác nhận đơn hàng qua email này, nếu bạn để lại.</span>
+      </div>
+
+      <!-- Optional invoice request. Fields are disabled (and not required) until the box is ticked, so they never block or pollute a normal order. -->
+      <div class="checkout-invoice">
+        <label class="checkout-consent__label checkout-invoice__toggle">
+          <input type="checkbox" id="invoice-requested" name="invoice_requested" value="yes">
+          <span>Tôi muốn xuất hóa đơn</span>
+        </label>
+
+        <div id="invoice-fields" class="checkout-invoice__fields" hidden>
+          <div class="checkout-field">
+            <label for="invoice-company-name">TÊN CÔNG TY / ĐƠN VỊ</label>
+            <input type="text" id="invoice-company-name" name="invoice_company_name" maxlength="200" autocomplete="organization" disabled>
+          </div>
+          <div class="checkout-field">
+            <label for="invoice-tax-code">MÃ SỐ THUẾ</label>
+            <input type="text" id="invoice-tax-code" name="invoice_tax_code" inputmode="numeric" maxlength="20" placeholder="10 hoặc 13 chữ số" disabled>
+            <span class="checkout-field__error" id="invoice-tax-code-error" hidden>Mã số thuế gồm 10 chữ số, hoặc 13 chữ số nếu là chi nhánh (VD: 0123456789-001).</span>
+          </div>
+          <div class="checkout-field">
+            <label for="invoice-address">ĐỊA CHỈ XUẤT HÓA ĐƠN</label>
+            <textarea id="invoice-address" name="invoice_address" rows="2" maxlength="300" disabled></textarea>
+          </div>
+          <span class="checkout-field__note">Hóa đơn điện tử sẽ được gửi qua email ở trên (bắt buộc khi xuất hóa đơn). Giá đã bao gồm VAT <span>{{vat_rate}}</span>% — xem <a href="terms.html#gia-va-hoa-don" target="_blank" rel="noopener">Điều khoản</a>.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 4 — Recipient ============ -->
+    <section class="checkout-section">
+      <div class="checkout-section__header">
+        <span class="checkout-section__number">4</span>
+        <h2 class="checkout-section__title">Thông tin người nhận</h2>
+      </div>
+
+      <!-- Pickup only: copies the sender's name and phone (UI only; the
+           order still stores both people). -->
+      <label class="checkout-consent__label checkout-same-person" id="same-person-wrap" hidden>
+        <input type="checkbox" id="same-person">
+        <span>Người nhận là người đặt</span>
+      </label>
+
+      <div class="checkout-field-row">
+        <div class="checkout-field">
+          <label for="recipient-name">HỌ VÀ TÊN</label>
+          <input type="text" id="recipient-name" name="recipient_name" placeholder="Trần Thị B" required>
+        </div>
+        <div class="checkout-field">
+          <label for="recipient-phone">SỐ ĐIỆN THOẠI</label>
+          <input type="tel" id="recipient-phone" name="recipient_phone" placeholder="09xx xxx xxx" inputmode="numeric" required>
+          <span class="checkout-field__error" id="recipient-phone-error" hidden>Chỉ nhập số, 9–12 chữ số.</span>
+        </div>
+      </div>
+
+      <!-- Delivery only. Disabled (so neither validated nor sent) for pickup. -->
+      <div id="delivery-fields">
+        <div class="checkout-field">
+          <label for="ward-id">PHƯỜNG / XÃ</label>
+          <select id="ward-id" name="ward_id" required>
+            <option value="">Chọn phường / xã</option>
+          </select>
+          <span class="checkout-field__note">Phí giao tính theo phường. Bloomy hiện chỉ giao trong khu vực TP.HCM cũ (chưa giao khu vực Bình Dương, Bà Rịa – Vũng Tàu trước sáp nhập).</span>
+        </div>
+        <div class="checkout-field">
+          <label for="delivery-address">SỐ NHÀ, TÊN ĐƯỜNG</label>
+          <textarea id="delivery-address" name="delivery_address" rows="2" placeholder="VD: 12 Lê Lợi" maxlength="300" required></textarea>
+        </div>
+      </div>
+
+      <!-- Pickup only -->
+      <div id="pickup-info" class="checkout-pickup-info" hidden>
+        <p class="checkout-pickup-info__label">Nhận hoa tại</p>
+        <p class="checkout-pickup-info__address"><span>{{shop_address}}</span> · <a href="{{maps_url}}" target="_blank" rel="noopener">Chỉ đường</a></p>
+      </div>
+
+      <div class="checkout-field">
+        <label for="order-notes">LỜI NHẮN KÈM HOA <span class="checkout-field__optional">(không bắt buộc)</span></label>
+        <textarea id="order-notes" name="notes" rows="2" placeholder="Chúc mừng sinh nhật..."></textarea>
+      </div>
+
+      <div class="checkout-consent">
+        <label class="checkout-consent__label">
+          <input type="checkbox" name="consent" value="yes" required>
+          <span>Tôi đã đọc và đồng ý với <a href="privacy.html" target="_blank" rel="noopener">Chính sách bảo mật</a> và <a href="terms.html" target="_blank" rel="noopener">Điều khoản dịch vụ</a> của Bloomy.</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 5 — Payment method ============ -->
+    <!-- Delivery offers COD + ZaloPay, pickup offers cash + ZaloPay;
+         checkout.js hides (and disables) the option that doesn't apply. -->
+    <section class="checkout-section">
+      <div class="checkout-section__header">
+        <span class="checkout-section__number">5</span>
+        <h2 class="checkout-section__title">Phương thức thanh toán</h2>
+      </div>
+
+      <div class="payment-picker" role="radiogroup" aria-label="Phương thức thanh toán">
+        <label class="payment-option">
+          <input type="radio" name="payment_method" value="cod" required checked>
+          <svg class="payment-option__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          <span class="payment-option__text">
+            <span class="payment-option__title">Thanh toán khi nhận (COD)</span>
+            <span class="payment-option__desc">Trả tiền mặt khi giao hoa</span>
+          </span>
+          <svg class="payment-option__check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </label>
+        <label class="payment-option" hidden>
+          <input type="radio" name="payment_method" value="cash" required disabled>
+          <svg class="payment-option__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+          <span class="payment-option__text">
+            <span class="payment-option__title">Tiền mặt tại shop</span>
+            <span class="payment-option__desc">Trả khi nhận hoa tại cửa hàng</span>
+          </span>
+          <svg class="payment-option__check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="payment_method" value="zalopay" required>
+          <svg class="payment-option__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span class="payment-option__text">
+            <span class="payment-option__title">ZaloPay</span>
+            <span class="payment-option__desc">Quét mã QR bằng ứng dụng</span>
+          </span>
+          <svg class="payment-option__check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </label>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ ORDER SUMMARY (sticky sidebar) ============ -->
+  <aside class="checkout-summary">
+    <h2 class="checkout-summary__title">Đơn hàng của bạn</h2>
+
+    <div id="checkout-summary-items" class="checkout-summary__items"></div>
+
+    <div class="checkout-summary__row">
+      <span>Tiền sản phẩm</span>
+      <span id="checkout-subtotal"></span>
+    </div>
+    <div class="checkout-summary__row" id="checkout-discount-row" hidden>
+      <span id="checkout-discount-label">Giảm giá</span>
+      <span id="checkout-discount"></span>
+    </div>
+    <p id="checkout-coupon-msg" class="checkout-summary__coupon-msg" hidden></p>
+    <div class="checkout-summary__row">
+      <span>Phí giao hàng</span>
+      <span id="checkout-shipping"></span>
+    </div>
+
+    <div class="checkout-summary__total">
+      <span>Tổng cộng</span>
+      <span id="checkout-total"></span>
+    </div>
+
+    <button type="submit" id="place-order-btn" class="btn btn-primary checkout-submit-btn" disabled>
+      Đặt hàng
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+    <p id="place-order-help" class="checkout-submit-help">Vui lòng điền đủ thông tin và chọn ngày, khung giờ giao để đặt hàng.</p>
+    <p id="checkout-error" class="checkout-error" hidden></p>
+
+    <ul class="checkout-summary__notes">
+      <li>Giá đã bao gồm VAT <span>{{vat_rate}}</span>%</li>
+      <li>Giao hoặc nhận theo khung giờ sáng / chiều / tối</li>
+      <li>Cam kết hoa tươi 100%</li>
+    </ul>
+  </aside>
+</form>

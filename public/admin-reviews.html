@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đánh giá — Quản trị Bloomy</title>
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-min-role="manager">
+
+  <!-- ============ ADMIN NAV (links filled in by js/admin-nav.js from the user's role) ============ -->
+  <header class="admin-nav">
+    <div class="container admin-nav__inner">
+      <span class="admin-nav__logo">Bloomy — Quản trị</span>
+      <nav class="admin-nav__links" id="admin-nav-links"></nav>
+      <button id="admin-logout" class="admin-nav__logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <div class="admin-page__header">
+      <h1 class="admin-page__title">Đánh giá</h1>
+      <select id="admin-reviews-filter" class="admin-table__status-select" aria-label="Lọc đánh giá">
+        <option value="all">Tất cả</option>
+        <option value="pending">Chờ duyệt</option>
+        <option value="approved">Đã duyệt</option>
+      </select>
+    </div>
+    <p class="admin-page__subtitle-note">
+      Đánh giá của khách chỉ hiện trên website sau khi bạn duyệt. “Ẩn” đưa đánh giá về trạng thái chờ duyệt;
+      “Xóa” dùng cho đánh giá rác. Khách không để lại email hay số điện thoại.
+    </p>
+    <p id="admin-reviews-counts" class="admin-form__msg is-ok"></p>
+    <p id="admin-reviews-error" class="admin-page__error" hidden></p>
+
+    <table class="admin-table">
+      <thead>
+        <tr><th>Sản phẩm</th><th>Người đánh giá</th><th>Sao</th><th>Nhận xét</th><th>Ngày</th><th>Trạng thái</th><th></th></tr>
+      </thead>
+      <tbody id="admin-reviews-body"></tbody>
+    </table>
+    <p id="admin-reviews-empty" class="admin-page__subtitle-note" hidden>Không có đánh giá nào.</p>
+  </main>
+
+  <script src="js/admin-nav.js" defer></script>
+  <script src="js/admin-reviews.js" defer></script>
+</body>
+</html>

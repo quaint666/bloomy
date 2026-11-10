@@ -1,0 +1,101 @@
+/* ==========================================================================
+   Bloomy — Two-factor login: the code step on the login page and the owner's
+   "Xác thực hai bước" section on the password page.
+   Loads after admin.css and reuses its pieces (.admin-login__*, .admin-account-form,
+   .admin-form__*, .admin-note, .admin-page__subtitle). Only what those do not cover is here.
+   ========================================================================== */
+
+/* ---- Login page: the hint under the code field, and the way back to the first step ---- */
+.admin-login__hint {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+}
+
+.admin-login__back {
+  align-self: flex-start;
+  margin-top: 14px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.admin-login__back:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* ---- Password page: the 2FA section ---- */
+.admin-twofa {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+/* .admin-account-form is display:flex, which would beat the hidden attribute. */
+.admin-twofa [hidden] {
+  display: none;
+}
+
+.admin-twofa__qr {
+  width: 240px;
+  height: 240px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  background-color: #fff;
+}
+
+.admin-twofa__secret {
+  display: block;
+  margin-top: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: hsl(var(--background));
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.admin-twofa__codes {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+  max-width: 420px;
+  margin: 12px 0;
+  padding: 16px 20px;
+  border: 1px dashed hsl(var(--border));
+  border-radius: var(--radius);
+  background-color: hsl(var(--background));
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+}
+
+.admin-twofa__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-twofa__block {
+  margin-bottom: 32px;
+}
+
+.admin-twofa__heading {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.admin-twofa__danger {
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive) / 0.4);
+}

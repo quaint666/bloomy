@@ -1,0 +1,298 @@
+/* ==========================================================================
+   Bloomy — Order Confirmation page styles.
+   Loads after style.css. Reuses .container, .btn, .breadcrumb, .cart-empty
+   (not-found state), and .checkout-summary (order recap sidebar) — all
+   already shared via style.css.
+   ========================================================================== */
+
+.confirmation-page {
+  padding-block: 32px 80px;
+}
+
+/* ---- Hero — centered, unlike Cart/Checkout's left-aligned hero, matching
+   the mockup's "success moment" framing ---- */
+.confirmation-hero {
+  text-align: center;
+  max-width: 600px;
+  margin: 24px auto 48px;
+}
+
+.confirmation-hero__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.confirmation-hero__eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  margin-bottom: 12px;
+}
+
+.confirmation-hero__heading {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.confirmation-hero__heading em {
+  color: hsl(var(--primary));
+  font-style: italic;
+}
+
+.confirmation-hero__subtitle {
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 28px;
+}
+
+.order-code-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background-color: hsl(var(--secondary));
+  border-radius: 999px;
+  padding: 12px 20px;
+}
+
+.order-code-chip__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.order-code-chip__value {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: hsl(var(--primary));
+  font-size: 1.05rem;
+}
+
+.order-code-chip button {
+  background: none;
+  border: none;
+  color: hsl(var(--muted-foreground));
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.order-code-chip button:hover {
+  background-color: hsl(var(--background));
+  color: hsl(var(--primary));
+}
+
+/* ---- Two-column layout: detail cards left, order recap right — same
+   grid shape as .checkout-layout ---- */
+.confirmation-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+  align-items: start;
+  margin-bottom: 32px;
+}
+
+.confirmation-card {
+  background-color: hsl(var(--secondary));
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.confirmation-details .confirmation-card:last-child {
+  margin-bottom: 0;
+}
+
+.confirmation-card__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: hsl(var(--primary));
+}
+
+.confirmation-info-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.confirmation-info-row > .confirmation-info-box {
+  flex: 1;
+  min-width: 0;
+}
+
+.confirmation-info-box {
+  background-color: hsl(var(--background));
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.confirmation-info-box--full {
+  margin-bottom: 16px;
+}
+
+.confirmation-info-box__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.confirmation-info-box__value {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.confirmation-info-box__sub {
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.confirmation-sender-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.confirmation-sender-line svg {
+  flex-shrink: 0;
+}
+
+.confirmation-sender-line span {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+/* ---- Fulfillment-status line, under the sender line in the delivery
+   card — plain text, no icon, deliberately quiet next to the sender line
+   above it (this is a status readout, not another data field). ---- */
+.confirmation-fulfillment-line {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.payment-status-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background-color: hsl(var(--background));
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.payment-status-box__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.payment-status-box__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.payment-status-box__title {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.payment-status-box__desc {
+  font-size: 0.82rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Masked-email note, under the payment-status box — same quiet
+   treatment as the fulfillment line above. ---- */
+.confirmation-email-note {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.confirmation-continue {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .confirmation-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .confirmation-info-row {
+    flex-direction: column;
+  }
+
+  .confirmation-card {
+    padding: 20px;
+  }
+
+  .confirmation-hero__heading {
+    font-size: 2rem;
+  }
+}
+
+.payment-status-box__retry-btn {
+  margin-top: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* [hidden] and .btn's own display: inline-flex have equal specificity —
+   without this, source order lets .btn win and the button stays visible
+   (and clickable) even while marked hidden. Same standing bug this
+   project has hit repeatedly (.payment-waiting, .checkout-field__error). */
+.payment-status-box__retry-btn[hidden] {
+  display: none;
+}
+
+/* GHTK tracking code under the order code (delivery orders, once shipped) */
+.confirmation-tracking {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.confirmation-tracking[hidden],
+#confirmation-discount-row[hidden] {
+  display: none;
+}

@@ -1,0 +1,577 @@
+/* ==========================================================================
+   Bloomy — Product Detail page styles.
+   Loads after style.css. Reuses .container, .btn, .breadcrumb,
+   .section-heading, and .product-grid/.product-card from style.css.
+   ========================================================================== */
+
+.product-detail-page {
+  padding-block: 32px 80px;
+}
+
+.not-found {
+  text-align: center;
+  padding-block: 80px;
+}
+
+.not-found p {
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 24px;
+}
+
+/* ---- Two-column layout: image left, info right ---- */
+
+.product-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  margin-bottom: 96px;
+  background-color: hsl(var(--primary) / 0.05);
+  border-radius: var(--radius);
+  padding: 32px;
+}
+
+.product-detail[hidden] {
+  display: none;
+}
+
+.product-detail__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.product-detail__title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.product-detail__name {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 500;
+}
+
+.product-detail__description {
+  color: hsl(var(--muted-foreground));
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+/* ---- Size picker (only rendered for products with several sizes) ---- */
+.size-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.size-picker[hidden] {
+  display: none;
+}
+
+.size-picker__option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 104px;
+  padding: 10px 16px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.size-picker__option:hover {
+  border-color: hsl(var(--primary));
+}
+
+.size-picker__option[aria-checked="true"] {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--secondary));
+  box-shadow: inset 0 0 0 1px hsl(var(--primary));
+}
+
+.size-picker__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.size-picker__price {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* External products swap the cart controls for one link; both the stepper
+   and the buttons set their own display, so [hidden] needs restating. */
+.product-detail__actions .qty-stepper[hidden],
+.product-detail__actions .btn[hidden] {
+  display: none;
+}
+
+/* ---- Composition box ---- */
+.composition-box {
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.composition-box__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 6px;
+}
+
+.composition-box__text {
+  font-size: 0.95rem;
+}
+
+.product-detail__price {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: hsl(var(--primary));
+  margin-bottom: 16px;
+}
+
+/* ---- Sold-out-today advisory (orange, deliberately distinct from the
+   discontinued badge — this state is informational, not blocking) ---- */
+.sold-out-advisory {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #b5670a;
+  background-color: #fdf1e0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+
+.sold-out-advisory svg {
+  flex-shrink: 0;
+}
+
+.sold-out-advisory[hidden] {
+  display: none;
+}
+
+/* ---- Quantity stepper + Add to cart ---- */
+.product-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+/* ---- Static feature mini-cards (kept local — only one page uses them
+   so far; promote to style.css if a second page ever needs the same
+   compact icon-free title/desc pair) ---- */
+.detail-features {
+  display: flex;
+  gap: 16px;
+}
+
+.detail-features > .detail-feature {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-feature {
+  background-color: hsl(var(--background));
+  border-radius: 14px;
+  padding: 14px 18px;
+}
+
+.detail-feature__title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.detail-feature__desc {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---- Related products section spacing ---- */
+.related-products {
+  margin-bottom: 32px;
+}
+
+@media (max-width: 900px) {
+  .product-detail {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 20px;
+  }
+
+  .product-detail__name {
+    font-size: 1.75rem;
+  }
+
+  .detail-features {
+    flex-direction: column;
+  }
+
+  .product-detail__actions {
+    flex-wrap: wrap;
+  }
+
+  .product-detail__actions #add-to-cart {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+/* Small legal note under the price (Luật Giá: listed prices include taxes). */
+.product-detail__tax-note {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: -8px;
+  margin-bottom: 16px;
+}
+
+/* ---- Short description, gallery thumbnails ---- */
+.product-detail__short {
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 16px;
+}
+
+.product-detail__short[hidden] {
+  display: none;
+}
+
+.gallery-thumbs {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.gallery-thumbs[hidden] {
+  display: none;
+}
+
+.gallery-thumb {
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  background: none;
+  cursor: pointer;
+}
+
+.gallery-thumb[aria-pressed="true"] {
+  border-color: hsl(var(--primary));
+}
+
+.gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- Tabs ---- */
+.product-tabs {
+  margin-bottom: 96px;
+}
+
+.product-tabs[hidden] {
+  display: none;
+}
+
+.product-tabs__list {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid hsl(var(--border));
+  overflow-x: auto;
+}
+
+.product-tabs__list [role="tab"] {
+  padding: 12px 18px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: hsl(var(--muted-foreground));
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.product-tabs__list [role="tab"][aria-selected="true"] {
+  color: hsl(var(--foreground));
+  border-bottom-color: hsl(var(--primary));
+}
+
+.product-tabs__panel {
+  padding-block: 28px;
+  max-width: 820px;
+}
+
+.product-tabs__panel[hidden] {
+  display: none;
+}
+
+.product-tabs__list-text {
+  list-style: disc;
+  padding-left: 22px;
+  display: grid;
+  gap: 10px;
+}
+
+.product-tabs__list-text a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+.product-tabs__empty {
+  color: hsl(var(--muted-foreground));
+}
+
+.product-attributes {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 24px;
+  margin-top: 24px;
+  font-size: 0.92rem;
+}
+
+.product-attributes dt {
+  font-weight: 600;
+}
+
+.product-attributes a {
+  color: hsl(var(--primary));
+}
+
+/* ---- Reviews ---- */
+.reviews-summary {
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.reviews-list {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.review {
+  padding-bottom: 18px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.review__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.review__stars {
+  color: hsl(var(--primary));
+  letter-spacing: 0.1em;
+}
+
+.review__date {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.review__comment {
+  overflow-wrap: anywhere;
+}
+
+.review-form {
+  display: grid;
+  gap: 14px;
+  max-width: 520px;
+}
+
+.review-form__title {
+  font-size: 1.1rem;
+}
+
+.review-form__field {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.review-form__field input,
+.review-form__field textarea {
+  padding: 10px 14px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 400;
+}
+
+.review-form__hint {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.review-stars {
+  border: none;
+  padding: 0;
+}
+
+.review-stars legend {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+
+.review-stars__row {
+  display: flex;
+  gap: 4px;
+}
+
+.review-star {
+  font-size: 1.8rem;
+  line-height: 1;
+  color: hsl(var(--border));
+  cursor: pointer;
+}
+
+.review-star.is-on {
+  color: hsl(var(--primary));
+}
+
+.review-star:focus-within {
+  outline: 2px solid hsl(var(--primary));
+  border-radius: 6px;
+}
+
+.review-form__msg {
+  font-size: 0.9rem;
+}
+
+.review-form__msg.is-ok {
+  color: hsl(var(--primary));
+}
+
+.review-form__msg.is-error {
+  color: hsl(var(--destructive));
+}
+
+.review-form__msg[hidden] {
+  display: none;
+}
+
+/* The honeypot: out of sight and out of the tab order, but not display:none
+   (some bots skip hidden fields). */
+.review-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+}
+
+@media (max-width: 700px) {
+  .product-attributes {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Share (button + the small menu used where the browser has no share sheet) ---- */
+.product-detail__actions .product-share {
+  position: relative;
+  flex: 1 1 100%;
+}
+
+.product-share .btn {
+  padding: 10px 20px;
+  font-size: 0.88rem;
+}
+
+.share-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  padding: 6px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background-color: hsl(var(--background));
+  box-shadow: 0 12px 28px hsl(0 0% 0% / 0.14);
+}
+
+.share-menu__item {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.share-menu__item:hover {
+  background-color: hsl(var(--secondary));
+}
+
+/* ---- Recently viewed ---- */
+.recent-viewed {
+  margin-top: 64px;
+}
+
+.recent-viewed__title {
+  margin-bottom: 20px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.recent-viewed__list {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.recent-viewed__link {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 140px;
+}
+
+.recent-viewed__image {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.recent-viewed__name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.recent-viewed__link:hover .recent-viewed__name {
+  color: hsl(var(--primary));
+}

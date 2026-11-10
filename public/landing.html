@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- The campaign_ values (name, headline, ...) are filled in by the server (render.js) from the
+       campaign the owner switched on. When none is on, this page is never sent: /landing redirects
+       to the products. -->
+  <title>{{campaign_name}} — Bloomy</title>
+  <meta name="description" content="{{campaign_headline}}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{campaign_name}} — Bloomy">
+  <meta property="og:description" content="{{campaign_headline}}">
+  <meta property="og:image" content="https://bloomy.quaintshomelabdomain.uk/images/og-image.jpg">
+  <meta property="og:url" content="https://bloomy.quaintshomelabdomain.uk/landing">
+  <link rel="icon" type="image/png" href="images/bloomylogo.png">
+
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/be-vietnam-pro-v12-latin_vietnamese-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-v37-latin_vietnamese-500italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/checkout.css">
+  <link rel="stylesheet" href="css/landing.css">
+</head>
+<body class="defer-footer">
+
+  <!--include:header-->
+
+  <!-- data-coupon: the code of the campaign's coupon, empty when it has none or it no longer applies.
+       landing.js puts it in the cart's coupon slot while the scripts load, before checkout.js first prices anything. -->
+  <main id="landing-main" data-coupon="{{campaign_coupon_code}}">
+
+  <!-- ============ HERO ============ -->
+  <section class="landing-hero">
+    <div class="container landing-hero__inner">
+      <div class="landing-hero__text">
+        <p class="landing-hero__name">{{campaign_name}}</p>
+        <h1 class="landing-hero__headline">{{campaign_headline}}</h1>
+        <p class="landing-hero__sub">{{campaign_subheadline}}</p>
+        {{campaign_coupon}}
+      </div>
+      {{campaign_hero_image}}
+    </div>
+  </section>
+
+  <!-- ============ PRODUCTS (cards are drawn by landing.js from /api/campaigns/active) ============ -->
+  <section class="container landing-products" aria-label="Sản phẩm trong chương trình">
+    <div id="landing-grid" class="landing-grid" aria-live="polite">
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__image"></div><div class="skeleton-card__line"></div><div class="skeleton-card__line skeleton-card__line--short"></div></div>
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__image"></div><div class="skeleton-card__line"></div><div class="skeleton-card__line skeleton-card__line--short"></div></div>
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__image"></div><div class="skeleton-card__line"></div><div class="skeleton-card__line skeleton-card__line--short"></div></div>
+    </div>
+    <p id="landing-error" class="landing-error" hidden>Không thể tải sản phẩm lúc này. Vui lòng tải lại trang.</p>
+    <p id="landing-empty" class="landing-error landing-empty" hidden>Chương trình này chưa có sản phẩm nào đang bán. Mời bạn xem <a href="products.html">tất cả sản phẩm</a>.</p>
+  </section>
+
+  <!-- ============ ORDER, on the same page (the form and summary are shared with checkout.html) ============ -->
+  <div class="container checkout-page landing-order" id="landing-order">
+    <h2 class="landing-order__title">Đặt hoa ngay tại đây</h2>
+
+    <div id="checkout-empty" class="landing-order__empty" hidden>
+      <p>Chọn một bó hoa ở trên, đơn hàng của bạn sẽ hiện ở đây.</p>
+    </div>
+
+    <div id="checkout-form-view" hidden>
+      <!--include:checkout-form-->
+    </div>
+
+    <!--include:checkout-payment-->
+  </div>
+
+  </main>
+
+  <!--include:footer-->
+
+  <!--include:floating-contact-->
+
+  <script src="js/main.js" defer></script>
+  <script src="js/landing.js" defer></script>
+  <script src="js/checkout.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,1560 @@
+/* ==========================================================================
+   Bloomy — Admin stylesheet
+   Shared across all admin pages (login, products, orders, stats, cutoffs),
+   loaded after style.css the same way home.css/about.css etc. are for
+   customer pages. Sections are added here as each admin page gets built —
+   not pre-built ahead of need.
+   ========================================================================== */
+
+.admin-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: hsl(var(--secondary));
+}
+
+.admin-login {
+  text-align: center;
+  padding: 24px;
+}
+
+.admin-login__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.admin-login__title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.admin-login__subtitle {
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 28px;
+}
+
+.admin-login__card {
+  background-color: hsl(var(--background));
+  border-radius: var(--radius);
+  box-shadow: 0 16px 32px hsl(var(--foreground) / 0.12);
+  padding: 32px;
+  width: 340px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-login__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.admin-login__label:not(:first-child) {
+  margin-top: 18px;
+}
+
+.admin-login__input {
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  color: hsl(var(--foreground));
+}
+
+.admin-login__input:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.admin-login__error {
+  color: hsl(var(--destructive));
+  font-size: 0.85rem;
+  margin-top: 16px;
+}
+
+.admin-login__submit {
+  margin-top: 24px;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ---- Admin nav — shared top strip on every admin page (Products, Orders,
+   Stats, Cutoffs). Static, non-collapsing — desktop-only per locked scope,
+   so no mobile-menu treatment needed (unlike .site-nav). ---- */
+.admin-nav {
+  background-color: hsl(var(--foreground));
+  color: hsl(var(--background));
+}
+
+.admin-nav__inner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding-block: 16px;
+}
+
+.admin-nav__logo {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.2rem;
+}
+
+.admin-nav__links {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+}
+
+.admin-nav__links a {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: hsl(var(--background) / 0.7);
+}
+
+.admin-nav__links a:hover,
+.admin-nav__links a.is-active {
+  color: hsl(var(--background));
+}
+
+.admin-nav__logout {
+  background: none;
+  border: 1px solid hsl(var(--background) / 0.3);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: hsl(var(--background));
+}
+
+.admin-nav__logout:hover {
+  background-color: hsl(var(--background) / 0.1);
+}
+
+/* ---- Shared admin page shell + table (Products, Orders, Stats, Cutoffs
+   all reuse the same .admin-page/.admin-table pattern) ---- */
+.admin-page {
+  padding-block: 40px;
+}
+
+.admin-page__title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.admin-page__error {
+  color: hsl(var(--destructive));
+  margin-bottom: 16px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: hsl(var(--background));
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid hsl(var(--border));
+  font-size: 0.9rem;
+}
+
+.admin-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  background-color: hsl(var(--secondary));
+}
+
+.admin-table__status-select {
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+}
+
+.admin-table__action-btn {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+}
+
+.admin-table__delete-btn {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive) / 0.4);
+}
+
+/* ---- Products page header row (title + search) ---- */
+.admin-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.admin-page__header .admin-page__title {
+  margin-bottom: 0;
+}
+
+.admin-page__search {
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  color: hsl(var(--foreground));
+  width: 240px;
+}
+
+.admin-page__search:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* ---- Stats page — metrics table + subtitle above the top-products/source
+   tables ---- */
+.admin-stats__metrics {
+  margin-bottom: 40px;
+}
+
+.admin-stats__metrics td:last-child {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Multi-column stats tables (funnel, top products, source) — same bottom
+   spacing as the key/value metrics table above. */
+.admin-stats__table {
+  margin-bottom: 40px;
+}
+
+/* Yearly tax-threshold progress bar (the fill width is set from JS, which
+   the page's CSP allows; inline style attributes it does not). */
+.admin-stats__bar {
+  height: 8px;
+  margin: -24px 0 16px;
+  border-radius: 999px;
+  background-color: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
+  overflow: hidden;
+}
+
+.admin-stats__bar-fill {
+  height: 100%;
+  width: 0;
+  background-color: hsl(var(--primary));
+}
+
+.admin-stats__bar-fill.is-over {
+  background-color: hsl(var(--destructive));
+}
+
+.admin-page__subtitle {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.admin-page__subtitle-note {
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 20px;
+  max-width: 640px;
+}
+
+/* ---- Orders page header row (title + status filter + search + CSV +
+   sheet toggle), and the stacked name/phone cell layout ---- */
+.admin-page__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-page__filter {
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+}
+
+.admin-page__filter:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.admin-table__name-phone {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-table__phone {
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.admin-table__address,
+.admin-table__note {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Delivery sheet (Orders page, toggled in place of the table) ---- */
+.admin-delivery-sheet {
+  background-color: hsl(var(--background));
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.admin-delivery-sheet__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.admin-delivery-sheet__window {
+  margin-bottom: 28px;
+}
+
+.admin-delivery-sheet__window:last-child {
+  margin-bottom: 0;
+}
+
+.admin-delivery-sheet__window-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.admin-delivery-sheet__order {
+  border-bottom: 1px solid hsl(var(--border));
+  padding-block: 10px;
+}
+
+.admin-delivery-sheet__order:last-child {
+  border-bottom: none;
+}
+
+.admin-delivery-sheet__order-top {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.admin-delivery-sheet__order-notes {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.admin-delivery-sheet__empty {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+}
+
+/* Print: only the delivery sheet's own content, nothing else on the page —
+   nav, filters, the underlying orders table (already hidden via JS when
+   the sheet is showing, but excluded here too as a safety net), and the
+   date/print controls all disappear. */
+@media print {
+  .admin-nav,
+  .admin-page__header,
+  #admin-orders-table-wrap,
+  .admin-delivery-sheet__header {
+    display: none !important;
+  }
+}
+
+/* ---- Generic admin form field styling — same visual language as
+   .admin-login__label/__input, reused wherever an admin page needs a plain
+   labeled input outside the login card (currently: Cutoffs' add-override
+   form, and the delivery sheet's date picker). ---- */
+.admin-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  background-color: hsl(var(--background));
+  border-radius: var(--radius);
+  padding: 20px 20px 36px;
+  margin-bottom: 24px;
+}
+
+.admin-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.admin-form__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  /* A label that wraps its field: the text on top, the field underneath. */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ...and a wrapped field is full width, so every pill in a form lines up
+   (left edge and width) instead of sitting wherever the label text ends. */
+.admin-form__label > .admin-form__input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-form__input {
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: hsl(var(--foreground));
+}
+
+.admin-form__input:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.admin-form__hint {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ==========================================================================
+   Orders: clickable order code + detail row (items, money, notes, invoice,
+   GHTK code, internal note)
+   ========================================================================== */
+.admin-table__expand {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: hsl(var(--primary));
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-table__expand::after {
+  content: " ▸";
+}
+
+.admin-table__expand[aria-expanded="true"]::after {
+  content: " ▾";
+}
+
+.admin-table__detail[hidden] {
+  display: none;
+}
+
+.admin-table__detail > td {
+  background-color: hsl(var(--secondary));
+}
+
+.admin-order-detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.admin-order-detail__title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 8px;
+}
+
+.admin-order-detail__items li,
+.admin-order-detail__money-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 3px;
+}
+
+.admin-order-detail__money-row.is-total {
+  font-weight: 600;
+  border-top: 1px solid hsl(var(--border));
+  margin-top: 4px;
+  padding-top: 6px;
+}
+
+.admin-order-detail__text {
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+
+.admin-order-detail__form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.admin-order-detail__form .admin-form__label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.admin-order-detail__form .admin-form__input {
+  width: 100%;
+}
+
+/* Delivery sheet: what each order contains */
+.admin-delivery-sheet__order-items {
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   Products: "no recipe yet" warning under the name
+   ========================================================================== */
+.admin-table__warning {
+  display: block;
+  font-size: 0.75rem;
+  color: hsl(var(--destructive));
+}
+
+/* ==========================================================================
+   Flowers ("Kho hoa")
+   ========================================================================== */
+.admin-table__row--low > td {
+  background-color: #fdf1e0; /* same orange tint as the sold-out advisory */
+}
+
+.admin-flowers__stock {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-flowers__adjust {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-flowers__amount {
+  width: 90px;
+}
+
+.admin-table__tag {
+  display: block;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ==========================================================================
+   Orders table: six columns that fit the page. Fixed layout + wrapping, so
+   no cell can push the table wider than its container; the wrapper still
+   scrolls sideways on a very narrow screen.
+   ========================================================================== */
+#admin-orders-table-wrap {
+  overflow-x: auto;
+}
+
+#admin-orders-table {
+  table-layout: fixed;
+  min-width: 760px;
+}
+
+#admin-orders-table th,
+#admin-orders-table td {
+  padding: 12px;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.admin-table__sub {
+  display: block;
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 2px;
+}
+
+.admin-table__place {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.admin-table__name-phone--spaced {
+  margin-top: 8px;
+}
+
+#admin-orders-table .admin-table__status-select {
+  max-width: 100%;
+}
+
+#admin-orders-table .admin-table__action-btn {
+  display: block;
+  margin-top: 6px;
+  white-space: normal;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Order detail row: wider product column, prices never split across lines
+   ========================================================================== */
+.admin-order-detail {
+  grid-template-columns: 1.7fr 1fr 1fr 1fr;
+}
+
+.admin-order-detail__items li span:last-child,
+.admin-order-detail__money-row span:last-child {
+  white-space: nowrap;
+}
+
+@media (max-width: 1000px) {
+  .admin-order-detail {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-order-detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-table__featured:disabled {
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Roles: nav "who · role", staff page ("Nhân sự"), password page, dialog
+   ========================================================================== */
+/* The nav bar is dark: light text, like the links (the links box already
+   takes the free space, so this sits just before "Đăng xuất"). */
+.admin-nav__who {
+  font-size: 0.8rem;
+  color: hsl(var(--background) / 0.6);
+  white-space: nowrap;
+}
+
+.admin-user-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.admin-form__msg {
+  font-size: 0.9rem;
+  margin: 8px 0 24px;
+}
+
+.admin-form__msg.is-ok {
+  color: hsl(var(--primary));
+}
+
+.admin-form__msg.is-error {
+  color: hsl(var(--destructive));
+}
+
+.admin-form__msg[hidden] {
+  display: none;
+}
+
+.admin-users__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-users__actions .admin-table__action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 420px;
+  margin-bottom: 12px;
+}
+
+.admin-dialog {
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 24px;
+  width: min(420px, calc(100% - 32px));
+}
+
+.admin-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.admin-dialog__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* ==========================================================================
+   Nav: ten links no longer fit on one line, so the bar may wrap
+   ========================================================================== */
+.admin-nav__links {
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+
+/* ==========================================================================
+   POS ("Bán tại quầy")
+   ========================================================================== */
+.pos-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.pos-layout[hidden],
+.pos-qr[hidden],
+.pos-receipt-panel[hidden] {
+  display: none;
+}
+
+.pos-products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.pos-product {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  background-color: hsl(var(--background));
+}
+
+.pos-product img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.pos-product__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.pos-product__sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pos-product__sizes .btn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.pos-product__sizes .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pos-ticket {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--radius);
+  background-color: hsl(var(--secondary));
+}
+
+.pos-line {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px;
+  align-items: center;
+  padding-block: 6px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.pos-line__qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pos-line .btn {
+  padding: 2px 10px;
+}
+
+.pos-line__amount {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.pos-coupon {
+  display: flex;
+  gap: 8px;
+}
+
+.pos-coupon .admin-form__input {
+  flex: 1;
+  min-width: 0;
+  text-transform: uppercase;
+}
+
+.pos-totals {
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 8px;
+}
+
+.pos-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.pos-pay {
+  display: flex;
+  gap: 20px;
+}
+
+.pos-qr {
+  max-width: 460px;
+  margin: 24px auto;
+  text-align: center;
+}
+
+.pos-qr__amount {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.pos-qr__img {
+  width: 260px;
+  height: 260px;
+  margin: 12px auto;
+}
+
+.pos-qr__actions,
+.pos-receipt__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.pos-receipt-panel {
+  margin: 24px auto;
+}
+
+.pos-receipt {
+  max-width: 340px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px dashed hsl(var(--border));
+  background-color: #fff;
+  color: #000;
+  font-size: 0.85rem;
+}
+
+.pos-receipt__title {
+  text-align: center;
+  font-size: 1.4rem;
+}
+
+.pos-receipt__small {
+  text-align: center;
+  font-size: 0.75rem;
+  margin-block: 2px;
+}
+
+.pos-receipt__heading {
+  text-align: center;
+  font-weight: 700;
+  margin-block: 10px 6px;
+}
+
+.pos-receipt__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 2px;
+}
+
+.pos-receipt__row.is-total {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.pos-receipt__thanks {
+  margin-top: 12px;
+}
+
+.pos-pickups {
+  margin-top: 40px;
+}
+
+@media (max-width: 900px) {
+  .pos-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .pos-ticket {
+    position: static;
+  }
+}
+
+/* Only the receipt prints from the POS page. */
+@media print {
+  .admin-nav,
+  .admin-pos .admin-page__header,
+  .admin-pos .pos-layout,
+  .admin-pos .pos-qr,
+  .admin-pos .pos-pickups,
+  .admin-pos .pos-receipt__actions,
+  .admin-pos #pos-notice,
+  .admin-pos #pos-error {
+    display: none !important;
+  }
+
+  .pos-receipt {
+    border: none;
+    max-width: 80mm;
+    margin: 0;
+  }
+}
+
+/* POS ticket: the two optional recipient fields stack with the same spacing as
+   the rest of the form ([hidden] restated because display:flex would win). */
+#pos-recipient {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#pos-recipient[hidden] {
+  display: none;
+}
+
+/* Settings: the generated style-fee fields stack like the rest of the form */
+.admin-fieldgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Reviews page: a long comment wraps inside its column */
+.admin-reviews__comment {
+  max-width: 420px;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Product SEO page: the list on the left, the editor on the right ---- */
+.admin-seo {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.admin-seo__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  top: 16px;
+}
+
+.admin-seo__products {
+  list-style: none;
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+}
+
+.admin-seo__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid hsl(var(--border));
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-seo__products li:last-child .admin-seo__row {
+  border-bottom: none;
+}
+
+.admin-seo__row:hover,
+.admin-seo__row.is-selected {
+  background-color: hsl(var(--secondary));
+}
+
+.admin-seo__row:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
+}
+
+.admin-seo__row-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-seo__row-name {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.admin-seo__row-sub {
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.admin-seo__health {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* The colour is never the only signal: every dot has its word next to it. */
+.admin-seo__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.admin-seo__dot--good,
+.admin-seo__check--good .admin-seo__check-level {
+  background-color: hsl(142 45% 36%);
+}
+
+.admin-seo__dot--warn,
+.admin-seo__check--warn .admin-seo__check-level {
+  background-color: hsl(28 90% 34%); /* dark enough for the white word on it (5.5:1; the lighter orange was 3.7:1) */
+}
+
+.admin-seo__dot--bad,
+.admin-seo__check--bad .admin-seo__check-level {
+  background-color: hsl(0 65% 46%);
+}
+
+.admin-seo__panel {
+  min-width: 0;
+}
+
+.admin-seo__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.admin-seo__count {
+  font-weight: 400;
+  color: hsl(var(--muted-foreground));
+}
+
+.admin-seo__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-seo__heading {
+  margin: 32px 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* A search result as Google draws it (its own blue and grey, on purpose). */
+.admin-seo__preview {
+  max-width: 640px;
+  padding: 16px 20px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background-color: hsl(0 0% 100%);
+  font-family: Arial, sans-serif;
+}
+
+.admin-seo__prev-url {
+  font-size: 0.82rem;
+  color: hsl(120 40% 28%);
+}
+
+.admin-seo__prev-title {
+  margin: 2px 0 4px;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  color: hsl(231 78% 41%);
+}
+
+.admin-seo__prev-desc {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: hsl(0 0% 30%);
+}
+
+.admin-seo__checks {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 640px;
+}
+
+.admin-seo__check {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.admin-seo__check-level {
+  flex-shrink: 0;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: hsl(0 0% 100%);
+}
+
+@media (max-width: 900px) {
+  .admin-seo {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-seo__list {
+    position: static;
+  }
+
+  .admin-seo__products {
+    max-height: 40vh;
+  }
+}
+
+/* ---- Admin menu: the links sit behind one button (see js/admin-nav.js) ---- */
+.admin-nav__inner {
+  position: relative;
+}
+
+.admin-nav__menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: hsl(var(--background) / 0.1);
+  border: 1px solid hsl(var(--background) / 0.25);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: hsl(var(--background));
+  cursor: pointer;
+}
+
+.admin-nav__menu:hover {
+  background: hsl(var(--background) / 0.18);
+}
+
+.admin-nav__menu:focus-visible {
+  outline: 2px solid hsl(var(--background));
+  outline-offset: 2px;
+}
+
+.admin-nav__menu-chevron {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.admin-nav__menu[aria-expanded="true"] .admin-nav__menu-chevron {
+  transform: translateY(1px) rotate(225deg);
+}
+
+.admin-nav__links.is-collapsible {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 4px;
+  padding: 12px;
+  min-width: 520px;
+  background-color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--background) / 0.2);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 32px hsl(0 0% 0% / 0.25);
+}
+
+/* Must come AFTER the rule above: equal specificity, later wins (it did not, once). */
+.admin-nav__links.is-collapsible[hidden] {
+  display: none;
+}
+
+.admin-nav__links.is-collapsible a {
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.admin-nav__links.is-collapsible a:hover {
+  background: hsl(var(--background) / 0.1);
+}
+
+.admin-nav__links.is-collapsible a.is-active {
+  background: hsl(var(--background) / 0.16);
+}
+
+.admin-nav__inner .admin-nav__who {
+  margin-left: auto;
+}
+
+@media (max-width: 640px) {
+  .admin-nav__links.is-collapsible {
+    grid-template-columns: 1fr 1fr;
+    min-width: 0;
+    right: 0;
+  }
+}
+
+/* ---- POS: the pickup orders toggle in the page header ---- */
+.pos-pickups-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  font-size: 0.88rem;
+}
+
+.pos-pickups-toggle__count {
+  min-width: 22px;
+  height: 22px;
+  padding-inline: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.pos-pickups-toggle__count[hidden] {
+  display: none;
+}
+
+.pos-pickups-toggle__chevron {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.pos-pickups-toggle[aria-expanded="true"] .pos-pickups-toggle__chevron {
+  transform: translateY(1px) rotate(225deg);
+}
+
+/* The list now opens above the sale instead of sitting under it. */
+.pos-pickups {
+  margin-top: 0;
+  margin-bottom: 32px;
+}
+
+/* ---- Campaign editor: reuses the SEO page's two-pane layout (.admin-seo*) and adds its own bits ---- */
+.admin-camp__badge {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background-color: hsl(142 45% 30%);
+  color: hsl(0 0% 100%);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.admin-camp__active {
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.admin-camp__active a {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.admin-camp__image {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.admin-camp__image-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+  font-weight: 400;
+}
+
+.admin-camp__image-preview {
+  width: 120px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid hsl(var(--border));
+}
+
+.admin-camp__image-name,
+.admin-camp__image-none {
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+  overflow-wrap: anywhere;
+}
+
+.admin-camp__image-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.admin-camp__products {
+  list-style: none;
+  margin: 8px 0;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  font-weight: 400;
+}
+
+.admin-camp__products:empty {
+  display: none;
+}
+
+.admin-camp__product {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.admin-camp__product:last-child {
+  border-bottom: none;
+}
+
+.admin-camp__product-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+}
+
+.admin-camp__status {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: hsl(0 0% 100%);
+}
+
+.admin-camp__status--sold_out_today {
+  background-color: hsl(28 90% 34%);
+}
+
+.admin-camp__status--discontinued {
+  background-color: hsl(0 65% 42%);
+}
+
+.admin-camp__icon {
+  width: 32px;
+  height: 32px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.admin-camp__icon:hover:not(:disabled) {
+  background-color: hsl(var(--secondary));
+}
+
+.admin-camp__icon:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.admin-camp__icon:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.admin-camp__add {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.admin-camp__add select {
+  flex: 1;
+}
+
+.admin-dialog--wide {
+  width: min(840px, calc(100% - 32px));
+}
+
+.admin-camp__images {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.admin-camp__image-option {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.admin-camp__image-option img {
+  width: 100%;
+  aspect-ratio: 5 / 4;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.admin-camp__image-option:hover,
+.admin-camp__image-option.is-selected {
+  border-color: hsl(var(--primary));
+}
+
+.admin-camp__image-option:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* ---- A note in the normal flow of the page (a heads-up under a heading or a list). Not .admin-form__hint:
+   that one is positioned absolutely under an input inside .admin-form__field and lands at the page's
+   left edge anywhere else. ---- */
+.admin-note {
+  margin: 10px 0;
+  padding: 10px 14px;
+  border-left: 4px solid hsl(var(--border));
+  border-radius: 8px;
+  background-color: hsl(var(--secondary));
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.admin-note--warn {
+  border-left-color: hsl(28 90% 34%);
+}
+
+/* ---- POS: the "new pickup order" notice (fixed, top right, so it is seen wherever the page is scrolled) ---- */
+.pos-new-pickup {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(440px, calc(100% - 32px));
+  padding: 12px 12px 12px 18px;
+  border: 1px solid hsl(var(--primary));
+  border-radius: var(--radius);
+  background-color: hsl(var(--background));
+  box-shadow: 0 12px 32px hsl(0 0% 0% / 0.2);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.pos-new-pickup .btn {
+  padding: 8px 16px;
+  font-size: 0.82rem;
+}
+
+.pos-new-pickup__close {
+  padding: 2px 8px;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+}
