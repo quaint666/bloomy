@@ -5,6 +5,7 @@ A flower shop web app: storefront, checkout, and a back office for staff. Node, 
 Live: https://bloomy.quaintshomelabdomain.uk
 
 ![Home page](docs/screenshots/home.webp)
+
 ![Product listing](docs/screenshots/products.webp)
 
 ## What it does
