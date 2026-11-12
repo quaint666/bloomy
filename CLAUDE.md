@@ -1,10 +1,10 @@
 # Bloomy
-Flower shop (UEH course project): Node 26, Express 5, TypeScript 7 (backend only), PostgreSQL 17, plain HTML/CSS/classic JS. UI text is Vietnamese; code and chat are English.
+Flower shop (UEH course project): Node 26, Express 5, TypeScript 7 (backend only), PostgreSQL 18, plain HTML/CSS/classic JS. UI text is Vietnamese; code and chat are English.
 
 ## Local setup
 ```bash
 docker network create bloomy-local
-docker run -d --name bloomy-local-pg --network bloomy-local -p 127.0.0.1:5433:5432 -e POSTGRES_USER=quaint -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=bloomy postgres:17
+docker run -d --name bloomy-local-pg --network bloomy-local -p 127.0.0.1:5433:5432 -e POSTGRES_USER=quaint -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=bloomy postgres:18
 for i in $(seq 1 60); do docker exec bloomy-local-pg pg_isready -h 127.0.0.1 -U quaint -d bloomy && break; sleep 1; done
 docker build -f Dockerfile.schema -t bloomy-schema:local .
 docker run --rm --network bloomy-local -e PGPASSWORD=dev bloomy-schema:local apply --auto-approve --file /schema.sql --host bloomy-local-pg --db bloomy --user quaint --schema public
@@ -18,7 +18,7 @@ node tests/<name>_test.mjs    # from the repo root
 ```
 
 ## Rules and gotchas
-- Every `tests/*_test.mjs` must end with `0 failed` (15 suites, 1,384 checks, all green on 2026-10-10 and on Node 26.13.0 on 2026-11-05); run them locally before a push.
+- Every `tests/*_test.mjs` must end with `0 failed` (15 suites, 1,384 checks, all green on 2026-10-10, on Node 26.13.0 on 2026-11-05 and on PostgreSQL 18.6 on 2026-11-11); run them locally before a push.
 - `TOTP_ENCRYPTION_KEY` is required (the server exits 1 without it) and `twofa_test` needs the same value as the running server; never use the production key.
 - The order endpoints share a 20-per-15-minutes limiter: run the whole set at most twice per 15 minutes.
 - Suites write real rows and restore them: local DB only, never production, never against a server with `EMAIL_MODE=send`.

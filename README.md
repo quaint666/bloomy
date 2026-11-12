@@ -32,7 +32,7 @@ Needs Docker, Node 26 and `openssl`. The database runs in Docker; the app runs o
 
 ```bash
 docker network create bloomy-local
-docker run -d --name bloomy-local-pg --network bloomy-local -p 127.0.0.1:5433:5432 -e POSTGRES_USER=quaint -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=bloomy postgres:17
+docker run -d --name bloomy-local-pg --network bloomy-local -p 127.0.0.1:5433:5432 -e POSTGRES_USER=quaint -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=bloomy postgres:18
 for i in $(seq 1 60); do docker exec bloomy-local-pg pg_isready -h 127.0.0.1 -U quaint -d bloomy && break; sleep 1; done
 docker build -f Dockerfile.schema -t bloomy-schema:local .
 docker run --rm --network bloomy-local -e PGPASSWORD=dev bloomy-schema:local apply --auto-approve --file /schema.sql --host bloomy-local-pg --db bloomy --user quaint --schema public

@@ -22,22 +22,24 @@ FROM pgplex/pgschema:1.13.1
 # plan and apply start an embedded PostgreSQL to check schema.sql against, and the base image does not
 # contain one: every run (each in a fresh container) would download it from Maven Central, and fail
 # wherever there is no internet. Fetch it here instead, once per image build, under the file name the
-# library looks for. The checksum is the one Maven Central publishes for the jar. When the FROM line
-# is bumped, check which PostgreSQL the new pgschema bundles and change the version and the checksum
-# with it; CI plans from the built image on a network without internet, so a mismatch fails there.
+# library looks for. It picks the embedded server that matches the MAJOR version of the database it is
+# pointed at, so the jar here is the one for the database in use: PostgreSQL 18. The checksum is the one
+# Maven Central publishes for the jar. When the FROM line is bumped, check which PostgreSQL versions the
+# new pgschema bundles and change the version and the checksum with it; a plan from the built image on
+# a network without internet fails if they do not match.
 # This step comes before COPY so that editing schema.sql does not repeat the download.
 RUN set -eu; \
-    V=17.5.0; \
+    V=18.3.0; \
     U=https://repo1.maven.org/maven2/io/zonky/test/postgres/embedded-postgres-binaries-linux-amd64-alpine/$V/embedded-postgres-binaries-linux-amd64-alpine-$V.jar; \
     wget -q -O /tmp/pg.jar "$U"; \
-    echo "7122386c7f7a089568f05720ada63448093d4065abbc0a89e6dc660851a53e3c  /tmp/pg.jar" | sha256sum -c -; \
+    echo "510fd314da39f1eeccef774a92428474168fedf55403342548e2adeaed66b483  /tmp/pg.jar" | sha256sum -c -; \
     mkdir -p "$HOME/.embedded-postgres-go"; \
     unzip -p /tmp/pg.jar postgres-linux-x86_64-alpine_linux.txz \
       > "$HOME/.embedded-postgres-go/embedded-postgres-binaries-linux-amd64-alpine-$V.txz"; \
     rm /tmp/pg.jar
 
-# psql, for seed.sh below. The base image is Alpine 3.20, which has no postgresql17-client; the 16 client loads plain
-# SQL into the 17 server without trouble. Installed as root, then back to the base image's user.
+# psql, for seed.sh below. The base image is Alpine 3.20, which has no postgresql18-client; the 16 client loads plain
+# SQL into the 18 server without trouble (seed.sh checked against 18.6 on 2026-11-11). Installed as root, then back to the base image's user.
 USER root
 RUN apk add --no-cache postgresql-client
 USER pgschema
