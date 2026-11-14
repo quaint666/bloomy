@@ -11,9 +11,7 @@
 
 import type { Request } from "express";
 import type { ProductStatus } from "./types";
-
-type Level = "good" | "warn" | "bad";
-interface Check { id: string; level: Level; text: string }
+import type { SeoCheck as Check, SeoLevel as Level } from "./shared/api-types";
 
 // The columns of a product row that these functions read (products in schema.sql).
 interface SeoProduct {

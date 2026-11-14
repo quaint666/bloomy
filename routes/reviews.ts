@@ -17,10 +17,10 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import pool = require("../db");
+import type { LatestReview, PublicReview, ReviewsBody, ReviewSummary } from "../shared/api-types";
 
-interface ReviewRow { id: number; name: string; stars: number; comment: string; created_at: Date }
-interface LatestReviewRow extends ReviewRow { product_id: number; product_name: string }
-interface ReviewSummary { count: number; average: number }
+type ReviewRow = PublicReview;
+type LatestReviewRow = LatestReview;
 
 const router = Router();
 
@@ -61,7 +61,8 @@ router.get("/products/:id/reviews", async (req, res, next) => {
        FROM reviews WHERE product_id = $1 AND approved`,
       [id]
     );
-    res.json({ summary: summary[0], reviews, limits: REVIEW_LIMITS });
+    const body: ReviewsBody = { summary: summary[0], reviews, limits: REVIEW_LIMITS };
+    res.json(body);
   } catch (err) {
     next(err);
   }

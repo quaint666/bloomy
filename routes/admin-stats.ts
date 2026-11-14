@@ -51,6 +51,7 @@ import { Router } from "express";
 import pool = require("../db");
 import { requireAdmin } from "./admin-auth";
 import type { ProductSize } from "../types";
+import type { AdminStatsBody } from "../shared/api-types";
 
 // What the queries return. COUNT(...)::int is a number; SUM(...)::bigint comes back from node-postgres as a
 // string, so those columns are typed string and converted below.
@@ -218,7 +219,7 @@ router.get("/", requireAdmin, async (req, res, next) => {
       conversionRate = funnel.visit > 0 ? funnel.order_placed / funnel.visit : null;
     }
 
-    res.json({
+    const body: AdminStatsBody = {
       total_orders: o.total_orders,
       total_revenue: o.total_revenue,
       paid_revenue: o.paid_revenue,
@@ -244,7 +245,8 @@ router.get("/", requireAdmin, async (req, res, next) => {
       flower_shortage_hits: checks.flower_shortage_hits,
       funnel,
       conversion_rate: conversionRate,
-    });
+    };
+    res.json(body);
   } catch (err) {
     next(err);
   }

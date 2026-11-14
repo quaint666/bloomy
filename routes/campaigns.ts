@@ -14,21 +14,16 @@
 
 import { Router } from "express";
 import pool = require("../db");
-import type { CouponRow, ProductStatus, SizePrice } from "../types";
+import type { CouponRow, SizePrice } from "../types";
+import type { ActiveCampaign, CampaignCard } from "../shared/api-types";
 
 interface CampaignRow {
   id: number; name: string; headline: string; subheadline: string | null;
   coupon_code: string | null; hero_image: string | null;
 }
 // `sizes` is filled in after the query, so it is optional until then.
-interface CampaignProduct {
-  id: number; name: string; image: string | null; status: ProductStatus;
-  price: number; has_sizes: boolean; sizes?: SizePrice[];
-}
-interface Campaign {
-  id: number; name: string; headline: string; subheadline: string | null; hero_image: string | null;
-  coupon: CouponRow | null; products?: CampaignProduct[];
-}
+type CampaignProduct = CampaignCard;
+type Campaign = ActiveCampaign;
 
 const router = Router();
 

@@ -36,14 +36,11 @@ import { Router } from "express";
 import pool = require("../db");
 import { TAG_KIND_LABELS } from "./tags";
 import type { ProductStatus, SizePrice } from "../types";
+import type { CategoryRef, ProductDetailBody, ProductDetailSize, ProductListItem, ProductType } from "../shared/api-types";
 
 type TagKind = keyof typeof TAG_KIND_LABELS;
-type ProductType = "standard" | "external";
-// `sizes` is added to the listing rows only when ?sizes=1, so it is optional.
-interface ProductListRow {
-  id: number; name: string; image: string | null; category_id: number; product_type: ProductType;
-  status: ProductStatus; price: number; has_sizes: boolean; sizes?: SizePrice[];
-}
+// A listing row is the shared ProductListItem (`sizes` is there only when ?sizes=1).
+type ProductListRow = ProductListItem;
 interface ProductDetailRow {
   id: number; category_id: number; sku: string; name: string; short_description: string | null;
   description: string | null; image: string | null; status: ProductStatus; product_type: ProductType;
@@ -52,14 +49,6 @@ interface ProductDetailRow {
 interface SizeFlowerRow {
   id: number; size: SizePrice["size"]; sku: string; price: number;
   flower_id: number | null; flower_name: string | null; quantity: number | null;
-}
-interface DetailSize { id: number; size: SizePrice["size"]; sku: string; price: number; flowers: { id: number; name: string | null; quantity: number | null }[] }
-interface CategoryRef { id: number; name: string; parent_id: number | null; parent_name: string | null }
-// The detail row, plus what the handler adds to it before sending.
-interface ProductDetail extends ProductDetailRow {
-  sizes?: DetailSize[]; price?: number;
-  tags?: { id: number; kind: TagKind; name: string; kind_label: string }[];
-  images?: string[]; category?: CategoryRef;
 }
 
 const router = Router();
@@ -211,7 +200,7 @@ router.get("/:id", async (req, res, next) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    const product: ProductDetail = result.rows[0];
+    const row = result.rows[0];
 
     // One row per (size, flower). LEFT JOIN so a size with no recipe (the
     // external product) still comes back, just with no flowers. ORDER BY
@@ -228,7 +217,7 @@ router.get("/:id", async (req, res, next) => {
     );
 
     // Group the flat rows into sizes, each with its own flower list.
-    const sizes: DetailSize[] = [];
+    const sizes: ProductDetailSize[] = [];
     for (const row of rows) {
       let size = sizes[sizes.length - 1];
       if (!size || size.id !== row.id) {
@@ -240,9 +229,8 @@ router.get("/:id", async (req, res, next) => {
       }
     }
 
-    product.sizes = sizes;
     // Lowest size price, same meaning as `price` in the listing response.
-    product.price = Math.min(...sizes.map((s) => s.price));
+    const price = Math.min(...sizes.map((s) => s.price));
 
     // Tags (with their group's label), the gallery photos beyond the main one,
     // and the category with its parent — what the product page's tabs show.
@@ -251,19 +239,24 @@ router.get("/:id", async (req, res, next) => {
        WHERE pt.product_id = $1 ORDER BY t.kind, t.name`,
       [id]
     );
-    product.tags = tags.map((t) => ({ ...t, kind_label: TAG_KIND_LABELS[t.kind] }));
     const { rows: images } = await pool.query<{ image: string }>(
       `SELECT image FROM product_images WHERE product_id = $1 ORDER BY sort_order, id`,
       [id]
     );
-    product.images = images.map((r) => r.image);
     const { rows: cat } = await pool.query<CategoryRef>(
       `SELECT c.id, c.name, par.id AS parent_id, par.name AS parent_name
        FROM categories c LEFT JOIN categories par ON par.id = c.parent_id WHERE c.id = $1`,
-      [product.category_id]
+      [row.category_id]
     );
-    product.category = cat[0];
 
+    const product: ProductDetailBody = {
+      ...row,
+      sizes,
+      price,
+      tags: tags.map((t) => ({ ...t, kind_label: TAG_KIND_LABELS[t.kind] })),
+      images: images.map((r) => r.image),
+      category: cat[0],
+    };
     res.json(product);
   } catch (err) {
     next(err);

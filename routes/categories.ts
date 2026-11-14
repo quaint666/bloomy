@@ -8,11 +8,10 @@
 
 import { Router } from "express";
 import pool = require("../db");
+import type { CategoryChild, CategoryNode } from "../shared/api-types";
 
 interface CategoryRow { id: number; name: string; parent_id: number | null; count: number }
-interface CategoryChild { id: number; name: string; count: number }
 interface CategoryParent { id: number; name: string; own: number; children: CategoryChild[] }
-interface CategoryNode { id: number; name: string; count: number; children: CategoryChild[] }
 
 const router = Router();
 

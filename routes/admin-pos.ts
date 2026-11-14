@@ -24,15 +24,8 @@ import pool = require("../db");
 import { requireRole } from "./admin-auth";
 import ordersRouter = require("./orders");
 import { notifyOrderConfirmed } from "../email";
-import type { FulfillmentStatus, FulfillmentType, OrderChannel, PaymentMethod, PaymentStatus, ProductSize, TimeWindow } from "../types";
-
-// Rows of the pickup queries below (orders and order_items in schema.sql).
-interface PickupRow {
-  id: number; token: string; sender_name: string; sender_phone: string; recipient_name: string; recipient_phone: string;
-  delivery_date: string; delivery_window: TimeWindow | null; payment_method: PaymentMethod; payment_status: PaymentStatus;
-  fulfillment_status: FulfillmentStatus; total_amount: number;
-}
-interface PickupItem { name: string; size: ProductSize | null; quantity: number }
+import type { FulfillmentStatus, FulfillmentType, OrderChannel, PaymentMethod, PaymentStatus } from "../types";
+import type { PosCashSaleBody, PosPickup, PosPickupItem, PosPickupRow, PosZaloPaySaleBody } from "../shared/api-types";
 
 const router = Router();
 
@@ -94,29 +87,32 @@ router.post("/orders", requireEmployee, async (req, res, next) => {
         .getFullOrderForEmail(order.id)
         .then((full) => full && notifyOrderConfirmed(full))
         .catch((err) => console.error("Bloomy: POS confirmation email failed", err));
-      return res.status(201).json({ id: order.id, token: order.token, payment_method: "cash", total_amount: totalAmount });
+      const cash: PosCashSaleBody = { id: order.id, token: order.token, payment_method: "cash", total_amount: totalAmount };
+      return res.status(201).json(cash);
     }
 
     const zp = await ordersRouter.startZaloPayPayment(order.id, totalAmount);
     if (!zp.ok) {
       // The sale exists (pending, stems taken): the screen offers "tạo lại mã QR" or cancel.
-      return res.status(201).json({
+      const failed: PosZaloPaySaleBody = {
         id: order.id,
         token: order.token,
         payment_method: "zalopay",
         total_amount: totalAmount,
         zalopay_error: true,
         message: zp.message,
-      });
+      };
+      return res.status(201).json(failed);
     }
-    return res.status(201).json({
+    const withQr: PosZaloPaySaleBody = {
       id: order.id,
       token: order.token,
       payment_method: "zalopay",
       total_amount: totalAmount,
       qr_data_url: zp.qr_data_url,
       order_url: zp.order_url,
-    });
+    };
+    return res.status(201).json(withQr);
   } catch (err) {
     await client.query("ROLLBACK").catch(() => {});
     next(err);
@@ -164,7 +160,7 @@ router.post("/orders/:id/cancel", requireEmployee, async (req, res, next) => {
 // handed over.
 router.get("/pickups", requireEmployee, async (req, res, next) => {
   try {
-    const { rows: orders } = await pool.query<PickupRow>(
+    const { rows: orders } = await pool.query<PosPickupRow>(
       `SELECT id, token, sender_name, sender_phone, recipient_name, recipient_phone,
               delivery_date, delivery_window, payment_method, payment_status,
               fulfillment_status, total_amount
@@ -174,9 +170,9 @@ router.get("/pickups", requireEmployee, async (req, res, next) => {
        ORDER BY delivery_date, delivery_window, id
        LIMIT 100`
     );
-    const byOrder = new Map<number, PickupItem[]>();
+    const byOrder = new Map<number, PosPickupItem[]>();
     if (orders.length > 0) {
-      const { rows: items } = await pool.query<PickupItem & { order_id: number }>(
+      const { rows: items } = await pool.query<PosPickupItem & { order_id: number }>(
         `SELECT order_id, name, size, quantity FROM order_items WHERE order_id = ANY($1) ORDER BY id`,
         [orders.map((o) => o.id)]
       );
@@ -185,7 +181,8 @@ router.get("/pickups", requireEmployee, async (req, res, next) => {
         byOrder.get(item.order_id)!.push({ name: item.name, size: item.size, quantity: item.quantity });
       }
     }
-    res.json(orders.map((o) => ({ ...o, items: byOrder.get(o.id) || [] })));
+    const pickups: PosPickup[] = orders.map((o) => ({ ...o, items: byOrder.get(o.id) || [] }));
+    res.json(pickups);
   } catch (err) {
     next(err);
   }

@@ -11,14 +11,13 @@
 import { Router } from "express";
 import pool = require("../db");
 import { requireAdmin } from "./admin-auth";
-
-interface FlowerStockRow { id: number; sku: string; name: string; price: number; stock: number }
+import type { AdminFlowerRow } from "../shared/api-types";
 
 const router = Router();
 
 router.get("/", requireAdmin, async (req, res, next) => {
   try {
-    const { rows } = await pool.query<FlowerStockRow>(
+    const { rows } = await pool.query<AdminFlowerRow>(
       `SELECT id, sku, name, price, stock FROM flowers ORDER BY name`
     );
     res.json(rows);

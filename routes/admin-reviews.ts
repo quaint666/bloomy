@@ -8,11 +8,7 @@
 import { Router } from "express";
 import pool = require("../db");
 import { requireAdmin } from "./admin-auth";
-
-interface AdminReviewRow {
-  id: number; product_id: number; product_name: string; name: string; stars: number;
-  comment: string; approved: boolean; created_at: Date;
-}
+import type { AdminReviewRow, AdminReviewsBody } from "../shared/api-types";
 
 const router = Router();
 
@@ -29,7 +25,8 @@ router.get("/", requireAdmin, async (req, res, next) => {
     const { rows: counts } = await pool.query<{ pending: number; approved: number }>(
       `SELECT COUNT(*) FILTER (WHERE NOT approved)::int AS pending, COUNT(*) FILTER (WHERE approved)::int AS approved FROM reviews`
     );
-    res.json({ counts: counts[0], reviews });
+    const body: AdminReviewsBody = { counts: counts[0], reviews };
+    res.json(body);
   } catch (err) {
     next(err);
   }

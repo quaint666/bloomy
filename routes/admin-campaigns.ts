@@ -19,7 +19,7 @@ import path from "path";
 import type { PoolClient } from "pg";
 import pool = require("../db");
 import { requireAdmin } from "./admin-auth";
-import type { ProductStatus } from "../types";
+import type { CampaignDetail, CampaignListItem, CampaignOptions, CampaignProduct, CouponRow } from "../shared/api-types";
 
 // What the editor may set. Only the fields that were sent are present.
 interface CampaignValues {
@@ -27,11 +27,6 @@ interface CampaignValues {
   coupon_code?: string | null; hero_image?: string | null; product_ids?: number[];
 }
 type Cleaned = { values: CampaignValues; field?: undefined } | { field: keyof CampaignValues; values?: undefined };
-interface CampaignProduct { id: number; name: string; status: ProductStatus; image: string | null }
-interface CampaignDetail {
-  id: number; name: string; headline: string; subheadline: string | null; coupon_code: string | null;
-  hero_image: string | null; active: boolean; products: CampaignProduct[];
-}
 
 const router = Router();
 
@@ -136,13 +131,14 @@ async function detail(id: number): Promise<CampaignDetail | null> {
 
 router.get("/", requireAdmin, async (req, res, next) => {
   try {
-    const { rows } = await pool.query(
+    const { rows } = await pool.query<Omit<CampaignListItem, "active"> & { active: boolean | null }>(
       `SELECT c.id, c.name, c.headline, c.coupon_code, c.hero_image,
               (SELECT COUNT(*) FROM campaign_products cp WHERE cp.campaign_id = c.id)::int AS product_count,
               (s.active_campaign_id = c.id) AS active
        FROM campaigns c CROSS JOIN settings s ORDER BY c.id`
     );
-    res.json(rows.map((r) => ({ ...r, active: r.active === true })));
+    const list: CampaignListItem[] = rows.map((r) => ({ ...r, active: r.active === true }));
+    res.json(list);
   } catch (err) {
     next(err);
   }
@@ -151,11 +147,12 @@ router.get("/", requireAdmin, async (req, res, next) => {
 router.get("/options", requireAdmin, async (req, res, next) => {
   try {
     const [coupons, products, images] = await Promise.all([
-      pool.query("SELECT code, type, value, min_subtotal, starts_on, ends_on, active FROM coupons ORDER BY code"),
-      pool.query("SELECT id, name, status, image FROM products ORDER BY id"),
+      pool.query<CouponRow>("SELECT code, type, value, min_subtotal, starts_on, ends_on, active FROM coupons ORDER BY code"),
+      pool.query<CampaignProduct>("SELECT id, name, status, image FROM products ORDER BY id"),
       listImages(),
     ]);
-    res.json({ coupons: coupons.rows, products: products.rows, images, limits: LIMITS });
+    const body: CampaignOptions = { coupons: coupons.rows, products: products.rows, images, limits: LIMITS };
+    res.json(body);
   } catch (err) {
     next(err);
   }

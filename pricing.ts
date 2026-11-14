@@ -17,12 +17,10 @@
 // the same .query().
 
 import type { CouponRow, CouponType, CustomStyle, ProductSize, ProductStatus, Queryable, SizePrice } from "./types";
+import type { CouponResult, CouponStatus, LineProblem, QuoteBody, QuoteFlower, QuoteLine } from "./shared/api-types";
 
 // Hand-written to match schema.sql. Nothing checks that a query returns these
 // shapes: a type here is an assertion about the SQL, not a proof.
-
-type LineProblem = "unknown_product" | "unknown_size" | "external" | "invalid_custom";
-type CouponStatus = "applied" | "not_found" | "inactive" | "below_minimum" | "needs_date" | "outside_dates";
 
 // Rows the queries below return. Money is whole đồng (INTEGER); dates are
 // "YYYY-MM-DD" strings (db.js).
@@ -55,46 +53,9 @@ interface QuoteInput {
   deliveryDate?: string | null;
 }
 
-// What quote() returns. A line that cannot be sold (problem set) carries fewer
-// fields, so those are optional.
-interface QuoteFlower { flower_id: number; name: string; stems: number; price: number }
-interface QuoteLine {
-  productId: number | null;
-  size: ProductSize | null;
-  quantity: number;
-  problem: LineProblem | null;
-  unitPrice: number;
-  lineTotal: number;
-  flowers: QuoteFlower[];
-  short_flowers: string[];
-  sizes: SizePrice[];
-  custom?: true;
-  key?: string | null;
-  name?: string;
-  image?: string | null;
-  style?: string | null;
-  style_label?: string | null;
-  style_fee?: number;
-  status?: ProductStatus;
-  note?: string | null;
-}
-interface CouponResult {
-  code: string; status: CouponStatus; discount: number;
-  type?: CouponType; value?: number; min_subtotal?: number;
-  starts_on?: string | null; ends_on?: string | null;
-}
-interface Quote {
-  lines: QuoteLine[];
-  subtotal: number;
-  coupon: CouponResult | null;
-  discount: number;
-  ward: WardRow | null;
-  shipping_fee: number | null;
-  total: number;
-  vat_rate: number;
-  short_flowers: string[];
-  stock_needed: { flower_id: number; stems: number }[];
-}
+// What quote() returns: the body the quote route sends (shared/api-types.ts), plus the stems it needs, which only
+// the order route reads.
+interface Quote extends QuoteBody { stock_needed: { flower_id: number; stems: number }[] }
 
 // VAT inside a tax-inclusive amount, rounded to the whole đồng. One formula
 // for every admin view (the stats SQL uses the same expression).

@@ -21,24 +21,12 @@ import ordersRouter = require("./orders");
 import { vatAmount } from "../pricing";
 import { isRealDate } from "./dates";
 import { csvSafe, sendCsv } from "./csv";
-import type { FulfillmentStatus, FulfillmentType, OrderChannel, PaymentMethod, PaymentStatus, ProductSize, TimeWindow } from "../types";
+import { ALLOWED_FULFILLMENT_TRANSITIONS, isFulfillmentStatus } from "../shared/rules";
+import type { FulfillmentStatus, PaymentMethod, PaymentStatus, ProductSize, TimeWindow } from "../types";
+import type { AdminOrder, AdminOrderItem, AdminOrderRow, DeliverySheetBody, PaymentStatusBody } from "../shared/api-types";
 
-// One row of the order list (ORDER_LIST_COLUMNS below).
-interface OrderListRow {
-  id: number; token: string; channel: OrderChannel; fulfillment_type: FulfillmentType;
-  sender_name: string; sender_phone: string; recipient_name: string; recipient_phone: string;
-  ward_name: string | null; delivery_address: string | null; delivery_date: string;
-  delivery_window: TimeWindow | null; notes: string | null; customer_email: string | null; source: string | null;
-  subtotal: number; discount: number; shipping_fee: number; total_amount: number; vat_rate: number;
-  coupon_code: string | null; payment_method: PaymentMethod; payment_status: PaymentStatus;
-  fulfillment_status: FulfillmentStatus; tracking_code: string | null; admin_note: string | null; created_at: Date;
-  invoice_requested: boolean; invoice_company_name: string | null; invoice_tax_code: string | null;
-  invoice_address: string | null;
-}
 // A line as the order query returns it; addCustomDetails() then adds custom, flowers and style_label.
 type ItemRow = Parameters<typeof ordersRouter.addCustomDetails>[1][number] & { order_id: number };
-type ListItem = Pick<ItemRow, "name" | "size" | "quantity" | "price" | "custom" | "style_label" | "flowers" | "note">;
-interface OrderWithItems extends OrderListRow { vat_amount: number; has_custom: boolean; items: ListItem[] }
 
 const router = Router();
 
@@ -54,7 +42,7 @@ const ORDER_FROM = `FROM orders o LEFT JOIN wards w ON w.id = o.ward_id`;
 
 // Attaches each order's lines (snapshot name, size, quantity, price) and its
 // VAT amount. One query for all lines, not one per order.
-async function withItems(orders: OrderListRow[]): Promise<OrderWithItems[]> {
+async function withItems(orders: AdminOrderRow[]): Promise<AdminOrder[]> {
   if (orders.length === 0) return [];
   const { rows } = await pool.query<ItemRow>(
     `SELECT id, order_id, product_id, name, size, style, note, quantity, price_at_purchase AS price
@@ -64,7 +52,7 @@ async function withItems(orders: OrderListRow[]): Promise<OrderWithItems[]> {
   // A custom bouquet carries its flowers and the customer's note: the shop
   // needs both to make it (see addCustomDetails in orders.js).
   await ordersRouter.addCustomDetails(pool, rows);
-  const byOrder = new Map<number, ListItem[]>();
+  const byOrder = new Map<number, AdminOrderItem[]>();
   for (const r of rows) {
     if (!byOrder.has(r.order_id)) byOrder.set(r.order_id, []);
     byOrder.get(r.order_id)!.push({
@@ -80,10 +68,11 @@ async function withItems(orders: OrderListRow[]): Promise<OrderWithItems[]> {
 
 router.get("/", requireAdmin, async (req, res, next) => {
   try {
-    const result = await pool.query<OrderListRow>(
+    const result = await pool.query<AdminOrderRow>(
       `SELECT ${ORDER_LIST_COLUMNS} ${ORDER_FROM} ORDER BY o.created_at DESC`
     );
-    res.json(await withItems(result.rows));
+    const orders: AdminOrder[] = await withItems(result.rows);
+    res.json(orders);
   } catch (err) {
     next(err);
   }
@@ -105,7 +94,7 @@ router.get("/delivery-sheet", requireAdmin, async (req, res, next) => {
       ? req.query.date
       : ordersRouter.todayVNDateString();
 
-    const { rows } = await pool.query<OrderListRow>(
+    const { rows } = await pool.query<AdminOrderRow>(
       `SELECT ${ORDER_LIST_COLUMNS} ${ORDER_FROM}
        WHERE o.delivery_date = $1
          AND o.channel = 'web'
@@ -115,7 +104,7 @@ router.get("/delivery-sheet", requireAdmin, async (req, res, next) => {
       [date]
     );
 
-    const windows: Record<TimeWindow, OrderWithItems[]> = { morning: [], afternoon: [], evening: [] };
+    const windows: Record<TimeWindow, AdminOrder[]> = { morning: [], afternoon: [], evening: [] };
     // Web orders always have a window (the database requires it); the
     // guard only keeps a bad row from crashing the whole sheet.
     for (const order of await withItems(rows)) {
@@ -129,7 +118,8 @@ router.get("/delivery-sheet", requireAdmin, async (req, res, next) => {
       [date]
     );
 
-    res.json({ date, windows, pending_zalopay_count: pendingRows[0].count });
+    const body: DeliverySheetBody = { date, windows, pending_zalopay_count: pendingRows[0].count };
+    res.json(body);
   } catch (err) {
     next(err);
   }
@@ -145,7 +135,7 @@ const SIZE_LABELS: Record<ProductSize, string> = { s: "Nhỏ", m: "Vừa", l: "L
 
 router.get("/orders.csv", requireAdmin, async (req, res, next) => {
   try {
-    const { rows } = await pool.query<OrderListRow>(
+    const { rows } = await pool.query<AdminOrderRow>(
       `SELECT ${ORDER_LIST_COLUMNS} ${ORDER_FROM} ORDER BY o.created_at DESC`
     );
     const orders = await withItems(rows);
@@ -294,7 +284,8 @@ router.post("/:id/reverify", requireAdmin, async (req, res, next) => {
       return res.status(400).json({ error: "not_a_zalopay_order" });
     }
     if (order.payment_status === "paid" || order.payment_status === "refunded") {
-      return res.json({ payment_status: order.payment_status });
+      const body: PaymentStatusBody = { payment_status: order.payment_status };
+      return res.json(body);
     }
     if (!order.app_trans_id) {
       return res.status(409).json({ error: "no_zalopay_attempt_yet" });
@@ -304,23 +295,16 @@ router.post("/:id/reverify", requireAdmin, async (req, res, next) => {
 
     if (zpRes.return_code === 1 && zpRes.is_processing === false && zpRes.amount === order.total_amount) {
       await ordersRouter.markOrderPaid(order.id, zpRes.zp_trans_id);
-      return res.json({ payment_status: "paid" });
+      const body: PaymentStatusBody = { payment_status: "paid" };
+      return res.json(body);
     }
 
-    return res.json({ payment_status: "pending" });
+    const body: PaymentStatusBody = { payment_status: "pending" };
+    return res.json(body);
   } catch (err) {
     next(err);
   }
 });
-
-// Which fulfillment_status values a given current value may move to.
-// delivered/cancelled are both terminal — no further changes from either.
-const ALLOWED_FULFILLMENT_TRANSITIONS: Record<FulfillmentStatus, FulfillmentStatus[]> = {
-  new: ["delivering", "cancelled"],
-  delivering: ["delivered", "cancelled"],
-  delivered: [],
-  cancelled: [],
-};
 
 router.patch("/:id/fulfillment", requireAdmin, async (req, res, next) => {
   try {
@@ -328,7 +312,7 @@ router.patch("/:id/fulfillment", requireAdmin, async (req, res, next) => {
     if (isNaN(id)) return res.status(400).json({ error: "invalid_id" });
 
     const { status } = req.body;
-    if (!["new", "delivering", "delivered", "cancelled"].includes(status)) {
+    if (!isFulfillmentStatus(status)) {
       return res.status(400).json({ error: "invalid_status" });
     }
 

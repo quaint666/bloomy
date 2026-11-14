@@ -13,14 +13,8 @@
 import { Router } from "express";
 import pool = require("../db");
 import { requireRole } from "./admin-auth";
+import type { AdminSettingsBody, AdminSettingsRow } from "../shared/api-types";
 
-// The whole settings row, as COLUMNS below selects it.
-interface SettingsRow {
-  shop_address: string; contact_phone: string; contact_email: string; vat_rate: number;
-  ring1_fee: number; ring2_fee: number; ring3_fee: number;
-  style_fee_bo: number; style_fee_gio: number; style_fee_hop: number;
-  active_campaign_id: number | null;
-}
 // `v` is a raw JSON value from req.body, of any type: each cleaner checks its own.
 type Cleaner = (v: any) => unknown;
 
@@ -56,14 +50,14 @@ const FIELDS: Record<string, Cleaner> = {
 const COLUMNS = [...Object.keys(FIELDS), "active_campaign_id"].join(", ");
 
 // The settings row plus the campaigns to choose from (id and name, for the dropdown).
-async function readSettings(row: SettingsRow) {
+async function readSettings(row: AdminSettingsRow): Promise<AdminSettingsBody> {
   const { rows: campaigns } = await pool.query<{ id: number; name: string }>("SELECT id, name FROM campaigns ORDER BY id");
   return { ...row, campaigns };
 }
 
 router.get("/", requireOwner, async (req, res, next) => {
   try {
-    const { rows } = await pool.query<SettingsRow>(`SELECT ${COLUMNS} FROM settings`);
+    const { rows } = await pool.query<AdminSettingsRow>(`SELECT ${COLUMNS} FROM settings`);
     res.json(await readSettings(rows[0]));
   } catch (err) {
     next(err);
@@ -105,7 +99,7 @@ router.patch("/", requireOwner, async (req, res, next) => {
     if (sets.length === 0) return res.status(400).json({ error: "nothing_to_update" });
 
     // The column names come from FIELDS above, never from the request.
-    const { rows } = await pool.query<SettingsRow>(`UPDATE settings SET ${sets.join(", ")} WHERE id RETURNING ${COLUMNS}`, values);
+    const { rows } = await pool.query<AdminSettingsRow>(`UPDATE settings SET ${sets.join(", ")} WHERE id RETURNING ${COLUMNS}`, values);
     res.json(await readSettings(rows[0]));
   } catch (err) {
     next(err);

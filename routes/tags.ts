@@ -6,6 +6,7 @@
 
 import { Router } from "express";
 import pool = require("../db");
+import type { TagsBody } from "../shared/api-types";
 
 type TagKind = "flower" | "color";
 interface TagRow { id: number; kind: TagKind; name: string }
@@ -31,7 +32,8 @@ router.get("/", async (req, res, next) => {
         tags: rows.filter((r) => r.kind === kind).sort(vi).map(({ id, name }) => ({ id, name })),
       }))
       .filter((g) => g.tags.length > 0);
-    res.json({ groups });
+    const body: TagsBody = { groups };
+    res.json(body);
   } catch (err) {
     next(err);
   }

@@ -34,6 +34,8 @@ import * as blog from "./blog";
 import * as seo from "./seo";
 import pool = require("./db");
 import type { CouponRow } from "./types";
+import { escapeHtml } from "./shared/escape";
+import { todayVNDateString } from "./shared/vn-time";
 
 // The shapes the three loaders return, taken from the loaders themselves so there is one definition.
 type PublicSettings = NonNullable<Awaited<ReturnType<typeof getPublicSettings>>>;
@@ -75,11 +77,6 @@ function formatPhone(digits: string): string {
   return /^[0-9]{10}$/.test(digits) ? `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}` : digits;
 }
 
-function escapeHtml(value: unknown): string {
-  // The pattern only matches these five characters, so the lookup always finds one.
-  return String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c as "&" | "<" | ">" | '"' | "'"]);
-}
-
 // ---------------------------------------------------------------------------
 // Token values
 // ---------------------------------------------------------------------------
@@ -107,16 +104,13 @@ function categoryItems(tree: CategoryTree): string {
 
 // ---- the active campaign's wording and its coupon chip ----
 
-function todayVN(): string {
-  return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
-}
 const dayMonth = (iso: string): string => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`; // "2026-10-15" -> "15/10"
 
 // What the chip promises, read from the coupon row as it is NOW. null when there is
 // nothing honest to promise: no coupon, switched off, or its window already ended.
 function couponChip(coupon: CouponRow | null): Chip | null {
   if (!coupon || !coupon.active) return null;
-  if (coupon.ends_on && coupon.ends_on < todayVN()) return null;
+  if (coupon.ends_on && coupon.ends_on < todayVNDateString()) return null;
   const discount = coupon.type === "percent" ? `Giảm ${coupon.value}%` : `Giảm ${formatVND(coupon.value)}`;
   const parts = [coupon.min_subtotal > 0 ? `${discount} cho đơn từ ${formatVND(coupon.min_subtotal)}` : discount];
   if (coupon.starts_on && coupon.ends_on) parts.push(`đơn giao từ ${dayMonth(coupon.starts_on)} đến ${dayMonth(coupon.ends_on)}`);

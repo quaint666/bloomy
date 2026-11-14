@@ -54,6 +54,8 @@ import type { PoolClient } from "pg";
 import pool = require("../db");
 import * as totp from "../totp";
 import type { AdminRole, AdminUser, Queryable } from "../types";
+import { ROLE_RANK } from "../shared/rules";
+import type { AdminLoginBody, AdminMeBody, RecoveryCodesBody, TwoFactorSetupBody, TwoFactorState } from "../shared/api-types";
 
 // The row the login query returns (admin_users in schema.sql).
 interface LoginRow { id: number; username: string; password: string; role: AdminRole; active: boolean; totp_secret: string | null }
@@ -63,7 +65,6 @@ const router = Router();
 
 const BCRYPT_COST = 10;
 
-const ROLE_RANK: Record<AdminRole, number> = { employee: 1, manager: 2, owner: 3 };
 const ROLES = Object.keys(ROLE_RANK) as AdminRole[];
 
 // Where each role lands after login (and when sent away from a page it may
@@ -257,7 +258,8 @@ router.post("/login", loginLimiter, async (req, res, next) => {
     if (admin.totp_secret) {
       if (code.trim() === "") {
         await padToFloor(startTime);
-        return res.json({ needs_code: true });
+        const asksForCode: AdminLoginBody = { needs_code: true };
+        return res.json(asksForCode);
       }
       const second = await checkSecondFactor(admin.id, code);
       if (second.result === "locked") {
@@ -281,7 +283,8 @@ router.post("/login", loginLimiter, async (req, res, next) => {
       req.session.save(async (err) => {
         if (err) return next(err);
         await padToFloor(startTime);
-        res.json({ success: true, role: admin.role, landing: LANDING[admin.role] });
+        const body: AdminLoginBody = { success: true, role: admin.role, landing: LANDING[admin.role] };
+        res.json(body);
       });
     });
   } catch (err) {
@@ -333,11 +336,12 @@ function requireRole(minRole: AdminRole): RequestHandler {
 const requireAdmin = requireRole("manager");
 
 router.get("/me", requireRole("employee"), (req, res) => {
-  res.json({
+  const body: AdminMeBody = {
     username: req.admin!.username,
     role: req.admin!.role,
     landing: LANDING[req.admin!.role],
-  });
+  };
+  res.json(body);
 });
 
 // Own password: needs the current one. Other browsers signed in as this user
@@ -399,7 +403,7 @@ async function replaceRecoveryCodes(adminId: number, before?: (client: PoolClien
 
 router.get("/me/2fa", ownerOnly, async (req, res, next) => {
   try {
-    const { rows } = await pool.query<{ enabled: boolean; recovery_remaining: number }>(
+    const { rows } = await pool.query<TwoFactorState>(
       `SELECT (totp_secret IS NOT NULL) AS enabled,
               (SELECT COUNT(*)::int FROM recovery_codes WHERE admin_user_id = $1 AND used_at IS NULL) AS recovery_remaining
          FROM admin_users WHERE id = $1`,
@@ -426,7 +430,8 @@ router.post("/me/2fa/setup", twoFactorLimiter, ownerOnly, async (req, res, next)
     req.session.pendingTotp = totp.encryptSecret(secret);
     await saveSession(req);
     const qr = await QRCode.toDataURL(totp.otpauthUri(secret, req.admin!.username), { margin: 1, width: 240 });
-    res.json({ secret, qr });
+    const body: TwoFactorSetupBody = { secret, qr };
+    res.json(body);
   } catch (err) {
     next(err);
   }
@@ -456,7 +461,8 @@ router.post("/me/2fa/enable", twoFactorLimiter, ownerOnly, async (req, res, next
     delete req.session.pendingTotp;
     await saveSession(req);
     await endSessionsFor(pool, req.admin!.id, req.sessionID);
-    res.json({ success: true, recovery_codes: codes });
+    const body: RecoveryCodesBody = { success: true, recovery_codes: codes };
+    res.json(body);
   } catch (err) {
     next(err);
   }
@@ -479,7 +485,8 @@ async function withSecondFactor(req: Request, res: Response, next: NextFunction,
 
 router.post("/me/2fa/recovery-codes", twoFactorLimiter, ownerOnly, (req, res, next) =>
   withSecondFactor(req, res, next, async () => {
-    res.json({ success: true, recovery_codes: await replaceRecoveryCodes(req.admin!.id) });
+    const body: RecoveryCodesBody = { success: true, recovery_codes: await replaceRecoveryCodes(req.admin!.id) };
+    res.json(body);
   })
 );
 

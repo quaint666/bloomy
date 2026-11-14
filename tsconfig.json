@@ -6,6 +6,6 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["*.ts", "routes/**/*.ts"],
+  "include": ["*.ts", "routes/**/*.ts", "shared/**/*.ts"],
   "exclude": ["node_modules", "public", "tests"]
 }

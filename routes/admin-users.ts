@@ -32,6 +32,7 @@ import {
   PASSWORD_MAX_BYTES,
 } from "./admin-auth";
 import type { AdminUser } from "../types";
+import type { AdminUsersBody, ApiErrorBody } from "../shared/api-types";
 
 const router = Router();
 
@@ -40,8 +41,8 @@ const requireOwner = requireRole("owner");
 // Any fixed number: all owner-affecting updates queue on the same advisory lock.
 const OWNER_CHANGE_LOCK = 41001;
 
-const invalidUsername = { error: "invalid_username", min: USERNAME_MIN, max: USERNAME_MAX };
-const invalidPassword = { error: "invalid_password", min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_BYTES };
+const invalidUsername: ApiErrorBody = { error: "invalid_username", min: USERNAME_MIN, max: USERNAME_MAX };
+const invalidPassword: ApiErrorBody = { error: "invalid_password", min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_BYTES };
 
 router.get("/", requireOwner, async (req, res, next) => {
   try {
@@ -49,7 +50,8 @@ router.get("/", requireOwner, async (req, res, next) => {
       `SELECT id, username, role, active FROM admin_users ORDER BY username`
     );
     // `me` lets the page disable the controls on the owner's own row.
-    res.json({ me: req.admin!.id, users: rows });
+    const body: AdminUsersBody = { me: req.admin!.id, users: rows };
+    res.json(body);
   } catch (err) {
     next(err);
   }

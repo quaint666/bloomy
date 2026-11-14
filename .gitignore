@@ -5,3 +5,30 @@ CLAUDE.local.md
 # Emitted by tsc next to each .ts source (npm run build); never edit or commit these
 /*.js
 /routes/*.js
+/shared/*.js
+# Browser scripts built from web/*.ts (npm run build:web); never edit or commit these. One line per converted file.
+/public/js/admin-reviews.js
+/public/js/admin-nav.js
+/public/js/admin-users.js
+/public/js/admin-login.js
+/public/js/admin-flowers.js
+/public/js/admin-cutoffs.js
+/public/js/admin-settings.js
+/public/js/admin-stats.js
+/public/js/admin-coupons.js
+/public/js/admin-products.js
+/public/js/admin-seo.js
+/public/js/admin-account.js
+/public/js/admin-campaigns.js
+/public/js/admin-orders.js
+/public/js/admin-pos.js
+/public/js/main.js
+/public/js/home.js
+/public/js/listing.js
+/public/js/landing.js
+/public/js/product.js
+/public/js/custom-bouquet.js
+/public/js/cart.js
+/public/js/confirmation.js
+/public/js/checkout.js
+/public/js/blog.js

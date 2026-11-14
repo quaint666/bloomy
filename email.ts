@@ -15,6 +15,7 @@
 // for ZaloPay's callback_url).
 
 import type { FulfillmentType, OrderChannel, PaymentMethod, PaymentStatus, ProductSize, TimeWindow } from "./types";
+import { WINDOW_TEXT } from "./shared/rules";
 
 // The order as getFullOrderForEmail() in routes/orders.js assembles it: the orders row, the ward name,
 // the shop address and the items. Hand-written to match schema.sql; nothing checks it against the query.
@@ -40,15 +41,6 @@ const EMAIL_FROM = process.env.EMAIL_FROM || "Bloomy <orders@bloomy.quaintshomel
 const SHOP_NOTIFICATION_EMAIL = process.env.SHOP_NOTIFICATION_EMAIL;
 const BLOOMY_BASE_URL = process.env.BLOOMY_BASE_URL;
 
-// Same Vietnamese window copy as public/js/confirmation.js — kept in sync
-// by hand (small, unlikely to drift, not worth a shared-module detour for
-// two files).
-const WINDOW_LABELS: Record<TimeWindow, { label: string; time: string }> = {
-  morning: { label: "Buổi sáng", time: "8:00 – 11:30" },
-  afternoon: { label: "Buổi chiều", time: "13:00 – 17:00" },
-  evening: { label: "Buổi tối", time: "18:00 – 21:00" },
-};
-
 const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   pending: "Chờ thanh toán",
   paid: "Đã thanh toán",
@@ -66,7 +58,7 @@ const SIZE_LABELS: Record<ProductSize, string> = { s: "Nhỏ", m: "Vừa", l: "L
 
 // "Buổi sáng (8–12h)" for a booked order; a counter (POS) sale has no window.
 function windowText(order: EmailOrder): string {
-  const win = order.delivery_window ? WINDOW_LABELS[order.delivery_window] : undefined;
+  const win = order.delivery_window ? WINDOW_TEXT[order.delivery_window] : undefined;
   return win ? `${win.label} (${win.time})` : "tại quầy";
 }
 

@@ -13,12 +13,8 @@ import pool = require("../db");
 import { requireAdmin } from "./admin-auth";
 import { csvSafe, sendCsv } from "./csv";
 import type { ProductSize, ProductStatus } from "../types";
+import type { AdminProductRow, AdminProductsBody } from "../shared/api-types";
 
-interface ProductAdminRow {
-  id: number; sku: string; name: string; status: ProductStatus; featured: boolean;
-  product_type: "standard" | "external"; category_name: string; min_price: number; max_price: number;
-  size_count: number; has_recipe: boolean;
-}
 // COUNT(*) OVER (...) is a bigint, which node-postgres returns as a string.
 interface ProductCsvRow {
   id: number; product_sku: string; size_sku: string; name: string; category: string; style: string | null;
@@ -39,7 +35,7 @@ router.get("/", requireAdmin, async (req, res, next) => {
   try {
     // has_recipe: at least one size lists its flowers. External products
     // never have one; the page shows "chưa có công thức" only for standard ones.
-    const result = await pool.query<ProductAdminRow>(
+    const result = await pool.query<AdminProductRow>(
       `SELECT p.id, p.sku, p.name, p.status, p.featured, p.product_type, c.name AS category_name,
               MIN(ps.price) AS min_price, MAX(ps.price) AS max_price, COUNT(ps.id)::int AS size_count,
               EXISTS (SELECT 1 FROM recipes r JOIN product_sizes s2 ON s2.id = r.size_id
@@ -50,7 +46,8 @@ router.get("/", requireAdmin, async (req, res, next) => {
        GROUP BY p.id, c.name
        ORDER BY p.id ASC`
     );
-    res.json({ featured_limit: FEATURED_LIMIT, products: result.rows });
+    const body: AdminProductsBody = { featured_limit: FEATURED_LIMIT, products: result.rows };
+    res.json(body);
   } catch (err) {
     next(err);
   }

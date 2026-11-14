@@ -15,9 +15,7 @@ import pool = require("../db");
 import { requireAdmin } from "./admin-auth";
 import { normalizeCouponCode } from "../pricing";
 import { isRealDate } from "./dates";
-import type { CouponRow } from "../types";
-
-interface CouponAdminRow extends CouponRow { id: number }
+import type { AdminCouponRow } from "../shared/api-types";
 
 const router = Router();
 
@@ -38,7 +36,7 @@ const COLUMNS = "id, code, type, value, min_subtotal, starts_on, ends_on, active
 
 router.get("/", requireAdmin, async (req, res, next) => {
   try {
-    const { rows } = await pool.query<CouponAdminRow>(`SELECT ${COLUMNS} FROM coupons ORDER BY active DESC, id DESC`);
+    const { rows } = await pool.query<AdminCouponRow>(`SELECT ${COLUMNS} FROM coupons ORDER BY active DESC, id DESC`);
     res.json(rows);
   } catch (err) {
     next(err);
@@ -62,7 +60,7 @@ router.post("/", requireAdmin, async (req, res, next) => {
     if (startsOn && endsOn && startsOn > endsOn) return res.status(400).json({ error: "invalid_dates" });
 
     try {
-      const { rows } = await pool.query<CouponAdminRow>(
+      const { rows } = await pool.query<AdminCouponRow>(
         `INSERT INTO coupons (code, type, value, min_subtotal, starts_on, ends_on)
          VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${COLUMNS}`,
         [code, type, value, minSubtotal, startsOn ?? null, endsOn ?? null]
@@ -93,7 +91,7 @@ router.patch("/:id", requireAdmin, async (req, res, next) => {
 
     try {
       // Each column changes only when it was sent ($2/$4/$6 say which).
-      const { rows } = await pool.query<CouponAdminRow>(
+      const { rows } = await pool.query<AdminCouponRow>(
         `UPDATE coupons SET
            active    = CASE WHEN $2 THEN $3 ELSE active END,
            starts_on = CASE WHEN $4 THEN $5::date ELSE starts_on END,

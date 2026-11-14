@@ -303,6 +303,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "bloomy-nopartials-"));
   for (const f of ["server.js", "render.js", "blog.js", "seo.js", "totp.js", "db.js", "email.js", "pricing.js", "create-admin.js", "package.json"]) fs.copyFileSync(path.join(ROOT, f), path.join(tmp, f));
   fs.cpSync(path.join(ROOT, "routes"), path.join(tmp, "routes"), { recursive: true });
+  fs.cpSync(path.join(ROOT, "shared"), path.join(tmp, "shared"), { recursive: true }); // the runtime values the server requires (rules, vn-time, escape)
   fs.symlinkSync(path.join(ROOT, "node_modules"), path.join(tmp, "node_modules"));
   let err = "", code = null;
   const child = spawn("node", ["server.js"], { cwd: tmp, env: serverEnv(39702), stdio: ["ignore", "ignore", "pipe"] });

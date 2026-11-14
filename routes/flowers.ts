@@ -12,15 +12,15 @@ import { Router } from "express";
 import pool = require("../db");
 import { CUSTOM_LIMITS, CUSTOM_STYLE_LABELS } from "../pricing";
 import type { CustomStyle } from "../types";
+import type { BuilderFlower, FlowersBody, FlowerStyle } from "../shared/api-types";
 
-interface FlowerRow { id: number; name: string; family: string; price: number; in_stock: boolean }
 interface StyleFees { style_fee_bo: number; style_fee_gio: number; style_fee_hop: number }
 
 const router = Router();
 
 router.get("/", async (req, res, next) => {
   try {
-    const { rows } = await pool.query<FlowerRow>(
+    const { rows } = await pool.query<BuilderFlower>(
       `SELECT id, name, family, price, stock > 0 AS in_stock FROM flowers`
     );
     // Vietnamese alphabetical order in Node (the database's collation may not
@@ -33,12 +33,13 @@ router.get("/", async (req, res, next) => {
     );
     if (settings.length === 0) return res.status(503).json({ error: "settings_missing" });
     // Object.entries loses the key type: these keys are exactly the CustomStyle values.
-    const styles = (Object.entries(CUSTOM_STYLE_LABELS) as [CustomStyle, string][]).map(([key, label]) => ({
+    const styles: FlowerStyle[] = (Object.entries(CUSTOM_STYLE_LABELS) as [CustomStyle, string][]).map(([key, label]) => ({
       key,
       label,
       fee: settings[0][`style_fee_${key}` as const],
     }));
-    res.json({ flowers: rows, styles, limits: CUSTOM_LIMITS });
+    const body: FlowersBody = { flowers: rows, styles, limits: CUSTOM_LIMITS };
+    res.json(body);
   } catch (err) {
     next(err);
   }

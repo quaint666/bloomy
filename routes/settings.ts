@@ -15,12 +15,8 @@
 
 import { Router } from "express";
 import pool = require("../db");
+import type { PublicSettings, Ward } from "../shared/api-types";
 
-interface PublicSettings {
-  shop_address: string; contact_phone: string; contact_email: string; vat_rate: number;
-  min_fee: number; max_fee: number;
-}
-interface Ward { id: number; name: string }
 
 const router = Router();
 

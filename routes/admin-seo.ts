@@ -13,6 +13,7 @@ import type { Request } from "express";
 import pool = require("../db");
 import { requireAdmin } from "./admin-auth";
 import * as seo from "../seo";
+import type { SeoDetailBody, SeoListItem } from "../shared/api-types";
 
 type SeoProduct = Parameters<typeof seo.effective>[0];
 
@@ -20,7 +21,7 @@ const router = Router();
 
 const COLUMNS = "id, name, status, image, short_description, description, seo_keyword, seo_title, seo_description";
 
-function detail(product: SeoProduct, base: string) {
+function detail(product: SeoProduct, base: string): SeoDetailBody {
   const e = seo.effective(product, base);
   return {
     product: { id: product.id, name: product.name, status: product.status, image: product.image, short_description: product.short_description, description: product.description },
@@ -45,7 +46,8 @@ router.get("/", requireAdmin, async (req, res, next) => {
   try {
     const base = seo.baseUrl(req);
     const { rows } = await pool.query<SeoProduct>(`SELECT ${COLUMNS} FROM products ORDER BY id`);
-    res.json(rows.map((p) => ({ id: p.id, name: p.name, status: p.status, keyword: p.seo_keyword, health: seo.health(p, base) })));
+    const list: SeoListItem[] = rows.map((p) => ({ id: p.id, name: p.name, status: p.status, keyword: p.seo_keyword, health: seo.health(p, base) }));
+    res.json(list);
   } catch (err) {
     next(err);
   }

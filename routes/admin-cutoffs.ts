@@ -9,8 +9,7 @@ import pool = require("../db");
 import { requireAdmin } from "./admin-auth";
 import { z } from "zod";
 import { isRealDate } from "./dates";
-
-interface CutoffRow { id: number; override_date: string; deadline: Date; note: string | null }
+import type { AdminCutoffRow } from "../shared/api-types";
 
 const router = Router();
 
@@ -25,7 +24,7 @@ const overrideSchema = z.object({
 
 router.get("/", requireAdmin, async (req, res, next) => {
   try {
-    const { rows } = await pool.query<CutoffRow>(
+    const { rows } = await pool.query<AdminCutoffRow>(
       `SELECT id, override_date, deadline, note FROM cutoff_overrides ORDER BY override_date`
     );
     // override_date now comes back as a plain "YYYY-MM-DD" string directly
@@ -57,7 +56,7 @@ router.post("/", requireAdmin, async (req, res, next) => {
   }
 
   try {
-    const { rows } = await pool.query<CutoffRow>(
+    const { rows } = await pool.query<AdminCutoffRow>(
       `INSERT INTO cutoff_overrides (override_date, deadline, note)
        VALUES ($1, $2, $3)
        ON CONFLICT (override_date) DO UPDATE SET deadline = EXCLUDED.deadline, note = EXCLUDED.note

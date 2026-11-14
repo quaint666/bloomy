@@ -13,7 +13,10 @@ import type { EmailItem, EmailOrder } from "../email";
 import { quote, normalizeCouponCode, CUSTOM_LIMITS, CUSTOM_STYLES, CUSTOM_STYLE_LABELS } from "../pricing";
 import { isRealDate } from "./dates";
 import { sessionIdSchema } from "./events";
+import { DEFAULT_CUTOFF_HOUR_VN, MAX_QUANTITY, WINDOW_END_MINUTES } from "../shared/rules";
+import { VN_OFFSET_HOURS, nowVN, nowVNMinutes, todayVNDateString } from "../shared/vn-time";
 import type { FulfillmentStatus, FulfillmentType, OrderChannel, PaymentMethod, PaymentStatus, ProductSize, Queryable, TimeWindow } from "../types";
+import type { CashOrderBody, DeadlineBody, PaymentStatusBody, PublicOrder, QuoteBody, UpcomingCutoff, ZaloPayOrderBody, ZaloPayQrBody } from "../shared/api-types";
 
 // Hand-written to match schema.sql and the queries below; nothing checks a query against them.
 
@@ -63,33 +66,6 @@ const router = Router();
 // epoch by +7h and reading it back with the UTC getters sidesteps whatever
 // timezone the OS/process actually thinks it's in.
 // ---------------------------------------------------------------------------
-const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
-const DEFAULT_CUTOFF_HOUR_VN = 14; // the fallback rule when a date has no cutoff_overrides row
-
-// End time of each delivery window, in minutes since midnight. Only ever
-// matters for "morning" in practice — afternoon/evening both end after
-// DEFAULT_CUTOFF_HOUR_VN, so the blanket default cutoff already rules today
-// out before either of those end times could be reached. Kept general (not
-// a morning-only special case) so this stays correct automatically if the
-// window times or cutoff hour ever change.
-const WINDOW_END_MINUTES: Record<TimeWindow, number> = {
-  morning: 11 * 60 + 30,
-  afternoon: 17 * 60,
-  evening: 21 * 60,
-};
-
-function nowVNMinutes(): number {
-  const d = nowVN();
-  return d.getUTCHours() * 60 + d.getUTCMinutes();
-}
-
-function nowVN(): Date {
-  return new Date(Date.now() + VN_OFFSET_MS);
-}
-
-function todayVNDateString(): string {
-  return nowVN().toISOString().slice(0, 10); // "YYYY-MM-DD"
-}
 
 function yymmddVN(): string {
   return nowVN().toISOString().slice(2, 10).replace(/-/g, ""); // "YYMMDD"
@@ -112,7 +88,7 @@ async function getEffectiveDeadline(client: Queryable, deliveryDateStr: string):
   // delivery date itself. VN is UTC+7, so 14:00 +07:00 == 07:00 UTC on the
   // same calendar date — expressed once here rather than as a second magic
   // literal elsewhere.
-  const utcHour = String(DEFAULT_CUTOFF_HOUR_VN - 7).padStart(2, "0");
+  const utcHour = String(DEFAULT_CUTOFF_HOUR_VN - VN_OFFSET_HOURS).padStart(2, "0");
   return new Date(`${deliveryDateStr}T${utcHour}:00:00.000Z`);
 }
 
@@ -399,7 +375,7 @@ function normalizeTaxCode(raw: string | null | undefined): string {
 const productItemSchema = z.object({
   productId: z.number().int().positive(),
   size: z.enum(["s", "m", "l"]),
-  quantity: z.number().int().positive().max(99),
+  quantity: z.number().int().positive().max(MAX_QUANTITY),
 });
 
 // A custom bouquet line. Counts and lengths come from pricing.js; whether the
@@ -413,7 +389,7 @@ const customItemSchema = z.object({
     style: z.enum(CUSTOM_STYLES),
     note: z.string().trim().max(CUSTOM_LIMITS.note_max).optional().nullable(),
   }),
-  quantity: z.number().int().positive().max(99),
+  quantity: z.number().int().positive().max(MAX_QUANTITY),
   key: z.string().max(300).optional(),
 });
 
@@ -534,7 +510,8 @@ router.post("/quote", quoteLimiter, async (req, res, next) => {
     });
     // stock_needed is for the order route only; stock levels stay private.
     delete (result as { stock_needed?: unknown }).stock_needed;
-    res.json(result);
+    const priced: QuoteBody = result;
+    res.json(priced);
   } catch (err) {
     next(err);
   }
@@ -800,7 +777,8 @@ router.post("/", orderLimiter, async (req, res, next) => {
         .then((fullOrder) => fullOrder && notifyOrderConfirmed(fullOrder))
         .catch((err) => console.error("Bloomy: order confirmation email failed", err));
 
-      return res.status(201).json({ token: order.token, payment_method: body.payment_method, total_amount: totalAmount });
+      const done: CashOrderBody = { token: order.token, payment_method: body.payment_method, total_amount: totalAmount };
+      return res.status(201).json(done);
     }
 
     // ZaloPay — the order row already exists and is safely committed before
@@ -811,21 +789,23 @@ router.post("/", orderLimiter, async (req, res, next) => {
     // confirmed once markOrderPaid() actually flips them to paid.
     const zp = await startZaloPayPayment(order.id, totalAmount);
     if (!zp.ok) {
-      return res.status(201).json({
+      const noQr: ZaloPayOrderBody = {
         token: order.token,
         payment_method: "zalopay",
         total_amount: totalAmount,
         zalopay_error: true,
         message: zp.message,
-      });
+      };
+      return res.status(201).json(noQr);
     }
-    return res.status(201).json({
+    const withQr: ZaloPayOrderBody = {
       token: order.token,
       payment_method: "zalopay",
       total_amount: totalAmount,
       qr_data_url: zp.qr_data_url,
       order_url: zp.order_url,
-    });
+    };
+    return res.status(201).json(withQr);
   } catch (err) {
     await client.query("ROLLBACK").catch(() => {});
     next(err);
@@ -911,7 +891,8 @@ router.get("/deadline", publicReadLimiter, async (req, res, next) => {
     );
     const isOverride = rows.length > 0;
     const deadline = isOverride ? new Date(rows[0].deadline) : await getEffectiveDeadline(pool, date as string); // isRealDate has checked it is a string
-    res.json({ date, deadline: deadline.toISOString(), is_override: isOverride });
+    const body: DeadlineBody = { date, deadline: deadline.toISOString(), is_override: isOverride };
+    res.json(body);
   } catch (err) {
     next(err);
   }
@@ -946,13 +927,12 @@ router.get("/upcoming-cutoffs", publicReadLimiter, async (req, res, next) => {
 
     // override_date now comes back as a plain "YYYY-MM-DD" string directly
     // (see db.js's type-parser override) — no conversion needed.
-    res.json(
-      rows.map((r) => ({
-        override_date: r.override_date,
-        deadline: r.deadline.toISOString(),
-        note: r.note,
-      }))
-    );
+    const upcoming: UpcomingCutoff[] = rows.map((r) => ({
+      override_date: r.override_date,
+      deadline: r.deadline.toISOString(),
+      note: r.note,
+    }));
+    res.json(upcoming);
   } catch (err) {
     next(err);
   }
@@ -967,7 +947,7 @@ router.get("/upcoming-cutoffs", publicReadLimiter, async (req, res, next) => {
 // ---------------------------------------------------------------------------
 router.get("/:token", async (req, res, next) => {
   try {
-    const { rows } = await pool.query(
+    const { rows } = await pool.query<Omit<PublicOrder, "order_code" | "items"> & { id: number }>(
       `SELECT o.id, o.token, o.fulfillment_type, o.sender_name, o.sender_phone,
               o.recipient_name, o.recipient_phone, w.name AS ward_name, o.delivery_address,
               o.delivery_date, o.delivery_window, o.notes, o.customer_email,
@@ -983,7 +963,7 @@ router.get("/:token", async (req, res, next) => {
 
     // Name, size and price come from the order's own snapshot; the product
     // join is only for the picture (LEFT JOIN: a line may have no product).
-    const { rows: items } = await pool.query(
+    const { rows: items } = await pool.query<OrderItem & { image: string | null }>(
       `SELECT oi.id, oi.product_id, oi.name, oi.size, oi.style, oi.note, p.image,
               oi.quantity, oi.price_at_purchase AS price
        FROM order_items oi
@@ -996,13 +976,14 @@ router.get("/:token", async (req, res, next) => {
 
     // admin_note is deliberately NOT selected above: it's internal only.
     const { id, ...publicFields } = order;
-    res.json({
+    const body: PublicOrder = {
       // node-postgres returns delivery_date as a plain "YYYY-MM-DD" string
       // (see db.js's type-parser override) — no conversion needed.
       order_code: `BLOMY${String(id).padStart(6, "0")}`,
       ...publicFields,
       items,
-    });
+    };
+    res.json(body);
   } catch (err) {
     next(err);
   }
@@ -1028,7 +1009,8 @@ router.post("/:token/verify-payment", orderLimiter, async (req, res, next) => {
       return res.status(400).json({ error: "not_zalopay_order" });
     }
     if (order.payment_status === "paid" || order.payment_status === "refunded") {
-      return res.json({ payment_status: order.payment_status });
+      const body: PaymentStatusBody = { payment_status: order.payment_status };
+      return res.json(body);
     }
     if (!order.app_trans_id) {
       return res.status(409).json({ error: "no_zalopay_attempt_yet" });
@@ -1038,10 +1020,12 @@ router.post("/:token/verify-payment", orderLimiter, async (req, res, next) => {
 
     if (zpRes.return_code === 1 && zpRes.is_processing === false && zpRes.amount === order.total_amount) {
       await markOrderPaid(order.id, zpRes.zp_trans_id);
-      return res.json({ payment_status: "paid" });
+      const body: PaymentStatusBody = { payment_status: "paid" };
+      return res.json(body);
     }
 
-    return res.json({ payment_status: "pending" });
+    const body: PaymentStatusBody = { payment_status: "pending" };
+    return res.json(body);
   } catch (err) {
     next(err);
   }
@@ -1079,7 +1063,8 @@ router.post("/:token/retry-zalopay-payment", orderLimiter, async (req, res, next
     if (!zp.ok) {
       return res.status(502).json({ error: "zalopay_retry_failed", message: zp.message });
     }
-    return res.json({ qr_data_url: zp.qr_data_url, order_url: zp.order_url });
+    const body: ZaloPayQrBody = { qr_data_url: zp.qr_data_url, order_url: zp.order_url };
+    return res.json(body);
   } catch (err) {
     console.error("Bloomy: ZaloPay retry-payment failed", err);
     return res.status(502).json({
