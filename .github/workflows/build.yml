@@ -1,0 +1,250 @@
+---
+# Bloomy CI.
+#
+# Every push to any branch: build both images, check them, and test them
+# against a throwaway Postgres. Only pushes to main also publish the images to
+# GitHub's registry (GHCR), tagged with the first 12 characters of the commit.
+# There is deliberately no `latest` tag: the homelab repo pins an exact tag
+# (and digest) in git, and deploying is a human-run Ansible play. CI never
+# deploys and holds no secrets of its own: it pushes with the run's built-in
+# GITHUB_TOKEN. On main the last step writes the pin command (tag and both
+# digests) into the run summary; the operator runs it in the homelab repo.
+#
+# The job runs on a GitHub-hosted runner, which has Docker. Every check runs
+# with `docker exec` / `docker run` on a per-run network, and the names carry
+# the run id.
+
+name: Build
+
+on:
+  push:
+    branches: ["**"]
+    # A push that changes only docs builds nothing: the image never contains them
+    # (.dockerignore drops *.md and the Dockerfile copies an explicit list).
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    env:
+      REGISTRY: ghcr.io
+      APP_IMAGE: ghcr.io/${{ github.repository }}
+      SCHEMA_IMAGE: ghcr.io/${{ github.repository }}-schema
+      CI_NAME: bloomy-ci-${{ github.run_id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Compute the image tag (first 12 characters of the commit)
+        env:
+          SHA: ${{ github.sha }}
+        run: echo "TAG=${SHA:0:12}" >> "$GITHUB_ENV"
+
+      - name: Build the app and schema images
+        run: |
+          docker build --provenance=false --build-arg BUILD_SHA="$TAG" -t "$APP_IMAGE:$TAG" .
+          docker build --provenance=false -f Dockerfile.schema -t "$SCHEMA_IMAGE:$TAG" .
+
+      # Report-only for the first week: --exit-code 0 shows the baseline without failing builds.
+      # Pinned by digest, checked on Docker Hub on 2026-11-02. Not the `latest` tag.
+      - name: Scan the app image for HIGH and CRITICAL CVEs (report only)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.69.3@sha256:bcc376de8d77cfe086a917230e818dc9f8528e3c852f7b1aff648949b6258d1c \
+            image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 0 "$APP_IMAGE:$TAG"
+
+      # Runs on the image's own Node (the version production uses), not on
+      # whatever Node the job image happens to ship.
+      - name: Syntax-check every shipped JS file
+        run: |
+          docker run --rm --entrypoint sh "$APP_IMAGE:$TAG" -c '
+            set -e
+            n=0
+            for f in $(find /app -name "*.js" -not -path "/app/node_modules/*"); do
+              node --check "$f"
+              n=$((n + 1))
+            done
+            echo "checked $n files"
+            [ "$n" -gt 0 ]
+          '
+
+      - name: Start a throwaway Postgres on a private network
+        run: |
+          docker rm -f "$CI_NAME-app" "$CI_NAME-pg" 2>/dev/null || true
+          docker network rm "$CI_NAME" 2>/dev/null || true
+          docker network create "$CI_NAME"
+          docker run -d --name "$CI_NAME-pg" --network "$CI_NAME" \
+            --memory=512m --memory-swap=512m \
+            -e POSTGRES_USER=quaint -e POSTGRES_PASSWORD=ci -e POSTGRES_DB=bloomy \
+            postgres:18
+          for i in $(seq 1 60); do
+            docker exec "$CI_NAME-pg" pg_isready -h 127.0.0.1 -U quaint -d bloomy && break
+            sleep 1
+          done
+          docker exec "$CI_NAME-pg" pg_isready -h 127.0.0.1 -U quaint -d bloomy
+
+      # schema.sql reaches the database only through the schema image, the same
+      # way the compose stack will do it. Applying to an empty database must
+      # leave nothing for `plan` to change.
+      - name: Apply schema.sql with the schema image, then plan must be empty
+        run: |
+          pgs() {
+            docker run --rm --network "$CI_NAME" -e PGPASSWORD=ci "$SCHEMA_IMAGE:$TAG" "$@" \
+              --file /schema.sql --host "$CI_NAME-pg" --db bloomy --user quaint --schema public
+          }
+          pgs apply --auto-approve
+          PLAN=$(pgs plan)
+          echo "$PLAN"
+          echo "$PLAN" | grep -q 'No changes detected'
+
+      # The schema image carries its own embedded PostgreSQL (see Dockerfile.schema), so the host needs no
+      # internet to plan or apply. Prove it: plan from the built image on a network with no route out.
+      # If a pgschema upgrade changes the bundled PostgreSQL version, the image falls back to a download
+      # and this step fails.
+      - name: Schema image plans without internet
+        run: |
+          docker network create --internal "$CI_NAME-offline"
+          docker network connect "$CI_NAME-offline" "$CI_NAME-pg"
+          PLAN=$(docker run --rm --network "$CI_NAME-offline" -e PGPASSWORD=ci "$SCHEMA_IMAGE:$TAG" plan \
+            --file /schema.sql --host "$CI_NAME-pg" --db bloomy --user quaint --schema public)
+          echo "$PLAN"
+          echo "$PLAN" | grep -q 'No changes detected'
+
+      # Seeds are for empty databases only: dev, CI, and a deliberate production
+      # wipe. Never run them on a production database that already has data.
+      # They are loaded with the schema image's own script (seed.sh), the way the deploy
+      # does it; the load order is written there only. The script must also refuse
+      # a second run, and must roll back completely when a seed file fails.
+      - name: Load the seed data with the schema image
+        run: |
+          pg() { docker exec "$CI_NAME-pg" psql -U quaint -tAq "$@"; }
+          seed() {
+            docker run --rm --network "$CI_NAME" -e PGHOST="$CI_NAME-pg" -e PGUSER=quaint -e PGDATABASE="$1" -e PGPASSWORD=ci \
+              --entrypoint /seed.sh "$SCHEMA_IMAGE:$TAG"
+          }
+          seed bloomy
+          CODE=0; OUT=$(seed bloomy 2>&1) || CODE=$?
+          echo "$OUT"; echo "second run exit code: $CODE"
+          [ "$CODE" -eq 1 ]
+          echo "$OUT" | grep -q 'already has data'
+          pg -d postgres -c 'CREATE DATABASE seedfail OWNER quaint'
+          docker exec -i "$CI_NAME-pg" psql -U quaint -d seedfail -v ON_ERROR_STOP=1 -q < schema.sql
+          pg -d seedfail -c 'DROP TABLE campaign_products'
+          CODE=0; OUT=$(seed seedfail 2>&1) || CODE=$?
+          echo "$OUT" | tail -3; echo "run with a failing seed file, exit code: $CODE"
+          [ "$CODE" -eq 1 ]
+          [ "$(pg -d seedfail -c 'SELECT (SELECT count(*) FROM products) + (SELECT count(*) FROM settings)')" = 0 ]
+          docker exec "$CI_NAME-pg" psql -U quaint -d bloomy -tAc \
+            "select (select count(*) from products) products, (select count(*) from product_sizes) sizes,
+                    (select count(*) from recipes) recipes, (select count(*) from wards) wards"
+
+      - name: Fail-fast check, the app refuses to start with no environment
+        run: |
+          CODE=0
+          OUT=$(docker run --rm "$APP_IMAGE:$TAG" 2>&1) || CODE=$?
+          echo "$OUT"
+          echo "exit code: $CODE"
+          [ "$CODE" -eq 1 ]
+          echo "$OUT" | grep -q 'missing required environment variables'
+
+      - name: Smoke test, healthz and the products API
+        run: |
+          docker run -d --init --name "$CI_NAME-app" --network "$CI_NAME" \
+            --memory=512m --memory-swap=512m \
+            -e DB_HOST="$CI_NAME-pg" -e DB_PASSWORD=ci -e SESSION_SECRET=ci \
+            -e BLOOMY_BASE_URL=http://localhost:3000 \
+            -e ZALOPAY_APP_ID=1 -e ZALOPAY_KEY1=ci -e ZALOPAY_KEY2=ci \
+            -e ZALOPAY_ENDPOINT=https://sb-openapi.zalopay.vn \
+            -e TOTP_ENCRYPTION_KEY="$(openssl rand -base64 32)" \
+            "$APP_IMAGE:$TAG"
+          js() { docker exec "$CI_NAME-app" node -e "$1"; }
+          for i in $(seq 1 30); do
+            js "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" && break
+            sleep 1
+          done
+          js "fetch('http://127.0.0.1:3000/healthz').then(async r=>{console.log('/healthz',r.status,await r.text());process.exit(r.ok?0:1)})"
+          docker exec -e TAG="$TAG" "$CI_NAME-app" node -e "fetch('http://127.0.0.1:3000/healthz').then(r=>{const b=r.headers.get('x-bloomy-build');console.log('X-Bloomy-Build:',b,'expected',process.env.TAG);process.exit(b===process.env.TAG?0:1)})"
+          js "fetch('http://127.0.0.1:3000/api/products').then(r=>r.json()).then(j=>{if(!Array.isArray(j)||j.length===0){console.error('not a non-empty array');process.exit(1)}console.log('/api/products rows:',j.length)})"
+
+      # The suites need the source tree (six of them start `node server.js` themselves) and the image
+      # has no tests/, so they run in a container of the Node image the Dockerfile pins, with the
+      # checkout copied in. The Node tag is read from the Dockerfile, not repeated here. The server
+      # runs from source (render_test hashes the unminified CSS/JS, the image serves minified).
+      # They use the throwaway database above, which the seed step filled; the suites restore the rows
+      # they touch. The key is random per run and shared by the server and twofa_test.
+      - name: Run all test suites on the pinned Node, from source
+        run: |
+          NODE_IMAGE=$(sed -n 's/^FROM \(node:[^ ]*\) AS compile$/\1/p' Dockerfile)
+          [ -n "$NODE_IMAGE" ]
+          echo "suites run on $NODE_IMAGE"
+          docker create --name "$CI_NAME-tests" --network "$CI_NAME" -w /app \
+            -e DB_HOST="$CI_NAME-pg" -e DB_PORT=5432 -e DB_USER=quaint -e DB_NAME=bloomy -e DB_PASSWORD=ci \
+            -e SESSION_SECRET=ci -e BLOOMY_BASE_URL=http://localhost:3000 \
+            -e ZALOPAY_APP_ID=1 -e ZALOPAY_KEY1=ci -e ZALOPAY_KEY2=ci \
+            -e ZALOPAY_ENDPOINT=https://sb-openapi.zalopay.vn \
+            -e EMAIL_MODE=log -e NODE_ENV=development -e PORT=3000 -e BASE=http://localhost:3000 \
+            -e TOTP_ENCRYPTION_KEY="$(openssl rand -base64 32)" \
+            "$NODE_IMAGE" sh -ec '
+              npm ci --silent
+              (cd tests && npm ci --silent)
+              npm run build --silent
+              node -v
+              node server.js > /tmp/server.log 2>&1 &
+              for i in $(seq 1 30); do
+                wget -qO /dev/null http://127.0.0.1:3000/healthz 2>/dev/null && break
+                sleep 1
+              done
+              wget -qO- http://127.0.0.1:3000/healthz; echo
+              bad=0
+              for t in tests/*_test.mjs; do
+                if node "$t" > /tmp/suite.log 2>&1; then
+                  echo "ok   $t: $(tail -1 /tmp/suite.log)"
+                else
+                  echo "FAIL $t"; grep -a FAIL /tmp/suite.log | head -20; tail -3 /tmp/suite.log
+                  bad=1
+                fi
+              done
+              [ "$bad" -eq 0 ] || { echo "--- server log"; tail -30 /tmp/server.log; }
+              [ "$bad" -eq 0 ]
+            '
+          tar --exclude=./.git --exclude=./node_modules --exclude=./tests/node_modules \
+            --transform='s,^\.,app,' -cf - . | docker cp - "$CI_NAME-tests:/"
+          docker start -a "$CI_NAME-tests"
+
+      - name: Show the app logs if something above failed
+        if: failure()
+        run: docker logs "$CI_NAME-app" 2>&1 | tail -40 || true
+
+      - name: Log in and push both images (main only)
+        if: github.ref == 'refs/heads/main'
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$REGISTRY_TOKEN" | docker login "$REGISTRY" -u "${{ github.actor }}" --password-stdin
+          docker push "$APP_IMAGE:$TAG"
+          docker push "$SCHEMA_IMAGE:$TAG"
+          APP_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "$APP_IMAGE:$TAG")
+          SCHEMA_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "$SCHEMA_IMAGE:$TAG")
+          PIN="scripts/bump_bloomy.sh $TAG ${APP_DIGEST#*@} ${SCHEMA_DIGEST#*@}"
+          echo "Pin command for the homelab repo: $PIN"
+          {
+            echo '### Pin this build in the homelab repo'
+            echo
+            echo '```'
+            echo "$PIN"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Clean up
+        if: always()
+        run: |
+          docker rm -f "$CI_NAME-tests" "$CI_NAME-app" "$CI_NAME-pg" 2>/dev/null || true
+          docker network rm "$CI_NAME-offline" "$CI_NAME" 2>/dev/null || true
+          docker logout "$REGISTRY" || true
+          docker rmi "$APP_IMAGE:$TAG" "$SCHEMA_IMAGE:$TAG" 2>/dev/null || true
