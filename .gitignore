@@ -32,3 +32,5 @@ CLAUDE.local.md
 /public/js/confirmation.js
 /public/js/checkout.js
 /public/js/blog.js
+.claude/
+local-db-setup.md
