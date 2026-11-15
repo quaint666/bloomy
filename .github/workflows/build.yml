@@ -4,11 +4,11 @@
 # Every push to any branch: build both images, check them, and test them
 # against a throwaway Postgres. Only pushes to main also publish the images to
 # GitHub's registry (GHCR), tagged with the first 12 characters of the commit.
-# There is deliberately no `latest` tag: the homelab repo pins an exact tag
-# (and digest) in git, and deploying is a human-run Ansible play. CI never
-# deploys and holds no secrets of its own: it pushes with the run's built-in
-# GITHUB_TOKEN. On main the last step writes the pin command (tag and both
-# digests) into the run summary; the operator runs it in the homelab repo.
+# There is deliberately no `latest` tag: deployment pins an exact tag and
+# digest, and deploying is a manual step. CI never deploys and holds no
+# secrets of its own: it pushes with the run's built-in GITHUB_TOKEN. On main
+# the last step writes the pin command (tag and both digests) into the run
+# summary.
 #
 # The job runs on a GitHub-hosted runner, which has Docker. Every check runs
 # with `docker exec` / `docker run` on a per-run network, and the names carry
@@ -232,9 +232,9 @@ jobs:
           APP_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "$APP_IMAGE:$TAG")
           SCHEMA_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "$SCHEMA_IMAGE:$TAG")
           PIN="scripts/bump_bloomy.sh $TAG ${APP_DIGEST#*@} ${SCHEMA_DIGEST#*@}"
-          echo "Pin command for the homelab repo: $PIN"
+          echo "Pin command: $PIN"
           {
-            echo '### Pin this build in the homelab repo'
+            echo '### Pin this build'
             echo
             echo '```'
             echo "$PIN"

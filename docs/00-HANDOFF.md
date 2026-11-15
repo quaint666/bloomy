@@ -211,7 +211,9 @@ Categories: parents + "Hoa theo mùa" children; the API omits categories with no
 
 ## 9. SCHEMA, SEEDS AND RUNTIME FACTS
 
-Technical facts kept from the original deploy record. The CI pipeline, the plan gate and the hosting they refer to are not part of this repo.
+Technical facts kept from the original deploy record. The plan gate and the hosting they refer to are not part of this repo.
+
+- CI is `.github/workflows/build.yml` (GitHub Actions, hosted runner): it builds the app and schema images, applies `schema.sql` to a throwaway PostgreSQL and requires an empty `plan`, runs the 15 suites from source on the Dockerfile's Node, and on `main` pushes both images to GHCR tagged with the first 12 characters of the commit.
 
 - Schema: a fresh database ends with an empty `plan` after `apply` (what CI checks). An in-place upgrade of an old database is additive only (new tables and columns, changed defaults, no `DROP`), but it creates no campaigns, no coupons and no status changes: seeds are not re-run on a live database. **Enum values are only ever added, never removed or reordered:** `plan` cannot see a removal or a reorder, so neither the plan review nor the deploy gate would catch it.
 - Seeds, in this order, for empty databases only: expected counts afterwards are products 51, campaigns 2, campaign_products 12, coupons 3 **[verified 2026-10-07 on the local database]**. They reach the server inside the schema image: after a wipe and a schema `apply`, run `/seed.sh` from that image (the command is in the header of `seed.sh`). A second run refuses with "this database already has data… Nothing changed.".
