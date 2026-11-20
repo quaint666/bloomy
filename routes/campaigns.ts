@@ -76,7 +76,7 @@ async function getActiveCampaign({ includeProducts = true }: { includeProducts?:
   return { id: c.id, name: c.name, headline: c.headline, subheadline: c.subheadline, hero_image: c.hero_image, coupon, products };
 }
 
-router.get("/active", async (req, res, next) => {
+router.get("/active", async (_req, res, next) => {
   try {
     const campaign = await getActiveCampaign();
     if (!campaign) return res.status(404).json({ error: "no_active_campaign" });

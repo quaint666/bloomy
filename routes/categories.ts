@@ -34,7 +34,7 @@ async function getCategoryTree(): Promise<CategoryNode[]> {
     .filter((p) => p.count > 0);
 }
 
-router.get("/", async (req, res, next) => {
+router.get("/", async (_req, res, next) => {
   try {
     res.json(await getCategoryTree());
   } catch (err) {

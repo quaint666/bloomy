@@ -10,12 +10,12 @@ import type { PoolClient } from "pg";
 import pool = require("../db");
 import { notifyOrderConfirmed } from "../email";
 import type { EmailItem, EmailOrder } from "../email";
-import { quote, normalizeCouponCode, CUSTOM_LIMITS, CUSTOM_STYLES, CUSTOM_STYLE_LABELS } from "../pricing";
+import { quote, CUSTOM_LIMITS, CUSTOM_STYLES, CUSTOM_STYLE_LABELS } from "../pricing";
 import { isRealDate } from "./dates";
 import { sessionIdSchema } from "./events";
 import { DEFAULT_CUTOFF_HOUR_VN, MAX_QUANTITY, WINDOW_END_MINUTES } from "../shared/rules";
 import { VN_OFFSET_HOURS, nowVN, nowVNMinutes, todayVNDateString } from "../shared/vn-time";
-import type { FulfillmentStatus, FulfillmentType, OrderChannel, PaymentMethod, PaymentStatus, ProductSize, Queryable, TimeWindow } from "../types";
+import type { FulfillmentStatus, FulfillmentType, OrderChannel, PaymentMethod, PaymentStatus, Queryable, TimeWindow } from "../types";
 import type { CashOrderBody, DeadlineBody, PaymentStatusBody, PublicOrder, QuoteBody, UpcomingCutoff, ZaloPayOrderBody, ZaloPayQrBody } from "../shared/api-types";
 
 // Hand-written to match schema.sql and the queries below; nothing checks a query against them.
@@ -82,7 +82,8 @@ async function getEffectiveDeadline(client: Queryable, deliveryDateStr: string):
     `SELECT deadline FROM cutoff_overrides WHERE override_date = $1`,
     [deliveryDateStr]
   );
-  if (rows.length > 0) return new Date(rows[0].deadline);
+  const override = rows[0];
+  if (override) return new Date(override.deadline);
 
   // Default rule: DEFAULT_CUTOFF_HOUR_VN o'clock, Vietnam time, on the
   // delivery date itself. VN is UTC+7, so 14:00 +07:00 == 07:00 UTC on the
@@ -210,8 +211,8 @@ async function getFullOrderForEmail(orderId: number): Promise<FullOrder | null> 
      WHERE o.id = $1`,
     [orderId]
   );
-  if (rows.length === 0) return null;
   const order = rows[0];
+  if (!order) return null;
 
   // Names, sizes and prices are snapshots on order_items — no join to
   // products, so an order reads the same even if the catalog changes later.
@@ -667,7 +668,7 @@ async function placeOrder(client: PoolClient, o: PlaceOrderInput): Promise<Place
       o.createdBy,
     ]
   );
-  const order = orderRows[0];
+  const order = pool.one(orderRows);
 
   // Each line keeps a snapshot (name, size, style, price) and the flowers
   // ONE bouquet of it uses — that copy, not the current recipe, is what a
@@ -685,7 +686,7 @@ async function placeOrder(client: PoolClient, o: PlaceOrderInput): Promise<Place
       await client.query(
         `INSERT INTO order_item_flowers (order_item_id, flower_id, stems, price_per_stem)
          VALUES ($1, $2, $3, $4)`,
-        [itemRows[0].id, f.flower_id, f.stems, f.price]
+        [pool.one(itemRows).id, f.flower_id, f.stems, f.price]
       );
     }
   }
@@ -844,14 +845,13 @@ router.post("/ipn", async (req, res) => {
       [payload.app_trans_id]
     );
 
-    if (rows.length === 0) {
+    const order = rows[0];
+    if (!order) {
       // Shouldn't happen (app_trans_id always comes from a real committed
       // order), but ack anyway — retrying won't make the order appear.
       console.error("Bloomy: IPN received for unknown app_trans_id", payload.app_trans_id);
       return res.json({ return_code: 1, return_message: "success" });
     }
-
-    const order = rows[0];
     if (payload.amount !== order.total_amount) {
       console.error("Bloomy: IPN amount mismatch", { orderId: order.id, expected: order.total_amount, got: payload.amount });
       return res.json({ return_code: -1, return_message: "amount mismatch" });
@@ -889,8 +889,9 @@ router.get("/deadline", publicReadLimiter, async (req, res, next) => {
       `SELECT deadline FROM cutoff_overrides WHERE override_date = $1`,
       [date]
     );
-    const isOverride = rows.length > 0;
-    const deadline = isOverride ? new Date(rows[0].deadline) : await getEffectiveDeadline(pool, date as string); // isRealDate has checked it is a string
+    const override = rows[0];
+    const isOverride = override !== undefined;
+    const deadline = override ? new Date(override.deadline) : await getEffectiveDeadline(pool, date as string); // isRealDate has checked it is a string
     const body: DeadlineBody = { date, deadline: deadline.toISOString(), is_override: isOverride };
     res.json(body);
   } catch (err) {
@@ -905,7 +906,7 @@ router.get("/deadline", publicReadLimiter, async (req, res, next) => {
 // early" advisory before the customer has picked any delivery date at all
 // (unlike /deadline above, which needs one specific date to check).
 // ---------------------------------------------------------------------------
-router.get("/upcoming-cutoffs", publicReadLimiter, async (req, res, next) => {
+router.get("/upcoming-cutoffs", publicReadLimiter, async (_req, res, next) => {
   try {
     const from = todayVNDateString();
     const until = (() => {
@@ -958,8 +959,8 @@ router.get("/:token", async (req, res, next) => {
        WHERE o.token = $1`,
       [req.params.token]
     );
-    if (rows.length === 0) return res.status(404).json({ error: "not_found" });
     const order = rows[0];
+    if (!order) return res.status(404).json({ error: "not_found" });
 
     // Name, size and price come from the order's own snapshot; the product
     // join is only for the picture (LEFT JOIN: a line may have no product).
@@ -1002,8 +1003,8 @@ router.post("/:token/verify-payment", orderLimiter, async (req, res, next) => {
        FROM orders WHERE token = $1`,
       [req.params.token]
     );
-    if (rows.length === 0) return res.status(404).json({ error: "not_found" });
     const order = rows[0];
+    if (!order) return res.status(404).json({ error: "not_found" });
 
     if (order.payment_method !== "zalopay") {
       return res.status(400).json({ error: "not_zalopay_order" });
@@ -1039,15 +1040,15 @@ router.post("/:token/verify-payment", orderLimiter, async (req, res, next) => {
 // is required each attempt; ZaloPay won't accept reusing one it never
 // actually accepted the first time.
 // ---------------------------------------------------------------------------
-router.post("/:token/retry-zalopay-payment", orderLimiter, async (req, res, next) => {
+router.post("/:token/retry-zalopay-payment", orderLimiter, async (req, res, _next) => {
   try {
     const { rows } = await pool.query<{ id: number; payment_method: PaymentMethod; payment_status: PaymentStatus; fulfillment_status: FulfillmentStatus; total_amount: number }>(
       `SELECT id, payment_method, payment_status, fulfillment_status, total_amount
        FROM orders WHERE token = $1`,
       [req.params.token]
     );
-    if (rows.length === 0) return res.status(404).json({ error: "not_found" });
     const order = rows[0];
+    if (!order) return res.status(404).json({ error: "not_found" });
 
     if (order.payment_method !== "zalopay") {
       return res.status(400).json({ error: "not_zalopay_order" });

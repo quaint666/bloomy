@@ -15,7 +15,7 @@ import type { AdminFlowerRow } from "../shared/api-types";
 
 const router = Router();
 
-router.get("/", requireAdmin, async (req, res, next) => {
+router.get("/", requireAdmin, async (_req, res, next) => {
   try {
     const { rows } = await pool.query<AdminFlowerRow>(
       `SELECT id, sku, name, price, stock FROM flowers ORDER BY name`

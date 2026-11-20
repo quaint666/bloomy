@@ -25,7 +25,7 @@ router.get("/", requireAdmin, async (req, res, next) => {
     const { rows: counts } = await pool.query<{ pending: number; approved: number }>(
       `SELECT COUNT(*) FILTER (WHERE NOT approved)::int AS pending, COUNT(*) FILTER (WHERE approved)::int AS approved FROM reviews`
     );
-    const body: AdminReviewsBody = { counts: counts[0], reviews };
+    const body: AdminReviewsBody = { counts: pool.one(counts), reviews };
     res.json(body);
   } catch (err) {
     next(err);

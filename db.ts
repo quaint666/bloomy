@@ -33,4 +33,12 @@ const pool = new Pool({
   port: Number(process.env.DB_PORT) || 5432,
 });
 
-export = pool;
+// For a query that must give exactly one row (an INSERT ... RETURNING, an aggregate): the row, or a clear error instead
+// of "Cannot read properties of undefined". With noUncheckedIndexedAccess a bare rows[0] is `T | undefined`.
+function one<T>(rows: T[]): T {
+  const row = rows[0];
+  if (row === undefined) throw new Error("Bloomy: a query that must return one row returned none");
+  return row;
+}
+
+export = Object.assign(pool, { one });

@@ -99,7 +99,8 @@ function checkContent(): number {
 function matchBlog(reqPath: string): BlogMatch | null {
   if (reqPath === "/blog") return { kind: "index" };
   const m = /^\/blog\/([a-z0-9-]+)$/.exec(reqPath);
-  return m ? { kind: "post", slug: m[1] } : null;
+  const slug = m?.[1];
+  return slug ? { kind: "post", slug } : null;
 }
 
 function readTemplate(name: string): Promise<string> {

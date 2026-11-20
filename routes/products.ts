@@ -128,7 +128,7 @@ router.get("/", async (req, res, next) => {
     // A page past the end (or below 1) comes back as the nearest real page.
     if (page !== undefined) {
       const { rows: counted } = await pool.query<{ count: string }>(`SELECT COUNT(*) AS count FROM (${query}) q`, values);
-      const total = Number(counted[0].count);
+      const total = Number(pool.one(counted).count);
       const pages = Math.max(1, Math.ceil(total / LISTING_PAGE_SIZE));
       const current = Math.min(Math.max(parseInt(String(page), 10) || 1, 1), pages);
       values.push(LISTING_PAGE_SIZE, (current - 1) * LISTING_PAGE_SIZE);
@@ -215,11 +215,10 @@ router.get("/:id", async (req, res, next) => {
       [id]
     );
 
-    if (result.rows.length === 0) {
+    const row = result.rows[0];
+    if (!row) {
       return res.status(404).json({ error: "Product not found" });
     }
-
-    const row = result.rows[0];
 
     // One row per (size, flower). LEFT JOIN so a size with no recipe (the
     // external product) still comes back, just with no flowers. ORDER BY

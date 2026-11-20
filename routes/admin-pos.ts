@@ -158,7 +158,7 @@ router.post("/orders/:id/cancel", requireEmployee, async (req, res, next) => {
 // Web pickup orders still waiting at the counter (any date, oldest first), with
 // what each contains. A ZaloPay one that isn't paid yet is listed but can't be
 // handed over.
-router.get("/pickups", requireEmployee, async (req, res, next) => {
+router.get("/pickups", requireEmployee, async (_req, res, next) => {
   try {
     const { rows: orders } = await pool.query<PosPickupRow>(
       `SELECT id, token, sender_name, sender_phone, recipient_name, recipient_phone,
@@ -203,11 +203,11 @@ router.post("/pickups/:id/handover", requireEmployee, async (req, res, next) => 
        FROM orders WHERE id = $1 FOR UPDATE`,
       [id]
     );
-    if (rows.length === 0) {
+    const o = rows[0];
+    if (!o) {
       await client.query("ROLLBACK");
       return res.status(404).json({ error: "order_not_found" });
     }
-    const o = rows[0];
     if (o.channel !== "web" || o.fulfillment_type !== "pickup" || !["new", "delivering"].includes(o.fulfillment_status) || o.payment_status === "refunded") {
       await client.query("ROLLBACK");
       return res.status(409).json({ error: "not_a_pickup_to_hand_over" });

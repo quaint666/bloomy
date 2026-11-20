@@ -107,7 +107,7 @@ app.set("trust proxy", 2);
 // build argument, see the Dockerfile; "dev" when run any other way). On every response, so a deploy check can
 // tell the new process from the old one without reading Docker's own state.
 const BUILD = process.env.BLOOMY_BUILD || "dev";
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((_req: Request, res: Response, next: NextFunction) => {
   res.set("X-Bloomy-Build", BUILD);
   next();
 });
@@ -269,7 +269,7 @@ app.get("/sitemap.xml", async (req, res) => {
 // the other tables. Intentionally outside /api — this is an infra concern,
 // not part of the application's own API surface.
 // ---------------------------------------------------------------------------
-app.get("/healthz", async (req, res) => {
+app.get("/healthz", async (_req, res) => {
   try {
     await pool.query("SELECT 1 FROM products LIMIT 1");
     res.status(200).json({ status: "ok" });
@@ -288,8 +288,9 @@ async function checkTotpKey(): Promise<void> {
   let secret: string;
   try {
     const { rows } = await pool.query<{ totp_secret: string }>("SELECT totp_secret FROM admin_users WHERE totp_secret IS NOT NULL LIMIT 1");
-    if (rows.length === 0) return;
-    secret = rows[0].totp_secret;
+    const first = rows[0];
+    if (!first) return;
+    secret = first.totp_secret;
   } catch (err) {
     return;
   }
@@ -329,7 +330,7 @@ app.use("/api", reviewsRouter);
 // Centralized error handler — catches anything a route's own try/catch
 // missed (e.g. a thrown error in middleware before the route handler runs).
 // Must be defined last, after all other app.use()/routes.
-app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => { // Express needs all four to treat it as an error handler
   console.error(err);
   res.status(500).json({ error: "Internal server error" });
 });

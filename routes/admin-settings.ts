@@ -55,10 +55,10 @@ async function readSettings(row: AdminSettingsRow): Promise<AdminSettingsBody> {
   return { ...row, campaigns };
 }
 
-router.get("/", requireOwner, async (req, res, next) => {
+router.get("/", requireOwner, async (_req, res, next) => {
   try {
     const { rows } = await pool.query<AdminSettingsRow>(`SELECT ${COLUMNS} FROM settings`);
-    res.json(await readSettings(rows[0]));
+    res.json(await readSettings(pool.one(rows)));
   } catch (err) {
     next(err);
   }
@@ -84,13 +84,13 @@ router.patch("/", requireOwner, async (req, res, next) => {
         // Only when the choice CHANGES: the settings page sends every field each time, and saving a new
         // phone number must not fail because the campaign that is already on has run out of products.
         const { rows: now } = await pool.query<{ active_campaign_id: number | null }>("SELECT active_campaign_id FROM settings");
-        if (now[0].active_campaign_id !== id) {
+        if (pool.one(now).active_campaign_id !== id) {
           const { rows: buyable } = await pool.query<{ n: number }>(
             `SELECT COUNT(*)::int AS n FROM campaign_products cp JOIN products p ON p.id = cp.product_id
              WHERE cp.campaign_id = $1 AND p.status <> 'discontinued'`,
             [id]
           );
-          if (buyable[0].n === 0) return res.status(400).json({ error: "campaign_empty", field: "active_campaign_id" });
+          if (pool.one(buyable).n === 0) return res.status(400).json({ error: "campaign_empty", field: "active_campaign_id" });
         }
       }
       values.push(id);
@@ -100,7 +100,7 @@ router.patch("/", requireOwner, async (req, res, next) => {
 
     // The column names come from FIELDS above, never from the request.
     const { rows } = await pool.query<AdminSettingsRow>(`UPDATE settings SET ${sets.join(", ")} WHERE id RETURNING ${COLUMNS}`, values);
-    res.json(await readSettings(rows[0]));
+    res.json(await readSettings(pool.one(rows)));
   } catch (err) {
     next(err);
   }

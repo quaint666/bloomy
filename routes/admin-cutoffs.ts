@@ -22,7 +22,7 @@ const overrideSchema = z.object({
   note: z.string().trim().max(100).optional().nullable(),
 });
 
-router.get("/", requireAdmin, async (req, res, next) => {
+router.get("/", requireAdmin, async (_req, res, next) => {
   try {
     const { rows } = await pool.query<AdminCutoffRow>(
       `SELECT id, override_date, deadline, note FROM cutoff_overrides ORDER BY override_date`

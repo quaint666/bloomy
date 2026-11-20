@@ -16,8 +16,8 @@
 // `db` is either the pool or a client inside a transaction — both expose
 // the same .query().
 
-import type { CouponRow, CouponType, CustomStyle, ProductSize, ProductStatus, Queryable, SizePrice } from "./types";
-import type { CouponResult, CouponStatus, LineProblem, QuoteBody, QuoteFlower, QuoteLine } from "./shared/api-types";
+import type { CouponRow, CustomStyle, ProductSize, ProductStatus, Queryable, SizePrice } from "./types";
+import type { CouponResult, LineProblem, QuoteBody, QuoteLine } from "./shared/api-types";
 
 // Hand-written to match schema.sql. Nothing checks that a query returns these
 // shapes: a type here is an assertion about the SQL, not a proof.
@@ -92,8 +92,8 @@ async function evaluateCoupon(db: Queryable, code: string, subtotal: number, del
      FROM coupons WHERE code = $1`,
     [code]
   );
-  if (rows.length === 0) return { code, status: "not_found", discount: 0 };
   const c = rows[0];
+  if (!c) return { code, status: "not_found", discount: 0 };
   const info = {
     code: c.code,
     type: c.type,
@@ -129,7 +129,9 @@ async function quote(db: Queryable, input: QuoteInput): Promise<Quote> {
   const { rows: settingsRows } = await db.query<SettingsRow>(
     `SELECT vat_rate, ring1_fee, ring2_fee, ring3_fee, style_fee_bo, style_fee_gio, style_fee_hop FROM settings`
   );
-  const settings = settingsRows[0];
+  const settingsRow = settingsRows[0];
+  if (!settingsRow) throw new Error("Bloomy: the settings row is missing"); // as before, the quote answers 500 (HANDOFF)
+  const settings: SettingsRow = settingsRow; // a plain type, so the function declarations below need no narrowing
 
   // Every requested product with all of its sizes, in one query.
   const isCustom = (item: QuoteItem): item is CustomItem => item.custom !== undefined;
@@ -306,8 +308,9 @@ async function quote(db: Queryable, input: QuoteInput): Promise<Quote> {
     shippingFee = 0;
   } else if (input.fulfillmentType === "delivery" && input.wardId) {
     const { rows } = await db.query<WardRow>(`SELECT id, name, ring FROM wards WHERE id = $1`, [input.wardId]);
-    if (rows.length > 0) {
-      ward = rows[0];
+    const found = rows[0];
+    if (found) {
+      ward = found;
       shippingFee = settings[`ring${ward.ring}_fee` as const];
     }
   }
