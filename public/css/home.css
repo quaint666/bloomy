@@ -281,7 +281,7 @@
 
 .features__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
 }
 
@@ -316,7 +316,7 @@
 
 @media (max-width: 900px) {
   .features__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -327,7 +327,7 @@
 
 .testimonials__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 
@@ -380,7 +380,7 @@
 
 @media (max-width: 900px) {
   .testimonials__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -392,7 +392,7 @@
 
 .custom-promo__inner {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 48px;
   align-items: center;
 }
@@ -419,7 +419,7 @@
 
 @media (max-width: 900px) {
   .custom-promo__inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 28px;
   }
 }
@@ -441,7 +441,7 @@
 
 .campaign-card {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 32px;
   align-items: center;
   padding: 36px 40px;
@@ -499,7 +499,7 @@
 
 @media (max-width: 900px) {
   .campaign-card:has(.campaign-card__media) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .campaign-card__media {
