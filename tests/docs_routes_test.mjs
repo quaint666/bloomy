@@ -14,6 +14,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { readRoutes } from "./lib/routes.mjs";
 
 const ROOT = process.cwd();
 const read = (f) => fs.readFileSync(path.join(ROOT, f), "utf8");
@@ -22,27 +23,8 @@ let passed = 0, failed = 0;
 function check(name, cond, extra = "") { if (cond) passed++; else { failed++; console.log(`FAIL ${name}${extra ? " :: " + extra : ""}`); } }
 
 // ---- the routes the code has
-const server = read("server.ts");
-const routerFile = new Map(); // import name -> routes/<file>
-for (const [, name, file] of server.matchAll(/import (\w+) = require\("\.\/routes\/([\w-]+)"\)/g)) routerFile.set(name, file);
-for (const [, name, file] of server.matchAll(/import \{ router as (\w+) \} from "\.\/routes\/([\w-]+)"/g)) routerFile.set(name, file);
-
-const real = new Map(); // "METHOD /path" -> file
-const problems = [];
-for (const [, prefix, name] of server.matchAll(/app\.use\("(\/[^"]*)",\s*(\w+)\)/g)) {
-  const file = routerFile.get(name);
-  if (!file) { problems.push(`server.ts mounts ${name} at ${prefix}, but it is not imported from ./routes/`); continue; }
-  const src = read(`routes/${file}.ts`);
-  const calls = [...src.matchAll(/router\.(get|post|put|patch|delete|head)\(\s*([^,)]+)/g)];
-  if (calls.length === 0) problems.push(`routes/${file}.ts has no router.get/post/... call this test can read`);
-  for (const [, method, arg] of calls) {
-    const lit = arg.trim().match(/^"([^"]*)"$/);
-    if (!lit) { problems.push(`routes/${file}.ts: router.${method}(${arg.trim()}) is not a plain string path`); continue; }
-    const sub = lit[1] === "/" ? "" : lit[1];
-    real.set(`${method.toUpperCase()} ${(prefix + sub).replace(/\/$/, "") || "/"}`, file);
-  }
-}
-for (const [, method, p] of server.matchAll(/app\.(get|post|head)\("(\/[^"]*)"/g)) real.set(`${method.toUpperCase()} ${p}`, "server");
+const { routes, problems } = readRoutes(ROOT);
+const real = new Map(routes.map((r) => [r.key, r.file])); // "METHOD /path" -> file
 check("the reader followed every mount and every route in the code", problems.length === 0, problems.join("; "));
 check("setup: the reader found a plausible number of routes", real.size >= 70, String(real.size));
 
