@@ -77,12 +77,13 @@ async function resetTwoFactor(): Promise<void> {
   console.log("Bloomy — turn off two-factor login for an account\n");
   const username = normalizeUsername(await ask("Username: "));
   const { rows } = await pool.query<{ id: number; enabled: boolean }>("SELECT id, (totp_secret IS NOT NULL) AS enabled FROM admin_users WHERE username = $1", [username]);
-  if (rows.length === 0) {
+  const account = rows[0];
+  if (!account) {
     console.error(`No account named "${username}". Nothing changed.`);
     process.exitCode = 1;
     return;
   }
-  if (!rows[0].enabled) {
+  if (!account.enabled) {
     console.log(`Two-factor login is not on for "${username}". Nothing changed.`);
     return;
   }
@@ -94,8 +95,8 @@ async function resetTwoFactor(): Promise<void> {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    await client.query("UPDATE admin_users SET totp_secret = NULL, totp_last_step = NULL WHERE id = $1", [rows[0].id]);
-    await client.query("DELETE FROM recovery_codes WHERE admin_user_id = $1", [rows[0].id]);
+    await client.query("UPDATE admin_users SET totp_secret = NULL, totp_last_step = NULL WHERE id = $1", [account.id]);
+    await client.query("DELETE FROM recovery_codes WHERE admin_user_id = $1", [account.id]);
     await client.query("COMMIT");
   } catch (err) {
     await client.query("ROLLBACK").catch(() => {});
@@ -103,7 +104,7 @@ async function resetTwoFactor(): Promise<void> {
   } finally {
     client.release();
   }
-  await endSessionsFor(pool, rows[0].id);
+  await endSessionsFor(pool, account.id);
   console.log(`Two-factor login turned off for "${username}"; their sessions were ended.`);
 }
 

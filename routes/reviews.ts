@@ -61,7 +61,7 @@ router.get("/products/:id/reviews", async (req, res, next) => {
        FROM reviews WHERE product_id = $1 AND approved`,
       [id]
     );
-    const body: ReviewsBody = { summary: summary[0], reviews, limits: REVIEW_LIMITS };
+    const body: ReviewsBody = { summary: pool.one(summary), reviews, limits: REVIEW_LIMITS };
     res.json(body);
   } catch (err) {
     next(err);

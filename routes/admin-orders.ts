@@ -66,7 +66,7 @@ async function withItems(orders: AdminOrderRow[]): Promise<AdminOrder[]> {
   });
 }
 
-router.get("/", requireAdmin, async (req, res, next) => {
+router.get("/", requireAdmin, async (_req, res, next) => {
   try {
     const result = await pool.query<AdminOrderRow>(
       `SELECT ${ORDER_LIST_COLUMNS} ${ORDER_FROM} ORDER BY o.created_at DESC`
@@ -118,7 +118,7 @@ router.get("/delivery-sheet", requireAdmin, async (req, res, next) => {
       [date]
     );
 
-    const body: DeliverySheetBody = { date, windows, pending_zalopay_count: pendingRows[0].count };
+    const body: DeliverySheetBody = { date, windows, pending_zalopay_count: pool.one(pendingRows).count };
     res.json(body);
   } catch (err) {
     next(err);
@@ -133,7 +133,7 @@ router.get("/delivery-sheet", requireAdmin, async (req, res, next) => {
 // ---------------------------------------------------------------------------
 const SIZE_LABELS: Record<ProductSize, string> = { s: "Nhỏ", m: "Vừa", l: "Lớn" };
 
-router.get("/orders.csv", requireAdmin, async (req, res, next) => {
+router.get("/orders.csv", requireAdmin, async (_req, res, next) => {
   try {
     const { rows } = await pool.query<AdminOrderRow>(
       `SELECT ${ORDER_LIST_COLUMNS} ${ORDER_FROM} ORDER BY o.created_at DESC`
@@ -231,10 +231,10 @@ router.patch("/:id/mark-paid", requireAdmin, async (req, res, next) => {
       `SELECT id, payment_method, payment_status FROM orders WHERE id = $1`,
       [id]
     );
-    if (rows.length === 0) {
+    const order = rows[0];
+    if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
-    const order = rows[0];
     if (order.payment_method !== "cod" && order.payment_method !== "cash") {
       return res.status(400).json({ error: "not_paid_in_person" });
     }
@@ -275,10 +275,10 @@ router.post("/:id/reverify", requireAdmin, async (req, res, next) => {
        FROM orders WHERE id = $1`,
       [id]
     );
-    if (rows.length === 0) {
+    const order = rows[0];
+    if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
-    const order = rows[0];
 
     if (order.payment_method !== "zalopay") {
       return res.status(400).json({ error: "not_a_zalopay_order" });
@@ -320,8 +320,8 @@ router.patch("/:id/fulfillment", requireAdmin, async (req, res, next) => {
       `SELECT id, fulfillment_status, payment_method, payment_status FROM orders WHERE id = $1`,
       [id]
     );
-    if (rows.length === 0) return res.status(404).json({ error: "order_not_found" });
     const order = rows[0];
+    if (!order) return res.status(404).json({ error: "order_not_found" });
 
     // Once refunded, an order is done regardless of where fulfillment_status
     // happened to be — there's no reason to keep moving a refunded order

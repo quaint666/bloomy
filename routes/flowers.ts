@@ -18,7 +18,7 @@ interface StyleFees { style_fee_bo: number; style_fee_gio: number; style_fee_hop
 
 const router = Router();
 
-router.get("/", async (req, res, next) => {
+router.get("/", async (_req, res, next) => {
   try {
     const { rows } = await pool.query<BuilderFlower>(
       `SELECT id, name, family, price, stock > 0 AS in_stock FROM flowers`
@@ -31,12 +31,13 @@ router.get("/", async (req, res, next) => {
     const { rows: settings } = await pool.query<StyleFees>(
       `SELECT style_fee_bo, style_fee_gio, style_fee_hop FROM settings`
     );
-    if (settings.length === 0) return res.status(503).json({ error: "settings_missing" });
+    const fees = settings[0];
+    if (!fees) return res.status(503).json({ error: "settings_missing" });
     // Object.entries loses the key type: these keys are exactly the CustomStyle values.
     const styles: FlowerStyle[] = (Object.entries(CUSTOM_STYLE_LABELS) as [CustomStyle, string][]).map(([key, label]) => ({
       key,
       label,
-      fee: settings[0][`style_fee_${key}` as const],
+      fee: fees[`style_fee_${key}` as const],
     }));
     const body: FlowersBody = { flowers: rows, styles, limits: CUSTOM_LIMITS };
     res.json(body);

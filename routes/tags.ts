@@ -24,7 +24,7 @@ const compareTags = (a: TagRow, b: TagRow): number =>
   : a.kind === "occasion" ? a.id - b.id
   : a.name.localeCompare(b.name, "vi");
 
-router.get("/", async (req, res, next) => {
+router.get("/", async (_req, res, next) => {
   try {
     const { rows } = await pool.query<TagRow>(
       `SELECT DISTINCT t.id, t.kind, t.name

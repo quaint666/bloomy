@@ -239,12 +239,12 @@ router.post("/login", loginLimiter, async (req, res, next) => {
       [username]
     );
 
-    if (result.rows.length === 0) {
+    const admin = result.rows[0];
+    if (!admin) {
       await padToFloor(startTime);
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
-    const admin = result.rows[0];
     const passwordMatches = await bcrypt.compare(password, admin.password);
 
     // A deactivated account gets the same answer as a wrong password, even
@@ -359,7 +359,7 @@ router.post("/me/password", passwordLimiter, requireRole("employee"), async (req
     }
     const { rows } = await pool.query<{ password: string }>("SELECT password FROM admin_users WHERE id = $1", [req.admin!.id]);
     // 400, not 401: a 401 makes every admin page send the user to the login screen.
-    if (!(await bcrypt.compare(current_password, rows[0].password))) {
+    if (!(await bcrypt.compare(current_password, pool.one(rows).password))) {
       return res.status(400).json({ error: "wrong_current_password" });
     }
     const hash = await hashPassword(new_password);
@@ -422,10 +422,11 @@ router.post("/me/2fa/setup", twoFactorLimiter, ownerOnly, async (req, res, next)
   try {
     if (typeof req.body.password !== "string") return res.status(400).json({ error: "invalid_payload" });
     const { rows } = await pool.query<{ password: string; totp_secret: string | null }>("SELECT password, totp_secret FROM admin_users WHERE id = $1", [req.admin!.id]);
-    if (!(await bcrypt.compare(req.body.password, rows[0].password))) {
+    const me = pool.one(rows);
+    if (!(await bcrypt.compare(req.body.password, me.password))) {
       return res.status(400).json({ error: "wrong_current_password" });
     }
-    if (rows[0].totp_secret) return res.status(409).json({ error: "already_enabled" });
+    if (me.totp_secret) return res.status(409).json({ error: "already_enabled" });
     const secret = totp.generateSecret();
     req.session.pendingTotp = totp.encryptSecret(secret);
     await saveSession(req);
@@ -473,7 +474,7 @@ router.post("/me/2fa/enable", twoFactorLimiter, ownerOnly, async (req, res, next
 async function withSecondFactor(req: Request, res: Response, next: NextFunction, then: () => Promise<void>) {
   try {
     const { rows } = await pool.query<{ totp_secret: string | null }>("SELECT totp_secret FROM admin_users WHERE id = $1", [req.admin!.id]);
-    if (!rows[0].totp_secret) return res.status(409).json({ error: "not_enabled" });
+    if (!pool.one(rows).totp_secret) return res.status(409).json({ error: "not_enabled" });
     const second = await checkSecondFactor(req.admin!.id, req.body.code);
     if (second.result === "locked") return res.status(429).json({ error: "two_factor_locked", retry_after: second.retryAfter });
     if (second.result !== "ok") return res.status(400).json({ error: "invalid_code" });

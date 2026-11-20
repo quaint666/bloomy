@@ -129,7 +129,7 @@ async function detail(id: number): Promise<CampaignDetail | null> {
   return { ...rows[0], active: rows[0].active === true, products };
 }
 
-router.get("/", requireAdmin, async (req, res, next) => {
+router.get("/", requireAdmin, async (_req, res, next) => {
   try {
     const { rows } = await pool.query<Omit<CampaignListItem, "active"> & { active: boolean | null }>(
       `SELECT c.id, c.name, c.headline, c.coupon_code, c.hero_image,
@@ -144,7 +144,7 @@ router.get("/", requireAdmin, async (req, res, next) => {
   }
 });
 
-router.get("/options", requireAdmin, async (req, res, next) => {
+router.get("/options", requireAdmin, async (_req, res, next) => {
   try {
     const [coupons, products, images] = await Promise.all([
       pool.query<CouponRow>("SELECT code, type, value, min_subtotal, starts_on, ends_on, active FROM coupons ORDER BY code"),
@@ -192,9 +192,10 @@ router.post("/", requireAdmin, async (req, res, next) => {
       "INSERT INTO campaigns (name, headline, subheadline, coupon_code, hero_image) VALUES ($1, $2, $3, $4, $5) RETURNING id",
       [v.name, v.headline, v.subheadline ?? null, v.coupon_code ?? null, v.hero_image ?? null]
     );
-    await save(client, rows[0].id, { product_ids: v.product_ids || [] });
+    const created = pool.one(rows);
+    await save(client, created.id, { product_ids: v.product_ids || [] });
     await client.query("COMMIT");
-    res.status(201).json(await detail(rows[0].id));
+    res.status(201).json(await detail(created.id));
   } catch (err) {
     await client.query("ROLLBACK").catch(() => {});
     next(err);

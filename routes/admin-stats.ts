@@ -192,7 +192,7 @@ router.get("/", requireAdmin, async (req, res, next) => {
     // Money sums are bigint in SQL (an int4 SUM overflows at ~2.1 billion VND
     // all-time and would 500 the whole page); node-postgres returns bigint as
     // a string, so they are converted back to numbers here.
-    const raw = ordersResult.rows[0];
+    const raw = pool.one(ordersResult.rows);
     const o = {
       ...raw,
       refunded_amount: Number(raw.refunded_amount),
@@ -205,7 +205,7 @@ router.get("/", requireAdmin, async (req, res, next) => {
     const sourceRows = sourceResult.rows.map((row) => ({ ...row, revenue: Number(row.revenue) }));
     // channel: "delivery" / "pickup" (web orders) or "pos" (counter sales)
     const channelRows = channelResult.rows.map((row) => ({ ...row, revenue: Number(row.revenue) }));
-    const checks = checksResult.rows[0];
+    const checks = pool.one(checksResult.rows);
 
     const rejectionRate = checks.total_checks > 0 ? checks.rejected_checks / checks.total_checks : null;
     const cancellationRate = o.total_orders > 0 ? o.cancelled_orders / o.total_orders : null;
@@ -216,7 +216,8 @@ router.get("/", requireAdmin, async (req, res, next) => {
     if (funnelResult) {
       funnel = { visit: 0, product_view: 0, add_to_cart: 0, checkout_view: 0, order_placed: 0 };
       for (const row of funnelResult.rows) funnel[row.event] = row.sessions;
-      conversionRate = funnel.visit > 0 ? funnel.order_placed / funnel.visit : null;
+      const { visit = 0, order_placed = 0 } = funnel; // a step with no row counts as 0
+      conversionRate = visit > 0 ? order_placed / visit : null;
     }
 
     const body: AdminStatsBody = {

@@ -78,8 +78,8 @@ function hotp(key: Buffer, counter: number, digits = DIGITS): string {
   const msg = Buffer.alloc(8);
   msg.writeBigUInt64BE(BigInt(counter));
   const h = crypto.createHmac("sha1", key).update(msg).digest();
-  const offset = h[h.length - 1] & 15;
-  const bin = ((h[offset] & 127) << 24) | (h[offset + 1] << 16) | (h[offset + 2] << 8) | h[offset + 3];
+  const offset = h.readUInt8(h.length - 1) & 15;
+  const bin = h.readUInt32BE(offset) & 0x7fffffff;
   return String(bin % 10 ** digits).padStart(digits, "0");
 }
 

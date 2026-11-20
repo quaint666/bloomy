@@ -32,7 +32,7 @@ async function getPublicSettings(): Promise<PublicSettings | undefined> {
   return rows[0];
 }
 
-router.get("/", async (req, res, next) => {
+router.get("/", async (_req, res, next) => {
   try {
     const settings = await getPublicSettings();
     // No row means the seed was never loaded: say so, instead of an empty 200 that pages read as "no settings".
@@ -43,7 +43,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get("/wards", async (req, res, next) => {
+router.get("/wards", async (_req, res, next) => {
   try {
     const { rows } = await pool.query<Ward>(`SELECT id, name FROM wards`);
     // Sorted here, not in SQL: Node's Vietnamese collation puts "Bà Điểm"

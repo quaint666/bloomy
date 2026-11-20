@@ -185,7 +185,8 @@ const warnedTokens = new Set<string>();
 
 function fillTokens(html: string, values: Tokens): string {
   return html.replace(TOKEN_RE, (_: string, name: string) => {
-    if (Object.prototype.hasOwnProperty.call(values, name)) return RAW_TOKENS.has(name) ? values[name] : escapeHtml(values[name]);
+    const value = values[name];
+    if (value !== undefined && Object.prototype.hasOwnProperty.call(values, name)) return RAW_TOKENS.has(name) ? value : escapeHtml(value);
     // A typo in a page shows up as an empty spot; say so once in the log.
     if (!warnedTokens.has(name)) {
       warnedTokens.add(name);
@@ -200,7 +201,7 @@ function fillTokens(html: string, values: Tokens): string {
 // ---------------------------------------------------------------------------
 
 async function expandIncludes(html: string, stack: string[] = []): Promise<string> {
-  const names = [...new Set([...html.matchAll(INCLUDE_RE)].map((m) => m[1]))];
+  const names = [...new Set([...html.matchAll(INCLUDE_RE)].flatMap((m) => (m[1] ? [m[1]] : [])))];
   if (names.length === 0) return html;
   if (stack.length >= MAX_INCLUDE_DEPTH) throw new Error(`partials nested too deep: ${stack.join(" -> ")}`);
   const parts: Record<string, string> = {};
@@ -216,7 +217,7 @@ async function expandIncludes(html: string, stack: string[] = []): Promise<strin
     parts[name] = await expandIncludes(raw, [...stack, name]);
   }
   // A function replacer, so "$" characters inside a partial are never special.
-  return html.replace(INCLUDE_RE, (_: string, name: string) => parts[name]);
+  return html.replace(INCLUDE_RE, (_: string, name: string) => parts[name] ?? "");
 }
 
 // Startup check (sync, runs once): every required partial exists and every
@@ -231,7 +232,7 @@ function checkPartials(): void {
     } catch (err) {
       throw new Error(`Bloomy: partial not found: ${file} (is the partials/ folder copied into the image?)`);
     }
-    for (const m of raw.matchAll(INCLUDE_RE)) visit(m[1], [...stack, name]);
+    for (const m of raw.matchAll(INCLUDE_RE)) if (m[1]) visit(m[1], [...stack, name]);
   };
   REQUIRED_PARTIALS.forEach((name) => visit(name, []));
 }
@@ -287,8 +288,9 @@ function pageFileFor(reqPath: string): string | null {
   if (reqPath === "/") return "index.html";
   if (PAGE_ALIASES[reqPath]) return PAGE_ALIASES[reqPath];
   const m = /^\/([a-z0-9][a-z0-9-]*\.html)$/i.exec(reqPath);
-  if (!m || /^admin-/i.test(m[1])) return null;
-  return m[1];
+  const page = m?.[1];
+  if (!page || /^admin-/i.test(page)) return null;
+  return page;
 }
 
 async function loadSettings(): Promise<PublicSettings | null> {

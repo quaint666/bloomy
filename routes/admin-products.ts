@@ -31,7 +31,7 @@ const FEATURED_LIMIT = 4;
 
 const VALID_STATUSES: ProductStatus[] = ["available", "sold_out_today", "discontinued"];
 
-router.get("/", requireAdmin, async (req, res, next) => {
+router.get("/", requireAdmin, async (_req, res, next) => {
   try {
     // has_recipe: at least one size lists its flowers. External products
     // never have one; the page shows "chưa có công thức" only for standard ones.
@@ -84,7 +84,7 @@ router.patch("/:id/status", requireAdmin, async (req, res, next) => {
 // Product export for Excel/Sheets, one row per size. A single-size product has a
 // blank size (it shows no size anywhere). Category is the full path, e.g.
 // "Hoa theo mùa › Mùa xuân".
-router.get("/products.csv", requireAdmin, async (req, res, next) => {
+router.get("/products.csv", requireAdmin, async (_req, res, next) => {
   try {
     const { rows } = await pool.query<ProductCsvRow>(
       `SELECT p.id, p.sku AS product_sku, ps.sku AS size_sku, p.name,

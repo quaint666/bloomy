@@ -34,7 +34,7 @@ function readDate(value: unknown): string | null | undefined | false {
 
 const COLUMNS = "id, code, type, value, min_subtotal, starts_on, ends_on, active";
 
-router.get("/", requireAdmin, async (req, res, next) => {
+router.get("/", requireAdmin, async (_req, res, next) => {
   try {
     const { rows } = await pool.query<AdminCouponRow>(`SELECT ${COLUMNS} FROM coupons ORDER BY active DESC, id DESC`);
     res.json(rows);
