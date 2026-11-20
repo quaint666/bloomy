@@ -50,9 +50,20 @@ const past = await api("?page=9999");
 check("a page past the end comes back as the last page", past.page === pages && past.items.length === total - LISTING_PAGE_SIZE * (pages - 1));
 check("page=0, page=-4 and page=abc come back as page 1", [(await api("?page=0")).page, (await api("?page=-4")).page, (await api("?page=abc")).page].every((n) => n === 1));
 
-const cat = await api("?category=1");
-const catPaged = await api("?page=1&category=1");
+// Categories are picked by size, not by id, so adding products to the seed cannot break this: one that fits on a single
+// page and, if the shop has one, one that needs two.
+const cats = await (await fetch(`${BASE}/api/categories`)).json();
+const shortCat = cats.filter((c) => c.count > 0 && c.count <= LISTING_PAGE_SIZE).sort((a, b) => b.count - a.count)[0];
+const longCat = cats.find((c) => c.count > LISTING_PAGE_SIZE);
+check("setup: a category that fits on one page", !!shortCat);
+const cat = await api(`?category=${shortCat.id}`);
+const catPaged = await api(`?page=1&category=${shortCat.id}`);
 check("a filter is applied before the pages are cut: total and items match the filtered array", catPaged.total === cat.length && catPaged.items.length === Math.min(LISTING_PAGE_SIZE, cat.length));
+if (longCat) {
+  const longAll = await api(`?category=${longCat.id}`);
+  const second = await api(`?page=2&category=${longCat.id}`);
+  check("a filter that needs two pages: page 2 holds the rest of that category, not of the whole shop", second.total === longAll.length && second.pages === Math.ceil(longAll.length / LISTING_PAGE_SIZE) && second.items.length === longAll.length - LISTING_PAGE_SIZE);
+}
 const none = await api("?page=1&search=zzzzzzzz");
 check("no match: no items, total 0, one page (page 1)", none.items.length === 0 && none.total === 0 && none.pages === 1 && none.page === 1);
 
@@ -106,8 +117,8 @@ async function openListing(query, { down = false } = {}) {
 
   p.nums()[1].click();
   await until(() => p.current() === "2");
-  p.d.querySelector('.pill[data-category="1"]')?.click();
-  check("picking a category goes back to page 1 as well", await until(() => !p.search().includes("page=") && p.search().includes("category=1")));
+  p.d.querySelector(`.pill[data-category="${shortCat.id}"]`)?.click();
+  check("picking a category goes back to page 1 as well", await until(() => !p.search().includes("page=") && p.search().includes(`category=${shortCat.id}`)));
   p.close();
 }
 
@@ -121,7 +132,7 @@ async function openListing(query, { down = false } = {}) {
 }
 
 { // a filter that fits on one page
-  const p = await openListing("?category=1");
+  const p = await openListing(`?category=${shortCat.id}`);
   check("a short result: no bar, and the count is the filtered total", await until(() => p.cards() > 0) && p.$("pagination").hidden === true && p.$("result-count").textContent === String(cat.length) && p.cards() === cat.length);
   p.close();
 }
