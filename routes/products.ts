@@ -12,6 +12,9 @@
 //   ?tag=3&tag=8          tag filter: a product must carry AT LEAST ONE of the chosen
 //                          tags of each kind (hồng OR tulip), and that for EVERY kind
 //                          chosen (hồng-or-tulip AND đỏ). Unknown ids are ignored.
+//   ?page=N               one page of LISTING_PAGE_SIZE (20) products, answered as
+//                          { items, total, page, pages } instead of a bare array;
+//                          the listing page uses it, everything else still gets the array.
 // All combine with AND — e.g. ?category=3&search=giỏ&sort=price_asc
 //
 // Discontinued products are never listed (listing, nav search, related
@@ -36,7 +39,8 @@ import { Router } from "express";
 import pool = require("../db");
 import { TAG_KIND_LABELS } from "./tags";
 import type { ProductStatus, SizePrice } from "../types";
-import type { CategoryRef, ProductDetailBody, ProductDetailSize, ProductListItem, ProductType } from "../shared/api-types";
+import type { CategoryRef, ProductDetailBody, ProductDetailSize, ProductListItem, ProductPage, ProductType } from "../shared/api-types";
+import { LISTING_PAGE_SIZE } from "../shared/rules";
 
 type TagKind = keyof typeof TAG_KIND_LABELS;
 // A listing row is the shared ProductListItem (`sizes` is there only when ?sizes=1).
@@ -64,7 +68,7 @@ function readIds(value: unknown): number[] {
 
 router.get("/", async (req, res, next) => {
   try {
-    const { category, search, sort, limit, featured } = req.query;
+    const { category, search, sort, limit, featured, page } = req.query;
 
     let query = `SELECT p.id, p.name, p.image, p.category_id, p.product_type, p.status,
                         MIN(ps.price) AS price, COUNT(ps.id) > 1 AS has_sizes
@@ -117,6 +121,21 @@ router.get("/", async (req, res, next) => {
       query += " ORDER BY price DESC, p.id ASC";
     } else {
       query += " ORDER BY p.id ASC";
+    }
+
+    // ?page=N (the listing page only): answers one page as { items, total, page, pages }.
+    // Everything above is the same query, so the total always matches the filters.
+    // A page past the end (or below 1) comes back as the nearest real page.
+    if (page !== undefined) {
+      const { rows: counted } = await pool.query<{ count: string }>(`SELECT COUNT(*) AS count FROM (${query}) q`, values);
+      const total = Number(counted[0].count);
+      const pages = Math.max(1, Math.ceil(total / LISTING_PAGE_SIZE));
+      const current = Math.min(Math.max(parseInt(String(page), 10) || 1, 1), pages);
+      values.push(LISTING_PAGE_SIZE, (current - 1) * LISTING_PAGE_SIZE);
+      query += ` LIMIT $${values.length - 1} OFFSET $${values.length}`;
+      const { rows: items } = await pool.query<ProductListRow>(query, values);
+      const body: ProductPage = { items, total, page: current, pages };
+      return res.json(body);
     }
 
     // Optional — Listing never sends this, so its existing behavior

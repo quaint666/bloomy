@@ -13,16 +13,17 @@
 // uses "q" for search (matching the nav search box's form, name="q") while the fetch
 // to /api/products uses "search", the API's name — translated in buildApiUrl().
 
-import type { CategoryNode, ProductListItem, TagGroup, TagsBody } from "../shared/api-types";
+import type { CategoryNode, ProductPage, TagGroup, TagsBody } from "../shared/api-types";
 import { byId } from "./lib/dom";
 
 // What the page is showing: the filters, read from the URL on load and written back as the person clicks.
-interface ListingState { category: string; tags: number[]; search: string; sort: string }
+interface ListingState { category: string; tags: number[]; search: string; sort: string; page: number }
 let state: ListingState = {
   category: "all",
   tags: [], // tag ids
   search: "",
   sort: "default",
+  page: 1, // 1-based; any change to the filters or the sort puts it back to 1
 };
 let categoryTree: CategoryNode[] = [];
 let tagGroups: TagGroup[] = [];
@@ -37,6 +38,7 @@ function readStateFromUrl(): void {
     .filter((n) => Number.isInteger(n) && n > 0);
   state.search = params.get("q") || "";
   state.sort = params.get("sort") || "default";
+  state.page = parseInt(params.get("page") ?? "", 10) || 1; // the server clamps a page that does not exist
 }
 
 function syncStateToUrl(): void {
@@ -45,6 +47,7 @@ function syncStateToUrl(): void {
   state.tags.forEach((id) => params.append("tag", String(id)));
   if (state.search) params.set("q", state.search);
   if (state.sort !== "default") params.set("sort", state.sort);
+  if (state.page > 1) params.set("page", String(state.page));
 
   const query = params.toString();
   history.replaceState(null, "", window.location.pathname + (query ? `?${query}` : ""));
@@ -56,6 +59,7 @@ function buildApiUrl(): string {
   state.tags.forEach((id) => params.append("tag", String(id)));
   if (state.search) params.set("search", state.search); // translated from "q"
   if (state.sort !== "default") params.set("sort", state.sort);
+  params.set("page", String(state.page));
 
   const query = params.toString();
   return "/api/products" + (query ? `?${query}` : "");
@@ -63,10 +67,12 @@ function buildApiUrl(): string {
 
 const hasFilters = (): boolean => state.category !== "all" || state.tags.length > 0 || state.search !== "";
 
-function renderProducts(products: ProductListItem[]): void {
+function renderProducts(body: ProductPage): void {
   const grid = byId("product-grid");
   const emptyMsg = byId("listing-empty");
-  byId("result-count").textContent = String(products.length ?? ""); // an error body has no length: nothing is shown, as before
+  const products = body.items;
+  byId("result-count").textContent = String(body.total);
+  renderPagination(body.page, body.pages);
 
   if (products.length === 0) {
     grid.innerHTML = "";
@@ -90,14 +96,44 @@ function renderProducts(products: ProductListItem[]): void {
     .join("");
 }
 
+// "‹ 1 2 3 ›" under the grid; hidden when everything fits on one page. Every page number is shown: with 20 per
+// page that is a handful for this shop, and it would need a window ("1 … 4 5 6 … 12") only far beyond that.
+function renderPagination(page: number, pages: number): void {
+  const nav = byId("pagination");
+  nav.innerHTML = "";
+  nav.hidden = pages <= 1;
+  if (pages <= 1) return;
+  const button = (label: string, target: number, text: string, disabled = false): HTMLButtonElement => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "pagination__btn";
+    b.dataset.page = String(target);
+    b.textContent = text;
+    b.setAttribute("aria-label", label);
+    b.disabled = disabled;
+    if (target === page && /^\d+$/.test(text)) b.setAttribute("aria-current", "page");
+    return b;
+  };
+  nav.appendChild(button("Trang trước", page - 1, "‹", page === 1));
+  for (let n = 1; n <= pages; n++) nav.appendChild(button(`Trang ${n}`, n, String(n)));
+  nav.appendChild(button("Trang sau", page + 1, "›", page === pages));
+}
+
 async function fetchAndRender(): Promise<void> {
   try {
     const res = await fetch(buildApiUrl());
-    renderProducts(await res.json());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const body: ProductPage = await res.json();
+    if (body.page !== state.page) { // asked for a page that is not there (an old link): the server sent the nearest one
+      state.page = body.page;
+      syncStateToUrl();
+    }
+    renderProducts(body);
   } catch (err) {
     console.error("Bloomy: failed to load products", err);
     // Clear the grey placeholders and say so, instead of leaving them shimmering for ever.
     byId("product-grid").innerHTML = "";
+    byId("pagination").hidden = true;
     byId("listing-empty").textContent = "Không thể tải sản phẩm lúc này. Vui lòng tải lại trang.";
     byId("listing-empty").hidden = false;
   } finally {
@@ -208,6 +244,7 @@ function applyStateToControls(): void {
 }
 
 function onFilterChange(): void {
+  state.page = 1;
   renderSubPills();
   applyStateToControls();
   syncStateToUrl();
@@ -264,6 +301,7 @@ const SEARCH_DEBOUNCE_MS = 1000;
 
 function runSearch(input: HTMLInputElement): void {
   state.search = input.value.trim();
+  state.page = 1;
   applyStateToControls();
   syncStateToUrl();
   fetchAndRender();
@@ -294,8 +332,22 @@ function initSort(): void {
   const select = byId("sort-select", HTMLSelectElement);
   select.addEventListener("change", () => {
     state.sort = select.value;
+    state.page = 1;
     syncStateToUrl();
     fetchAndRender();
+  });
+}
+
+function initPagination(): void {
+  byId("pagination").addEventListener("click", (e) => {
+    if (!(e.target instanceof Element)) return;
+    const btn = e.target.closest<HTMLButtonElement>(".pagination__btn");
+    if (!btn || btn.disabled) return;
+    state.page = Number(btn.dataset.page);
+    syncStateToUrl();
+    fetchAndRender();
+    // Back to the top of the grid, so the new page does not open at its bottom row.
+    document.querySelector(".listing-grid-section")?.scrollIntoView({ block: "start" });
   });
 }
 
@@ -306,6 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initFilterClicks();
   initSearch();
   initSort();
+  initPagination();
   loadFilters();
   fetchAndRender();
 });

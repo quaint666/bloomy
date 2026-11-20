@@ -223,6 +223,10 @@ export interface ProductListItem {
   status: ProductStatus; price: number; has_sizes: boolean; sizes?: SizePrice[];
 }
 
+// GET /api/products?page=N: one page of the listing, with how many products match in all. `page` is the page the
+// server really sent (a page past the end comes back as the last one).
+export interface ProductPage { items: ProductListItem[]; total: number; page: number; pages: number }
+
 // GET /api/settings (routes/settings.ts): the values pages display.
 export interface PublicSettings {
   shop_address: string; contact_phone: string; contact_email: string; vat_rate: number;
