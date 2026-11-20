@@ -18,7 +18,7 @@ node tests/<name>_test.mjs    # from the repo root
 ```
 
 ## Rules and gotchas
-- Every `tests/*_test.mjs` must end with `0 failed` (19 suites, 1,455 checks, all green on 2026-11-20 on Node 26.13.0; the first 15 were also green on 2026-10-10, on Node 26.13.1 on 2026-11-13 and on PostgreSQL 18.6 on 2026-11-11); CI runs all of them on every push (`.github/workflows/build.yml`, from source on the Dockerfile's Node, before any image is pushed), so a red suite blocks the publish; still run them locally first.
+- Every `tests/*_test.mjs` must end with `0 failed` (19 suites, 1,455 checks, all green on 2026-11-20 on Node 26.13.0; the first 15 were also green on 2026-10-10, on Node 26.13.1 on 2026-11-13 and on PostgreSQL 18.6 on 2026-11-11); CI runs all of them on every pull request and every push to `main` (`.github/workflows/build.yml`, from source on the Dockerfile's Node, before any image is pushed), so a red suite blocks the publish; still run them locally first.
 - `TOTP_ENCRYPTION_KEY` is required (the server exits 1 without it) and `twofa_test` needs the same value as the running server; never use the production key.
 - The order endpoints share a 20-per-15-minutes limiter: run the whole set at most twice per 15 minutes.
 - Suites write real rows and restore them: local DB only, never production, never against a server with `EMAIL_MODE=send`.
@@ -37,7 +37,7 @@ node tests/<name>_test.mjs    # from the repo root
 - CI publishes to GHCR (`ghcr.io/quaint666/bloomy` and `bloomy-schema`) only from `main`, tagged with the first 12 characters of the commit, never `latest`, with the run's own `GITHUB_TOKEN`. It never deploys and holds no other secret. The run summary prints the tag and both digests as one pin command.
 - Ask before `git push` to `main`: it publishes images. A push that changes only `docs/**` or `*.md` starts no run.
 - jsdom cannot see CSS or layout: say plainly that how it looks is unverified; never claim a visual result.
-- One branch per task, small commits; the user reviews the diff and merges.
+- One branch per task, small commits, one pull request per branch (`.github/pull_request_template.md`; CI only builds a branch that has one); the user reviews the diff and merges. `.github/CODEOWNERS` is `* @quaint666`.
 
 ## Docs (open when the task touches them)
 - `docs/00-HANDOFF.md`: architecture and API table (§5), locked decisions (§6), tests (§10).

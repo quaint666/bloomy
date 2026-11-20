@@ -1,9 +1,10 @@
 ---
 # Bloomy CI.
 #
-# Every push to any branch: build both images, check them, and test them
-# against a throwaway Postgres. Only pushes to main also publish the images to
-# GitHub's registry (GHCR), tagged with the first 12 characters of the commit.
+# Every pull request and every push to main: build both images, check them, and
+# test them against a throwaway Postgres. Only pushes to main also publish the
+# images to GitHub's registry (GHCR), tagged with the first 12 characters of the
+# commit. (A branch with no pull request is not built; open one to see CI.)
 # There is deliberately no `latest` tag: deployment pins an exact tag and
 # digest, and deploying is a manual step. CI never deploys and holds no
 # secrets of its own: it pushes with the run's built-in GITHUB_TOKEN. On main
@@ -17,10 +18,14 @@
 name: Build
 
 on:
-  push:
-    branches: ["**"]
-    # A push that changes only docs builds nothing: the image never contains them
+  pull_request:
+    # A change to only docs builds nothing: the image never contains them
     # (.dockerignore drops *.md and the Dockerfile copies an explicit list).
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+  push:
+    branches: [main]
     paths-ignore:
       - "docs/**"
       - "**/*.md"
@@ -238,7 +243,7 @@ jobs:
         run: docker logs "$CI_NAME-app" 2>&1 | tail -40 || true
 
       - name: Log in and push both images (main only)
-        if: github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
