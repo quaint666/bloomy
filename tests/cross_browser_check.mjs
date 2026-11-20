@@ -23,7 +23,7 @@
 // Per browser and per width (1440, 390 and 360 px: a desktop, a recent iPhone, a common small Android) it checks the product list (grid columns, 20 cards, no horizontal scroll,
 // the page bar on ONE line, page 2 by a real-position click and the scroll back to the grid, the Valentine filter and its
 // "Dịp" chips), a product page (sizes, price, add to cart and the cart badge), the cart and the checkout page, and the
-// home page; and on each page that the scripts ran (window.Bloomy) and no picture is broken. Firefox also reports
+// home page, then every other page type (the sitemap, the blog posts, the sign-in page, an order page, a variety of product pages); and on each page that the scripts ran (window.Bloomy; the admin pages do not load it) and no picture is broken. Firefox also reports
 // JavaScript errors from its log; classic WebDriver has no console, so for WebKit "the scripts ran" is the stand-in.
 //
 // Proves: those pages lay out and behave as stated in Firefox and in WebKitGTK. Does NOT prove: real Safari (fonts, the
@@ -201,8 +201,26 @@ const measureCheckout = async () => {
 };
 const measureHome = async () => { await sleep(600); return { overflow: overflow(), off: offenders(), broken: broken(), bloomy: typeof window.Bloomy, title: document.title }; };
 
-// every other customer page: only "no horizontal scroll, the scripts ran, no broken picture" (the pages above get more)
-const SWEEP = ["/about.html", "/story.html", "/commitment.html", "/custom-bouquet.html", "/blog", "/terms.html", "/privacy.html", "/order-confirmation.html?token=zz-fake-token-0123456789"];
+// every other customer page, found rather than listed: the sitemap's pages (static pages, the blog and its posts, the
+// landing page), the sign-in page, an order page for a made-up token, and a VARIETY of product pages (by status, type,
+// style and one size or several). Only "no horizontal scroll, the scripts ran, no broken picture" is checked on them
+// (the pages above get more).
+async function sweepPages(api, done) {
+  const sitemap = await (await fetch(`${BASE}/sitemap.xml`)).text();
+  const fromMap = [...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map((m) => new URL(m[1]).pathname + new URL(m[1]).search).filter((x) => !x.startsWith("/product.html"));
+  const list = await api("/api/products");
+  const maxId = Math.max(...list.map((p) => p.id)) + 3;
+  const seen = new Map();
+  for (let id = 1; id <= maxId; id++) {
+    const d = await fetch(`${BASE}/api/products/${id}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    if (!d) continue;
+    const key = `${d.status}|${d.product_type}|${d.style}|${d.sizes.length > 1 ? "sizes" : "one"}`;
+    if (!seen.has(key)) seen.set(key, d.id);
+  }
+  const products = [...seen.values()].map((id) => `/product.html?id=${id}`);
+  const pages = [...new Set([...fromMap, "/admin-login.html", "/order-confirmation.html?token=zz-fake-token-0123456789", ...products])].filter((x) => !done.includes(x));
+  return { pages, products: seen.size };
+}
 
 // ============================================================ the checks
 const results = [];
@@ -215,7 +233,9 @@ async function runBrowser(driver, site) {
   const first = await api("/api/products?page=1");
   const pages = first.pages;
   const withSizes = all.find((p) => p.has_sizes) ?? all[0];
+  const extraProducts = [all.find((p) => !p.has_sizes && p.product_type === "standard" && p.status === "available"), all.find((p) => p.has_sizes && p.id !== withSizes.id && p.category_id !== withSizes.category_id)].filter(Boolean).map((p) => p.id);
   const valentine = (await api("/api/tags")).groups.find((g) => g.kind === "occasion")?.tags.find((t) => t.name === "Valentine");
+  const sweep = await sweepPages(api, ["/", "/products.html", "/cart.html", "/checkout.html"]);
   const valentineCount = valentine ? (await api(`/api/products?tag=${valentine.id}`)).length : null;
 
   for (const vp of VIEWPORTS) {
@@ -252,10 +272,16 @@ async function runBrowser(driver, site) {
     log(tag("product: the add button is reachable, adds one line, the cart badge says 1"), prod.reach && prod.cart === 1 && prod.badge?.split(",").includes("1"), JSON.stringify(prod));
     log(tag("product: no horizontal scroll, scripts ran, no broken picture"), prod.overflow <= 0 && prod.bloomy === "object" && prod.broken === 0, JSON.stringify(prod));
     await shot(`${vp.name}-product`);
+    let lines = 1;
+    for (const id of extraProducts) { // more lines make the cart and checkout pages heavier
+      await driver.goto(`${site}/product.html?id=${id}`);
+      const more = await ev(measureProduct);
+      if (more.cart === lines + 1) lines++;
+    }
 
     await driver.goto(`${site}/cart.html`);
     const cart = await ev(measureCart);
-    log(tag("cart: the line is there with a total and a checkout button"), cart.shown && cart.lines === 1 && /đ/.test(cart.total ?? "") && cart.checkout, JSON.stringify(cart));
+    log(tag(`cart: the ${lines} line${lines > 1 ? "s are" : " is"} there with a total and a checkout button`), cart.shown && cart.lines === lines && /đ/.test(cart.total ?? "") && cart.checkout, JSON.stringify(cart));
     log(tag("cart: no horizontal scroll, no broken picture"), cart.overflow <= 0 && cart.broken === 0, JSON.stringify(cart));
     await shot(`${vp.name}-cart`);
 
@@ -265,12 +291,14 @@ async function runBrowser(driver, site) {
     await shot(`${vp.name}-checkout`);
 
     const bad = [];
-    for (const page of SWEEP) {
+    for (const page of sweep.pages) {
       await driver.goto(`${site}${page}`);
       const m = await ev(measureHome);
-      if (!(m.overflow <= 0 && m.bloomy === "object" && m.broken === 0)) bad.push(`${page} ${JSON.stringify({ o: m.overflow, off: m.off, b: m.bloomy, br: m.broken, err: m.__error })}`);
+      // (admin pages never load main.js, so window.Bloomy is not expected there)
+      if (!(m.overflow <= 0 && (m.bloomy === "object" || page.startsWith("/admin-")) && m.broken === 0)) bad.push(`${page} ${JSON.stringify({ o: m.overflow, off: m.off, b: m.bloomy, br: m.broken, err: m.__error })}`);
+      await shot(`${vp.name}-sweep-${page.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "")}`);
     }
-    log(tag(`the other ${SWEEP.length} pages (${SWEEP.map((x) => x.split("?")[0]).join(" ")}): no horizontal scroll, scripts ran, no broken picture`), bad.length === 0, bad.join(" | "));
+    log(tag(`the other ${sweep.pages.length} pages (sitemap, blog, sign-in, order page, ${sweep.products} kinds of product page): no horizontal scroll, scripts ran, no broken picture`), bad.length === 0, bad.join(" | "));
   }
   const errs = driver.errors();
   if (driver.name === "Firefox") log("no JavaScript error in the browser's log on any page", errs.length === 0, errs.slice(0, 3).join(" | "));

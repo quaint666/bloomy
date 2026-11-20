@@ -2,6 +2,7 @@
 //   A. the stylesheet rules (nothing to run: the CSS files are read)
 //        - the motion block is scoped to customer pages, short, and does not override reduced-motion
 //        - the category filter bar is see-through like the header, its underline is 3px
+//   A2. no customer stylesheet has a bare `fr` grid column (it cannot shrink: sideways scroll on a phone)
 //   B. the cart badge pops only when the count goes UP; the add buttons pop (product page, landing page)
 //   C. the admin menu: one button naming the page you are on, a panel with the right links for each role,
 //      Escape and a click elsewhere close it
@@ -106,6 +107,35 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   check("the tab underline is 3px (was 2px)", /border-bottom:\s*3px solid transparent/.test(pill), pill.replace(/\s+/g, " "));
   check("…the active tab's underline is still the brand colour", /\.pill\.is-active[^{]*\{[^}]*border-bottom-color:\s*hsl\(var\(--primary\)\)/.test(listing));
   check("…and the bar keeps its height (one pixel less padding below)", /padding:\s*16px 2px 13px/.test(pill));
+}
+
+// ============================================================ A2. no bare fr grid column on a customer page
+// A bare `1fr` track cannot shrink below the min-content of what is in it, so a wide photo or a form pushes the whole
+// page sideways on a phone (the cart and checkout did, found in Firefox and WebKit). `minmax(0, 1fr)` can shrink and
+// otherwise lays out exactly the same. The admin stylesheets (staff pages, behind a login) are not held to this.
+{
+  const bareFr = (value) => { // does a bare `<n>fr` track appear outside minmax(...)? (parentheses are followed, so repeat(3, 1fr) counts and minmax(0, 1fr) does not)
+    const stack = [];
+    for (let i = 0; i < value.length; i++) {
+      const c = value[i];
+      if (c === "(") stack.push((value.slice(0, i).match(/([\w-]+)\s*$/) || [])[1] || "");
+      else if (c === ")") stack.pop();
+      else {
+        const m = value.slice(i).match(/^\d*\.?\d+fr\b/);
+        if (m && !/[\w.-]/.test(value[i - 1] || " ")) { if (!stack.includes("minmax")) return true; i += m[0].length - 1; }
+      }
+    }
+    return false;
+  };
+  const blank = (src) => src.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " ")); // comments out, line numbers kept
+  const found = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((x) => x.endsWith(".css") && !x.startsWith("admin"))) {
+    const src = blank(css(f));
+    for (const m of src.matchAll(/grid-template-columns\s*:\s*([^;{}]+);/g)) if (bareFr(m[1])) found.push(`${f}:${src.slice(0, m.index).split("\n").length} ${m[0].trim()}`);
+  }
+  check("no customer stylesheet has a bare fr grid column (write minmax(0, 1fr))", found.length === 0, found.slice(0, 4).join(" | ") + (found.length > 4 ? ` ... (${found.length})` : ""));
+  check("the bare-fr reader: finds 1fr, 1.6fr and repeat(3, 2fr); accepts minmax(0, 1fr), minmax(220px, 1fr), repeat(2, minmax(0, 1fr)) and auto-fill with min()",
+    bareFr("1fr") && bareFr("96px 1.6fr") && bareFr("repeat(3, 2fr)") && !bareFr("minmax(0, 1fr)") && !bareFr("minmax(220px, 1fr) 96px") && !bareFr("repeat(2, minmax(0, 1fr))") && !bareFr("repeat(auto-fill, minmax(min(100%, 200px), 1fr))"));
 }
 
 // ---- log in the test staff
