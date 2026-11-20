@@ -229,6 +229,44 @@
    reused as-is — Listing's cards are the exact same shape as Homepage's
    featured cards (image, name, price — no badges/rating/sold-count). */
 
+/* Pagination under the grid, in the pills' look. scroll-margin-top is where a page change lands the top of the grid:
+   under the sticky nav and filter bar (the 60px for the bar is a guess, not measured). */
+.listing-grid-section {
+  scroll-margin-top: calc(var(--nav-height, 73px) + 60px);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 40px;
+}
+
+.pagination__btn {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+  cursor: pointer;
+}
+
+.pagination__btn[aria-current="page"] {
+  color: hsl(var(--primary-foreground));
+  background-color: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+}
+
+.pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .listing-empty {
   text-align: center;
   color: hsl(var(--muted-foreground));

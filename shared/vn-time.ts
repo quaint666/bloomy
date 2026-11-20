@@ -1,7 +1,7 @@
 // Bloomy — Vietnam time, written once for the server and the browser (runtime code, unlike api-types.ts: the server
 // compiles it to shared/vn-time.js, esbuild bundles it into each page script that imports it).
 //
-// Neither the VPS (UTC) nor a visitor's device can be trusted to be on Vietnam time, so every date or time decision
+// Neither the server (it may be UTC) nor a visitor's device can be trusted to be on Vietnam time, so every date or time decision
 // that matters goes through these, never a bare `new Date()`: the epoch is shifted by +7 hours and read back with the
 // UTC getters, which sidesteps whatever timezone the machine thinks it is in.
 

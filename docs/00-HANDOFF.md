@@ -140,7 +140,7 @@ Contents: 0 things to know · 4 what was built · 5 architecture and code map (+
 | POST | `/api/orders/ipn` | public | routes/orders.js |
 | POST | `/api/orders/quote` | public | routes/orders.js |
 | GET | `/api/orders/upcoming-cutoffs` | public | routes/orders.js |
-| GET | `/api/products` | public | routes/products.js |
+| GET | `/api/products` (`?page=N`: 20 per page, answered as `{ items, total, page, pages }`) | public | routes/products.js |
 | GET | `/api/products/:id` | public | routes/products.js |
 | GET | `/api/products/:id/reviews` | public | routes/reviews.js |
 | POST | `/api/products/:id/reviews` | public | routes/reviews.js |
@@ -213,7 +213,7 @@ Categories: parents + "Hoa theo mùa" children; the API omits categories with no
 
 Technical facts kept from the original deploy record. The plan gate and the hosting they refer to are not part of this repo.
 
-- CI is `.github/workflows/build.yml` (GitHub Actions, hosted runner): it builds the app and schema images, applies `schema.sql` to a throwaway PostgreSQL and requires an empty `plan`, runs the 15 suites from source on the Dockerfile's Node, and on `main` pushes both images to GHCR tagged with the first 12 characters of the commit.
+- CI is `.github/workflows/build.yml` (GitHub Actions, hosted runner): it builds the app and schema images, applies `schema.sql` to a throwaway PostgreSQL and requires an empty `plan`, runs the 16 suites from source on the Dockerfile's Node, and on `main` pushes both images to GHCR tagged with the first 12 characters of the commit.
 
 - Schema: a fresh database ends with an empty `plan` after `apply` (what CI checks). An in-place upgrade of an old database is additive only (new tables and columns, changed defaults, no `DROP`), but it creates no campaigns, no coupons and no status changes: seeds are not re-run on a live database. **Enum values are only ever added, never removed or reordered:** `plan` cannot see a removal or a reorder, so neither the plan review nor the deploy gate would catch it.
 - Seeds, in this order, for empty databases only: expected counts afterwards are products 51, campaigns 2, campaign_products 12, coupons 3 **[verified 2026-10-07 on the local database]**. They reach the server inside the schema image: after a wipe and a schema `apply`, run `/seed.sh` from that image (the command is in the header of `seed.sh`). A second run refuses with "this database already has data… Nothing changed.".
@@ -254,9 +254,11 @@ All suites live in `tests/` (jsdom is the only dependency: `cd tests && npm inst
 | `ui_polish_test.mjs` | 75 | CSS rules (scoping, `[hidden]`, hint class, filter bar), badge/add pops, admin Menu per role, POS toggle | — |
 | `campaign_editor_test.mjs` | 107 | editor API (roles, picture whitelist, validation, order), activation guard, the editor page | 39708 |
 | `qol2_test.mjs` | 110 | share, toast, back-to-top, recently viewed, skeletons, copy coupon, reading bar, POS notice/shortcut, last admin page, CSS | — |
+| `listing_test.mjs` | 28 | the listing's pages: `?page=` (cut, order, clamping, filters, sort), callers without `?page` still get the array, the page's bar (click, URL, reset on filter or sort, API down) | — |
 | `totp_test.mjs` | 41 | TOTP/HOTP against the RFC 6238 and RFC 4226 published vectors, encryption round trip, key checks, recovery codes | — |
 | `twofa_test.mjs` | 116 | 2FA end to end against the running server and its database: enrol, login with and without code, lockout, one-time codes, recovery codes, disable, limiter | — |
 | **Total (2026-10-10, 15 suites, one full run)** | **1384** | all suites passed with 0 failed; run by Claude on a database built from `schema.sql` and the seeds | |
+| **Total (2026-11-20, Node 26.13.0, 16 suites, one full run)** | **1412** | all suites passed with 0 failed; run by Claude on a local database built from `schema.sql` and the seeds | — |
 | **Total (2026-11-13, Node 26.13.1, 15 suites, one full run)** | **1384** | all suites passed with 0 failed on Node 26.13.1 (server run from source in a node:26.13.1-alpine3.24 container); run by Claude (CI dry run passed too) | |
 
 **Test edits made in the 3c session (so they are not mistaken for regressions):** five suites match `.css` requests with `/\.css(\?|$)/` (URLs now carry `?v=`); `landing_test`, `render_test` and `analytics_test` strip `?v=` before comparing script sources; `qol2_test`'s page-transition check now asserts the cross-fade is **gone** (`@view-transition` and `view-transition-name` absent); `render_test` §3b checks the fingerprints (hash = first 8 hex of the file's sha1, changes when the file changes, left alone for a missing file, not applied to root-relative or already-queried URLs). **Gotcha (found 2026-10-07):** `render_test` §6 copies a temp app tree to prove the server refuses to start without `partials/`; that file list must include **`totp.js`** (`server.js` now requires it) or the check "message names the missing partial" fails with "Cannot find module './totp'" — the repo copy has it and the check passes **[verified 2026-10-07]**.

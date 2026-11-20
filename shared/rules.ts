@@ -7,6 +7,10 @@ import type { AdminRole, FulfillmentStatus, TimeWindow } from "./api-types";
 // page and the custom-bouquet builder never go above it.
 export const MAX_QUANTITY = 99;
 
+// Products on one page of the listing (4 per row on a desktop = 5 rows). The server cuts the pages, the page only reads
+// `pages` from the reply, so this is the one place the number lives.
+export const LISTING_PAGE_SIZE = 20;
+
 // An admin page or route needs at least this rank.
 export const ROLE_RANK: Record<AdminRole, number> = { employee: 1, manager: 2, owner: 3 };
 

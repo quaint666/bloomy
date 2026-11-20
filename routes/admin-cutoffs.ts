@@ -17,7 +17,7 @@ const overrideSchema = z.object({
   override_date: z.string().refine(isRealDate, "invalid_date"),
   // <input type="datetime-local"> sends a value with no timezone attached
   // ("2026-02-13T20:00") — always interpreted as Vietnam time (+07:00)
-  // below, never the VPS's own (UTC) clock.
+  // below, never the server's own clock (it may be UTC).
   deadline_local: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/),
   note: z.string().trim().max(100).optional().nullable(),
 });
