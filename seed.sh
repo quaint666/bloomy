@@ -7,7 +7,7 @@
 #   docker compose --profile tools run --rm -e PGHOST=db -e PGUSER=quaint -e PGDATABASE=bloomy --entrypoint /seed.sh schema
 #
 # It refuses, and changes nothing, when products or settings already hold rows: the seeds are demo data and must never
-# be loaded over a live shop. The six files run in ONE transaction, so a failure leaves nothing behind. The load order
+# be loaded over a live shop. The seven files run in ONE transaction, so a failure leaves nothing behind. The load order
 # matters (products need categories and flowers; the campaigns pick their products by SKU) and is written here only.
 set -eu
 
@@ -22,7 +22,7 @@ fi
 
 cd /seeds
 set --
-for f in seed-categories.sql seed-flowers.sql seed-products.sql seed-gallery.sql seed-reviews.sql seed-reference.sql; do
+for f in seed-categories.sql seed-flowers.sql seed-products.sql seed-products-2.sql seed-gallery.sql seed-reviews.sql seed-reference.sql; do
   set -- "$@" -f "$f"
 done
 if ! psql -q -v ON_ERROR_STOP=1 --single-transaction "$@" > /dev/null; then

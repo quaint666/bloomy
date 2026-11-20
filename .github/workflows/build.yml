@@ -143,6 +143,22 @@ jobs:
           docker exec "$CI_NAME-pg" psql -U quaint -d bloomy -tAc \
             "select (select count(*) from products) products, (select count(*) from product_sizes) sizes,
                     (select count(*) from recipes) recipes, (select count(*) from wards) wards"
+          # seed-more.sh is the way the second catalogue reaches a LIVE shop: delete it here (its sizes, recipes and tag
+          # links go with the products), run it, and run it again. The counts must come back, and stay the same.
+          counts() { pg -d bloomy -F ' ' -c "select (select count(*) from products), (select count(*) from product_sizes), (select count(*) from recipes), (select count(*) from product_tags)"; }
+          more() {
+            docker run --rm --network "$CI_NAME" -e PGHOST="$CI_NAME-pg" -e PGUSER=quaint -e PGDATABASE=bloomy -e PGPASSWORD=ci \
+              --entrypoint /seed-more.sh "$SCHEMA_IMAGE:$TAG"
+          }
+          FULL=$(counts)
+          pg -d bloomy -c "DELETE FROM products WHERE sku >= 'BLM-0052'"
+          [ "$(counts)" != "$FULL" ]
+          more
+          [ "$(counts)" = "$FULL" ]
+          OUT=$(more); echo "$OUT"
+          echo "$OUT" | grep -q '(0 added'
+          [ "$(counts)" = "$FULL" ]
+          echo "seed-more: restored and idempotent ($FULL)"
 
       - name: Fail-fast check, the app refuses to start with no environment
         run: |
