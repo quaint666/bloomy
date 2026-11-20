@@ -13,7 +13,7 @@ CREATE TYPE product_status AS ENUM ('available', 'sold_out_today', 'discontinued
 CREATE TYPE product_type AS ENUM ('standard', 'external');
 CREATE TYPE product_style AS ENUM ('bo', 'gio', 'hop', 'vong', 'set');
 CREATE TYPE product_size AS ENUM ('s', 'm', 'l');
-CREATE TYPE tag_kind AS ENUM ('flower', 'color');
+CREATE TYPE tag_kind AS ENUM ('flower', 'color', 'occasion');
 CREATE TYPE time_window AS ENUM ('morning', 'afternoon', 'evening');
 CREATE TYPE order_channel AS ENUM ('web', 'pos');
 CREATE TYPE fulfillment_type AS ENUM ('delivery', 'pickup');
