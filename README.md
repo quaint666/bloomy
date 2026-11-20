@@ -49,13 +49,12 @@ Open http://localhost:3000. Create the first owner account in a real terminal wi
 
 ## Tests
 
-With the server running and the same `TOTP_ENCRYPTION_KEY`:
-
 ```bash
-node tests/render_test.mjs      # one suite; each ends with "0 failed"
+npm test                        # all suites, on a fresh server and a throwaway database that is dropped afterwards
+npm test -- listing tags        # only the suites whose file name contains one of the words
 ```
 
-Run them against a local database only: they write real rows and restore them. The order endpoints share a limiter of 20 requests per 15 minutes, so run the whole set at most twice in that window. jsdom cannot see CSS or layout, so how the pages look is not covered by the suites.
+Only `DB_HOST`, `DB_PORT`, `DB_USER` and `DB_PASSWORD` of a local Postgres are needed (it refuses another host). To run one suite by hand against a server you started (with the same `TOTP_ENCRYPTION_KEY`): `node tests/render_test.mjs`; it ends with "0 failed", writes real rows and restores them, so use a local database only, and restart that server if you see 429s (the order limiter is 20 requests per 15 minutes). jsdom cannot see CSS or layout, so how the pages look is not covered by the suites.
 
 ## Layout
 
