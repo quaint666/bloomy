@@ -145,7 +145,7 @@ app.use(
 
 // Session store — rows in the same Postgres instance already running
 // (connect-pg-simple), not Redis or the default in-memory store. Design
-// locked in fundamentals-learning-handoff.md §4: single VPS, single admin,
+// locked in fundamentals-learning-handoff.md §4: one server, single admin,
 // no case for a separate service; MemoryStore would leak memory and wipe
 // every session on restart, wrong even for a demo.
 //

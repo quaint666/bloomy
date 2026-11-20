@@ -60,7 +60,7 @@ interface ZpQueryResponse { return_code: number; is_processing: boolean; amount:
 const router = Router();
 
 // ---------------------------------------------------------------------------
-// Vietnam-time helpers. The VPS itself runs in UTC — every date/time
+// Vietnam-time helpers. The server may run in UTC (a container usually does) — every date/time
 // decision that matters for the cutoff, or for ZaloPay's own yymmdd
 // requirement, goes through these, never a bare `new Date()`. Shifting the
 // epoch by +7h and reading it back with the UTC getters sidesteps whatever
