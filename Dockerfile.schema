@@ -48,4 +48,5 @@ COPY schema.sql /schema.sql
 
 # The demo data and the script that loads it into an EMPTY database, all or nothing (see seed.sh).
 COPY --chmod=0755 seed.sh /seed.sh
+COPY --chmod=0755 seed-more.sh /seed-more.sh
 COPY seed-*.sql /seeds/
