@@ -12,7 +12,7 @@
 
 .landing-hero__inner {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 40px;
   align-items: center;
 }
@@ -77,7 +77,7 @@
 
 .landing-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 28px;
 }
 
@@ -225,7 +225,7 @@ body.is-paying .landing-order__title {
 
 @media (max-width: 900px) {
   .landing-hero__inner:has(.landing-hero__media) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .landing-hero__media {
@@ -234,7 +234,7 @@ body.is-paying .landing-order__title {
   }
 
   .landing-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .landing-hero__headline {
@@ -244,7 +244,7 @@ body.is-paying .landing-order__title {
 
 @media (max-width: 600px) {
   .landing-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .landing-hero {

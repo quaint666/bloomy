@@ -22,7 +22,7 @@ Live: https://bloomy.quaintshomelabdomain.uk
 - **Strict Content-Security-Policy.** No inline scripts or styles; customer text goes through `textContent` or an escape helper.
 - **Pages are rendered on the server** from shared partials, with asset fingerprinting (`?v=<hash>`) and an esbuild minify stage in the Dockerfile.
 - **Sessions in PostgreSQL** (`connect-pg-simple`), bcrypt passwords, rate-limited login.
-- **20 test suites, 1,475 checks** against a real server and database, using jsdom for the pages.
+- **20 test suites, 1,477 checks** against a real server and database, using jsdom for the pages.
 - **CI on GitHub Actions** builds the images, checks the schema against a throwaway PostgreSQL, runs the suites, and publishes to GHCR from `main`.
 
 Architecture, the API table and the locked design decisions are in [`docs/00-HANDOFF.md`](docs/00-HANDOFF.md).
