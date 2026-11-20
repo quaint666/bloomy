@@ -33,7 +33,7 @@ Contents: 0 things to know · 4 what was built · 5 architecture and code map (+
 - *Fixes found in review:* menu panel never hid (specificity + order) → global `[hidden]` rule; `.admin-form__hint` (absolutely positioned) misused → `.admin-note`; a second scroll offset removed (the site already has `[id] { scroll-margin-top }`); a folder named `x.webp` was offered as a picture (editor lists files only).
 
 **3c / deploy session (2026-10-07).**
-- **Owner 2FA** (`totp.js`, `routes/admin-auth.js`, `admin-account.html` + `web/admin-account.ts`, `admin-login.html` + `web/admin-login.ts`, `css/admin-twofa.css`): RFC 6238 TOTP (SHA-1, 6 digits, 30 s, ±1 step of clock drift). The secret is stored **encrypted with AES-256-GCM** under the env variable **`TOTP_ENCRYPTION_KEY`** (32 random bytes, base64: `openssl rand -base64 32`). `server.js` lists it in `REQUIRED_ENV` and calls `require("./totp").loadKey()` at start-up, so a missing or wrong-length key stops the app with exit 1 and a clear message instead of failing at the owner's first login. A key that has the right length but is the **wrong key** (changed or lost) is caught only by a start-up self-check in `server.js` (`checkTotpKey`): it tries to decrypt one stored secret and logs one `Bloomy: ERROR: TOTP_ENCRYPTION_KEY cannot decrypt…` line; it never stops the app, it is not awaited (the line can come after the first `/healthz`), and it is silent when no secret is stored or the database is not ready. **Login is one request** carrying username, password and, when asked for, the code: right password + 2FA on + no code → `200 {needs_code:true}` and **no session**; a wrong code counts only after the password was right; **3 wrong codes lock that account for 5 minutes (in memory — a restart clears it)**; a code works **once** (`admin_users.totp_last_step`); 10 recovery codes, stored hashed, single use (`recovery_codes.used_at`); the 2FA endpoints share `twoFactorLimiter` (10 per 15 minutes). No "remember this browser" (decided). Manager/employee accounts have no 2FA.
+- **Owner 2FA** (`totp.js`, `routes/admin-auth.ts`, `admin-account.html` + `web/admin-account.ts`, `admin-login.html` + `web/admin-login.ts`, `css/admin-twofa.css`): RFC 6238 TOTP (SHA-1, 6 digits, 30 s, ±1 step of clock drift). The secret is stored **encrypted with AES-256-GCM** under the env variable **`TOTP_ENCRYPTION_KEY`** (32 random bytes, base64: `openssl rand -base64 32`). `server.js` lists it in `REQUIRED_ENV` and calls `require("./totp").loadKey()` at start-up, so a missing or wrong-length key stops the app with exit 1 and a clear message instead of failing at the owner's first login. A key that has the right length but is the **wrong key** (changed or lost) is caught only by a start-up self-check in `server.js` (`checkTotpKey`): it tries to decrypt one stored secret and logs one `Bloomy: ERROR: TOTP_ENCRYPTION_KEY cannot decrypt…` line; it never stops the app, it is not awaited (the line can come after the first `/healthz`), and it is silent when no secret is stored or the database is not ready. **Login is one request** carrying username, password and, when asked for, the code: right password + 2FA on + no code → `200 {needs_code:true}` and **no session**; a wrong code counts only after the password was right; **3 wrong codes lock that account for 5 minutes (in memory — a restart clears it)**; a code works **once** (`admin_users.totp_last_step`); 10 recovery codes, stored hashed, single use (`recovery_codes.used_at`); the 2FA endpoints share `twoFactorLimiter` (10 per 15 minutes). No "remember this browser" (decided). Manager/employee accounts have no 2FA.
 - **Way back in when phone and codes are both lost:** `node create-admin.js --reset-2fa` (shell only, on the server: `sudo docker exec -it bloomy_app node create-admin.js --reset-2fa`). **[user-confirmed]** it works. After a reset the owner logs in with the password alone and enrols again.
 - **Browser TypeScript (all 26 scripts converted, 2026-11-14):** every page script lives in `web/*.ts` (shared helpers in `web/lib/`); `shared/` holds the types the server and the browser both read (type-only, written for the JSON on the wire). `npm run typecheck:web` checks them and `npm run build:web` bundles each `web/*.ts` into `public/js/<name>.js` (esbuild, one classic script per page script, `--format=iife` so its names cannot clash). Stage `assets` runs both before the minify step below, so a type error in `web/` fails the image build. `web/package.json` (`"type": "module"`) is needed: with the root `"type": "commonjs"`, esbuild wraps every `.ts` module in CommonJS helper code. The bundles in `public/js/` are build output (gitignored, one `.gitignore` line each; `git ls-files public/js` is empty). `main.ts` is bundled on its own and exposes `window.Bloomy`; the other scripts read it through the `BloomyApi` type (an erased `import type`), so it is not repeated in each page. Test seams: a function a suite calls by name on `window` is assigned there explicitly (`afterLoginTarget`, `updateCartBadge`, `showPaymentWaiting`, `pollPickups`, `readingProgress`), and `pollTimer` is a live getter, because `checkout_live_test` and `landing_live_test` stop the poll with `eval`. Values both sides use are written once in `shared/rules.ts` (`MAX_QUANTITY`, `ROLE_RANK`, `ALLOWED_FULFILLMENT_TRANSITIONS`, `WINDOW_TEXT`, `WINDOW_END_MINUTES`, `DEFAULT_CUTOFF_HOUR_VN`), `shared/vn-time.ts` (the +7 h helpers) and `shared/escape.ts`; the order email keeps its own `escapeHtml` (it writes "" for a missing value where the shared one writes "null"). What the types do **not** check: the SQL (`pool.query<T>` is an assertion), what `res.json()` really sends (the reply bodies are checked on the server against `shared/api-types.ts`, the browser trusts them), and `localStorage` (the cart is read as written).
 - **Minify:** the `Dockerfile` has three stages. Stage `assets` runs `npm ci --ignore-scripts`, the `web/` build above, and `esbuild --minify --charset=utf8 --legal-comments=none --outdir=/out --outbase=public` over `public/**/*.js|css` (with file-count checks); the final stage does `COPY --from=assets /out ./public` and also copies `totp.js`. esbuild is a **devDependency pinned in `package-lock.json`**. Not minified: HTML, `partials/`, `content/`. A new root-level `.ts` file needs its compiled `.js` added to the `COPY` edit (this is how `totp.js` was added).
@@ -53,12 +53,12 @@ Contents: 0 things to know · 4 what was built · 5 architecture and code map (+
 - `blog.js` — builds `/blog` and `/blog/<slug>` from `content/` (`posts.json` is the source of the index **and** the sitemap), `[[product:N]]` → live product cards, `checkContent()` at startup. `BLOOMY_CONTENT_DIR` overrides the folder (tests only).
 - `seo.js` — `effective()`, `checks()`, `snippet()`, `health()`, `cleanFields()` (one implementation for the panel and the page).
 - `pricing.js` — **the only place money, coupons, shipping and custom-bouquet rules are computed** (`quote()`).
-- `routes/orders.js` — `placeOrder()` (the ONE order writer; web checkout and POS both use it), ZaloPay start/IPN/verify/retry, `returnOrderStock()`, `markOrderPaid()`.
-- `routes/admin-auth.js` — login (with the optional 2FA code)/logout/me/password, the owner-only 2FA endpoints (`/api/admin/me/2fa…`), `requireRole(level)`, `requireAdmin` (= manager+), `LANDING` per role.
+- `routes/orders.ts` — `placeOrder()` (the ONE order writer; web checkout and POS both use it), ZaloPay start/IPN/verify/retry, `returnOrderStock()`, `markOrderPaid()`.
+- `routes/admin-auth.ts` — login (with the optional 2FA code)/logout/me/password, the owner-only 2FA endpoints (`/api/admin/me/2fa…`), `requireRole(level)`, `requireAdmin` (= manager+), `LANDING` per role.
 - `totp.js` — TOTP/HOTP on `node:crypto`, AES-256-GCM secret encryption, recovery-code helpers; `loadKey()` reads and checks `TOTP_ENCRYPTION_KEY`.
-- `routes/campaigns.js` — `GET /api/campaigns/active` and `getActiveCampaign({ includeProducts })`.
-- `routes/admin-campaigns.js` — campaign editor API (picture list = real files in `public/images`, `BLOOMY_IMAGES_DIR` overrides for tests; validation; transaction for the product list).
-- `routes/admin-seo.js` — SEO panel API (list with health, one, patch, live preview).
+- `routes/campaigns.ts` — `GET /api/campaigns/active` and `getActiveCampaign({ includeProducts })`.
+- `routes/admin-campaigns.ts` — campaign editor API (picture list = real files in `public/images`, `BLOOMY_IMAGES_DIR` overrides for tests; validation; transaction for the product list).
+- `routes/admin-seo.ts` — SEO panel API (list with health, one, patch, live preview).
 - other routes: products, categories, tags, flowers (builder data), reviews, settings, admin-* (users, settings, coupons, pos, orders, products, flowers, stats, cutoffs, reviews), `csv.js`, `events.js` (funnel).
 - `email.js` — customer + shop emails (`EMAIL_MODE=log` prints instead of sending).
 - `create-admin.js` — bootstrap/emergency CLI (also how the first owner is made after a wipe); `--reset-2fa` clears an owner's 2FA.
@@ -71,84 +71,86 @@ Contents: 0 things to know · 4 what was built · 5 architecture and code map (+
 
 **Seeds, in load order:** `seed-categories.sql`, `seed-flowers.sql`, `seed-products.sql`, **`seed-products-2.sql`**, **`seed-gallery.sql`**, `seed-reviews.sql`, `seed-reference.sql`. `seed-reference.sql` must come **after** products (campaigns pick products by SKU; it raises an exception if it does not insert exactly 12 `campaign_products` rows). `gen_products.py` generates `seed-products.sql` (statuses live there); `gen_products2.py` generates `seed-products-2.sql`: 54 more products for Peekbox's six occasions (BLM-0052 to BLM-0105, prices from stem cost like the first seed), the six `occasion` tags in calendar order and the occasion links of the first 50 products. That file is **additive and idempotent** (no fixed ids, SKU and (kind, name) lookups, `ON CONFLICT DO NOTHING`), because it also has to reach a live shop, which never re-runs the first seed: `seed-more.sh` (schema image) runs just that file in one transaction against a database that already has the first catalogue, and a second run changes nothing. Seeds are for empty databases only: `seed.sh` (in the schema image, next to the seven files) loads them in this order in **one transaction, all or nothing**, and refuses, changing nothing, when `products` or `settings` already hold rows.
 
-### API table (generated from the code on 2026-10-06; the five 2FA rows and the login row were added by hand on 2026-10-07 from `routes/admin-auth.js`)
+### API table (generated from the code on 2026-10-06, then kept by hand; `tests/docs_routes_test.mjs` fails when a route is missing from it, a row is not a route, a row names the wrong file, or any doc names a `routes/*.js` that is not a `.ts`)
 
 | Method | Path | Who | File |
 |---|---|---|---|
-| GET | `/api/admin/campaigns` | manager+ | routes/admin-campaigns.js |
-| POST | `/api/admin/campaigns` | manager+ | routes/admin-campaigns.js |
-| DELETE | `/api/admin/campaigns/:id` | manager+ | routes/admin-campaigns.js |
-| GET | `/api/admin/campaigns/:id` | manager+ | routes/admin-campaigns.js |
-| PATCH | `/api/admin/campaigns/:id` | manager+ | routes/admin-campaigns.js |
-| GET | `/api/admin/campaigns/options` | manager+ | routes/admin-campaigns.js |
-| GET | `/api/admin/coupons` | manager+ | routes/admin-coupons.js |
-| POST | `/api/admin/coupons` | manager+ | routes/admin-coupons.js |
-| PATCH | `/api/admin/coupons/:id` | manager+ | routes/admin-coupons.js |
-| GET | `/api/admin/cutoffs` | manager+ | routes/admin-cutoffs.js |
-| POST | `/api/admin/cutoffs` | manager+ | routes/admin-cutoffs.js |
-| DELETE | `/api/admin/cutoffs/:id` | manager+ | routes/admin-cutoffs.js |
-| GET | `/api/admin/flowers` | manager+ | routes/admin-flowers.js |
-| PATCH | `/api/admin/flowers/:id/stock` | manager+ | routes/admin-flowers.js |
-| POST | `/api/admin/login` | public (rate-limited; optional `code`; may answer `needs_code`) | routes/admin-auth.js |
-| POST | `/api/admin/logout` | session | routes/admin-auth.js |
-| GET | `/api/admin/me` | employee+ | routes/admin-auth.js |
-| POST | `/api/admin/me/password` | employee+ | routes/admin-auth.js |
-| GET | `/api/admin/me/2fa` | owner | routes/admin-auth.js |
-| POST | `/api/admin/me/2fa/setup` | owner (2FA limiter) | routes/admin-auth.js |
-| POST | `/api/admin/me/2fa/enable` | owner (2FA limiter) | routes/admin-auth.js |
-| POST | `/api/admin/me/2fa/recovery-codes` | owner (2FA limiter) | routes/admin-auth.js |
-| POST | `/api/admin/me/2fa/disable` | owner (2FA limiter) | routes/admin-auth.js |
-| GET | `/api/admin/orders` | manager+ | routes/admin-orders.js |
-| PATCH | `/api/admin/orders/:id` | manager+ | routes/admin-orders.js |
-| PATCH | `/api/admin/orders/:id/fulfillment` | manager+ | routes/admin-orders.js |
-| PATCH | `/api/admin/orders/:id/mark-paid` | manager+ | routes/admin-orders.js |
-| PATCH | `/api/admin/orders/:id/refund` | manager+ | routes/admin-orders.js |
-| POST | `/api/admin/orders/:id/reverify` | manager+ | routes/admin-orders.js |
-| GET | `/api/admin/orders/delivery-sheet` | manager+ | routes/admin-orders.js |
-| GET | `/api/admin/orders/orders.csv` | manager+ | routes/admin-orders.js |
-| POST | `/api/admin/pos/orders` | employee+ | routes/admin-pos.js |
-| POST | `/api/admin/pos/orders/:id/cancel` | employee+ | routes/admin-pos.js |
-| GET | `/api/admin/pos/pickups` | employee+ | routes/admin-pos.js |
-| POST | `/api/admin/pos/pickups/:id/handover` | employee+ | routes/admin-pos.js |
-| GET | `/api/admin/products` | manager+ | routes/admin-products.js |
-| PATCH | `/api/admin/products/:id/featured` | manager+ | routes/admin-products.js |
-| PATCH | `/api/admin/products/:id/status` | manager+ | routes/admin-products.js |
-| GET | `/api/admin/products/products.csv` | manager+ | routes/admin-products.js |
-| GET | `/api/admin/reviews` | manager+ | routes/admin-reviews.js |
-| DELETE | `/api/admin/reviews/:id` | manager+ | routes/admin-reviews.js |
-| PATCH | `/api/admin/reviews/:id` | manager+ | routes/admin-reviews.js |
-| GET | `/api/admin/seo` | manager+ | routes/admin-seo.js |
-| GET | `/api/admin/seo/:id` | manager+ | routes/admin-seo.js |
-| PATCH | `/api/admin/seo/:id` | manager+ | routes/admin-seo.js |
-| POST | `/api/admin/seo/:id/preview` | manager+ | routes/admin-seo.js |
-| GET | `/api/admin/settings` | owner | routes/admin-settings.js |
-| PATCH | `/api/admin/settings` | owner | routes/admin-settings.js |
-| GET | `/api/admin/stats` | manager+ | routes/admin-stats.js |
-| GET | `/api/admin/users` | owner | routes/admin-users.js |
-| POST | `/api/admin/users` | owner | routes/admin-users.js |
-| PATCH | `/api/admin/users/:id` | owner | routes/admin-users.js |
-| POST | `/api/admin/users/:id/password` | owner | routes/admin-users.js |
-| GET | `/api/campaigns/active` | public | routes/campaigns.js |
-| GET | `/api/categories` | public | routes/categories.js |
-| POST | `/api/events` | public | routes/events.js |
-| GET | `/api/flowers` | public | routes/flowers.js |
-| POST | `/api/orders` | public | routes/orders.js |
-| GET | `/api/orders/:token` | public | routes/orders.js |
-| POST | `/api/orders/:token/retry-zalopay-payment` | public | routes/orders.js |
-| POST | `/api/orders/:token/verify-payment` | public | routes/orders.js |
-| GET | `/api/orders/deadline` | public | routes/orders.js |
-| POST | `/api/orders/ipn` | public | routes/orders.js |
-| POST | `/api/orders/quote` | public | routes/orders.js |
-| GET | `/api/orders/upcoming-cutoffs` | public | routes/orders.js |
-| GET | `/api/products` (`?page=N`: 20 per page, answered as `{ items, total, page, pages }`) | public | routes/products.js |
-| GET | `/api/products/:id` | public | routes/products.js |
-| GET | `/api/products/:id/reviews` | public | routes/reviews.js |
-| POST | `/api/products/:id/reviews` | public | routes/reviews.js |
-| GET | `/api/products/status` | public | routes/products.js |
-| GET | `/api/reviews/latest` | public | routes/reviews.js |
-| GET | `/api/settings` | public | routes/settings.js |
-| GET | `/api/settings/wards` | public | routes/settings.js |
-| GET | `/api/tags` | public | routes/tags.js |
+| GET | `/api/admin/campaigns` | manager+ | routes/admin-campaigns.ts |
+| POST | `/api/admin/campaigns` | manager+ | routes/admin-campaigns.ts |
+| DELETE | `/api/admin/campaigns/:id` | manager+ | routes/admin-campaigns.ts |
+| GET | `/api/admin/campaigns/:id` | manager+ | routes/admin-campaigns.ts |
+| PATCH | `/api/admin/campaigns/:id` | manager+ | routes/admin-campaigns.ts |
+| GET | `/api/admin/campaigns/options` | manager+ | routes/admin-campaigns.ts |
+| GET | `/api/admin/coupons` | manager+ | routes/admin-coupons.ts |
+| POST | `/api/admin/coupons` | manager+ | routes/admin-coupons.ts |
+| PATCH | `/api/admin/coupons/:id` | manager+ | routes/admin-coupons.ts |
+| GET | `/api/admin/cutoffs` | manager+ | routes/admin-cutoffs.ts |
+| POST | `/api/admin/cutoffs` | manager+ | routes/admin-cutoffs.ts |
+| DELETE | `/api/admin/cutoffs/:id` | manager+ | routes/admin-cutoffs.ts |
+| GET | `/api/admin/flowers` | manager+ | routes/admin-flowers.ts |
+| PATCH | `/api/admin/flowers/:id/stock` | manager+ | routes/admin-flowers.ts |
+| POST | `/api/admin/login` | public (rate-limited; optional `code`; may answer `needs_code`) | routes/admin-auth.ts |
+| POST | `/api/admin/logout` | session | routes/admin-auth.ts |
+| GET | `/api/admin/me` | employee+ | routes/admin-auth.ts |
+| POST | `/api/admin/me/password` | employee+ | routes/admin-auth.ts |
+| GET | `/api/admin/me/2fa` | owner | routes/admin-auth.ts |
+| POST | `/api/admin/me/2fa/setup` | owner (2FA limiter) | routes/admin-auth.ts |
+| POST | `/api/admin/me/2fa/enable` | owner (2FA limiter) | routes/admin-auth.ts |
+| POST | `/api/admin/me/2fa/recovery-codes` | owner (2FA limiter) | routes/admin-auth.ts |
+| POST | `/api/admin/me/2fa/disable` | owner (2FA limiter) | routes/admin-auth.ts |
+| GET | `/api/admin/orders` | manager+ | routes/admin-orders.ts |
+| PATCH | `/api/admin/orders/:id` | manager+ | routes/admin-orders.ts |
+| PATCH | `/api/admin/orders/:id/fulfillment` | manager+ | routes/admin-orders.ts |
+| PATCH | `/api/admin/orders/:id/mark-paid` | manager+ | routes/admin-orders.ts |
+| PATCH | `/api/admin/orders/:id/refund` | manager+ | routes/admin-orders.ts |
+| POST | `/api/admin/orders/:id/reverify` | manager+ | routes/admin-orders.ts |
+| GET | `/api/admin/orders/delivery-sheet` | manager+ | routes/admin-orders.ts |
+| GET | `/api/admin/orders/orders.csv` | manager+ | routes/admin-orders.ts |
+| POST | `/api/admin/pos/orders` | employee+ | routes/admin-pos.ts |
+| POST | `/api/admin/pos/orders/:id/cancel` | employee+ | routes/admin-pos.ts |
+| GET | `/api/admin/pos/pickups` | employee+ | routes/admin-pos.ts |
+| POST | `/api/admin/pos/pickups/:id/handover` | employee+ | routes/admin-pos.ts |
+| GET | `/api/admin/products` | manager+ | routes/admin-products.ts |
+| PATCH | `/api/admin/products/:id/featured` | manager+ | routes/admin-products.ts |
+| PATCH | `/api/admin/products/:id/status` | manager+ | routes/admin-products.ts |
+| GET | `/api/admin/products/products.csv` | manager+ | routes/admin-products.ts |
+| GET | `/api/admin/reviews` | manager+ | routes/admin-reviews.ts |
+| DELETE | `/api/admin/reviews/:id` | manager+ | routes/admin-reviews.ts |
+| PATCH | `/api/admin/reviews/:id` | manager+ | routes/admin-reviews.ts |
+| GET | `/api/admin/seo` | manager+ | routes/admin-seo.ts |
+| GET | `/api/admin/seo/:id` | manager+ | routes/admin-seo.ts |
+| PATCH | `/api/admin/seo/:id` | manager+ | routes/admin-seo.ts |
+| POST | `/api/admin/seo/:id/preview` | manager+ | routes/admin-seo.ts |
+| GET | `/api/admin/settings` | owner | routes/admin-settings.ts |
+| PATCH | `/api/admin/settings` | owner | routes/admin-settings.ts |
+| GET | `/api/admin/stats` | manager+ | routes/admin-stats.ts |
+| GET | `/api/admin/users` | owner | routes/admin-users.ts |
+| POST | `/api/admin/users` | owner | routes/admin-users.ts |
+| PATCH | `/api/admin/users/:id` | owner | routes/admin-users.ts |
+| POST | `/api/admin/users/:id/password` | owner | routes/admin-users.ts |
+| GET | `/api/campaigns/active` | public | routes/campaigns.ts |
+| GET | `/api/categories` | public | routes/categories.ts |
+| POST | `/api/events` | public | routes/events.ts |
+| GET | `/api/flowers` | public | routes/flowers.ts |
+| POST | `/api/orders` | public | routes/orders.ts |
+| GET | `/api/orders/:token` | public | routes/orders.ts |
+| POST | `/api/orders/:token/retry-zalopay-payment` | public | routes/orders.ts |
+| POST | `/api/orders/:token/verify-payment` | public | routes/orders.ts |
+| GET | `/api/orders/deadline` | public | routes/orders.ts |
+| POST | `/api/orders/ipn` | public | routes/orders.ts |
+| POST | `/api/orders/quote` | public | routes/orders.ts |
+| GET | `/api/orders/upcoming-cutoffs` | public | routes/orders.ts |
+| GET | `/api/products` (`?page=N`: 20 per page, answered as `{ items, total, page, pages }`) | public | routes/products.ts |
+| GET | `/api/products/:id` | public | routes/products.ts |
+| GET | `/api/products/:id/reviews` | public | routes/reviews.ts |
+| POST | `/api/products/:id/reviews` | public | routes/reviews.ts |
+| GET | `/api/products/status` | public | routes/products.ts |
+| GET | `/api/reviews/latest` | public | routes/reviews.ts |
+| GET | `/api/settings` | public | routes/settings.ts |
+| GET | `/api/settings/wards` | public | routes/settings.ts |
+| GET | `/api/tags` | public | routes/tags.ts |
+| GET | `/healthz` | public | server.ts |
+| GET | `/sitemap.xml` | public | server.ts |
 
 ### Pages (customer, server-rendered) and tokens
 `index`, `products`, `product`, `cart`, `checkout`, `order-confirmation`, `custom-bouquet`, `about`, `story`, `commitment`, `terms`, `privacy`, `landing` (alias), `blog` (+ posts). Tokens in use: `zalo_url`, `vat_rate`, `contact_phone_display`, `contact_phone`, `contact_email`, `tel_url`, `maps_url`, `shop_address`, `site_base`, `min_fee`, `max_fee`, `footer_categories`, `campaign_*` (name, headline, subheadline, coupon, coupon_code, hero_image, card), `product_*` (title, description, canonical, robots, og_images), `post_*`/`blog_*`.
@@ -213,7 +215,7 @@ Categories: parents + "Hoa theo mùa" children; the API omits categories with no
 
 Technical facts kept from the original deploy record. The plan gate and the hosting they refer to are not part of this repo.
 
-- CI is `.github/workflows/build.yml` (GitHub Actions, hosted runner): it builds the app and schema images, applies `schema.sql` to a throwaway PostgreSQL and requires an empty `plan`, runs the 18 suites from source on the Dockerfile's Node, and on `main` pushes both images to GHCR tagged with the first 12 characters of the commit.
+- CI is `.github/workflows/build.yml` (GitHub Actions, hosted runner): it builds the app and schema images, applies `schema.sql` to a throwaway PostgreSQL and requires an empty `plan`, runs the 19 suites from source on the Dockerfile's Node, and on `main` pushes both images to GHCR tagged with the first 12 characters of the commit.
 
 - Schema: a fresh database ends with an empty `plan` after `apply` (what CI checks). An in-place upgrade of an old database is additive only (new tables and columns, changed defaults, no `DROP`), but it creates no campaigns, no coupons and no status changes: seeds are not re-run on a live database. **Enum values are only ever added, never removed or reordered:** `plan` cannot see a removal or a reorder, so neither the plan review nor the deploy gate would catch it.
 - Seeds, in this order, for empty databases only: expected counts afterwards are products 105 (100 listable: five are discontinued), product_sizes 247, recipes 631, product_tags 479, campaigns 2, campaign_products 12, coupons 3 **[verified 2026-11-20 on the local database; `seed-more.sh` on a database with only the first 51 products gives the same counts]**. They reach the server inside the schema image: after a wipe and a schema `apply`, run `/seed.sh` from that image (the command is in the header of `seed.sh`). A second run refuses with "this database already has data… Nothing changed.". For a **live** shop that has only the first catalogue, run `/seed-more.sh` instead (same connection variables; run the schema `plan` and `apply` first, the occasion tags need the new `tag_kind` value): it refuses on an empty database and prints how many products it added (0 on a second run).
@@ -255,12 +257,13 @@ All suites live in `tests/` (jsdom is the only dependency: `cd tests && npm inst
 | `campaign_editor_test.mjs` | 107 | editor API (roles, picture whitelist, validation, order), activation guard, the editor page | 39708 |
 | `qol2_test.mjs` | 110 | share, toast, back-to-top, recently viewed, skeletons, copy coupon, reading bar, POS notice/shortcut, last admin page, CSS | — |
 | `listing_test.mjs` | 30 | the listing's pages: `?page=` (cut, order, clamping, filters, sort), callers without `?page` still get the array, the page's bar (click, URL, reset on filter or sort, API down) | — |
+| `docs_routes_test.mjs` | 7 | reads files only: this API table against the routes in `server.ts` and `routes/*.ts` (every route a row, every row a route, the right `.ts` file), and stale `routes/*.js` names in the docs | — |
 | `catalogue_test.mjs` | 19 | the seeded catalogue: at least 100 listable products, the five-page listing that follows, the six occasion tags with Peekbox's names in order and 5+ products each, every product has sizes and recipes, unique names and pictures, every picture a WebP file (560x700 for the second catalogue) | — |
 | `tags_test.mjs` | 15 | the tag groups (flower, colour, occasion "Dịp"): order (occasions in calendar order, the rest alphabetical), hidden when nobody can buy the tag, the product page's tags, `?tag=` OR within a kind and AND across kinds | — |
 | `totp_test.mjs` | 41 | TOTP/HOTP against the RFC 6238 and RFC 4226 published vectors, encryption round trip, key checks, recovery codes | — |
 | `twofa_test.mjs` | 116 | 2FA end to end against the running server and its database: enrol, login with and without code, lockout, one-time codes, recovery codes, disable, limiter | — |
 | **Total (2026-10-10, 15 suites, one full run)** | **1384** | all suites passed with 0 failed; run by Claude on a database built from `schema.sql` and the seeds | |
-| **Total (2026-11-20, Node 26.13.0, 18 suites, one full run)** | **1448** | all suites passed with 0 failed; run by Claude on a local database built from `schema.sql` and the seeds | — |
+| **Total (2026-11-20, Node 26.13.0, 19 suites, one full run)** | **1455** | all suites passed with 0 failed; run by Claude on a local database built from `schema.sql` and the seeds | — |
 | **Total (2026-11-13, Node 26.13.1, 15 suites, one full run)** | **1384** | all suites passed with 0 failed on Node 26.13.1 (server run from source in a node:26.13.1-alpine3.24 container); run by Claude (CI dry run passed too) | |
 
 **Test edits made in the 3c session (so they are not mistaken for regressions):** five suites match `.css` requests with `/\.css(\?|$)/` (URLs now carry `?v=`); `landing_test`, `render_test` and `analytics_test` strip `?v=` before comparing script sources; `qol2_test`'s page-transition check now asserts the cross-fade is **gone** (`@view-transition` and `view-transition-name` absent); `render_test` §3b checks the fingerprints (hash = first 8 hex of the file's sha1, changes when the file changes, left alone for a missing file, not applied to root-relative or already-queried URLs). **Gotcha (found 2026-10-07):** `render_test` §6 copies a temp app tree to prove the server refuses to start without `partials/`; that file list must include **`totp.js`** (`server.js` now requires it) or the check "message names the missing partial" fails with "Cannot find module './totp'" — the repo copy has it and the check passes **[verified 2026-10-07]**.
@@ -295,7 +298,7 @@ The eight older suites from earlier conversations (`reg`, `pos_test`, `pub_test`
 ## 13. APPENDIX
 
 ### 13.1 Constants (single sources)
-Custom bouquet limits/styles/name: `pricing.js`. Review limits: `routes/reviews.js` (+ DB CHECKs). Featured cap 4: `routes/admin-products.js` (`FEATURED_LIMIT`). Coupon code pattern: `routes/admin-coupons.js` (+ CHECK). Username/password rules and 2FA limits (5-minute lockout after 3 wrong codes, 10 recovery codes): `routes/admin-auth.js` / `totp.js`. Tag group labels: `routes/tags.js`. Role ranks + landing pages: `routes/admin-auth.js`. Admin nav list: `public/js/admin-nav.js` (`ADMIN_PAGES`). Settings fields/validators: `routes/admin-settings.js`. SEO field limits (60/70/200) and rules: `seo.js`. Campaign limits (name 80, headline 120, subheadline 200, 12 products): `routes/admin-campaigns.js` (`LIMITS`) + DB CHECKs. GA ID + allowed hostname: `public/js/main.js` (`GA_MEASUREMENT_ID`, `GA_HOSTS`); Google CSP hosts: `server.js` (`GA_SCRIPT`, `GA_IMG`, `GA_CONNECT`). Recently viewed key/size: `main.js`. Toast/back-to-top constants: `main.js`. POS poll 20 s / notice 10 s: `public/js/admin-pos.js`. Seeded settings: address `27 Nguyễn Huệ, phường Sài Gòn, TP.HCM`, VAT 10, fees 25.000/35.000/45.000, style fees 30.000/80.000/100.000, **phone `0900000000`, email `hello@bloomy.example` (placeholders)**. Site URL `https://bloomy.quaintshomelabdomain.uk`; GA4 `G-SJ1XV11XC2`.
+Custom bouquet limits/styles/name: `pricing.js`. Review limits: `routes/reviews.ts` (+ DB CHECKs). Featured cap 4: `routes/admin-products.ts` (`FEATURED_LIMIT`). Coupon code pattern: `routes/admin-coupons.ts` (+ CHECK). Username/password rules and 2FA limits (5-minute lockout after 3 wrong codes, 10 recovery codes): `routes/admin-auth.ts` / `totp.js`. Tag group labels: `routes/tags.ts`. Role ranks + landing pages: `routes/admin-auth.ts`. Admin nav list: `public/js/admin-nav.js` (`ADMIN_PAGES`). Settings fields/validators: `routes/admin-settings.ts`. SEO field limits (60/70/200) and rules: `seo.js`. Campaign limits (name 80, headline 120, subheadline 200, 12 products): `routes/admin-campaigns.ts` (`LIMITS`) + DB CHECKs. GA ID + allowed hostname: `public/js/main.js` (`GA_MEASUREMENT_ID`, `GA_HOSTS`); Google CSP hosts: `server.js` (`GA_SCRIPT`, `GA_IMG`, `GA_CONNECT`). Recently viewed key/size: `main.js`. Toast/back-to-top constants: `main.js`. POS poll 20 s / notice 10 s: `public/js/admin-pos.js`. Seeded settings: address `27 Nguyễn Huệ, phường Sài Gòn, TP.HCM`, VAT 10, fees 25.000/35.000/45.000, style fees 30.000/80.000/100.000, **phone `0900000000`, email `hello@bloomy.example` (placeholders)**. Site URL `https://bloomy.quaintshomelabdomain.uk`; GA4 `G-SJ1XV11XC2`.
 
 ### 13.2 Useful SQL
 ```sql
