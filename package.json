@@ -4,7 +4,7 @@
   "description": "Bloomy: a Vietnamese flower shop (Node, Express 5, PostgreSQL, TypeScript server, plain HTML/CSS/JS front end)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node tests/run_all.mjs",
     "typecheck": "tsc --noEmit && npm run typecheck:web",
     "typecheck:web": "tsc --noEmit -p web",
     "build": "tsc && npm run build:web",
