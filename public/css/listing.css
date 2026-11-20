@@ -267,6 +267,19 @@
   cursor: default;
 }
 
+/* A phone is about 330px of room: "‹ 1 2 3 4 5 ›" is seven buttons and has to fit on one line (it wrapped at 40px). */
+@media (max-width: 480px) {
+  .pagination {
+    gap: 6px;
+  }
+
+  .pagination__btn {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 6px 8px;
+  }
+}
+
 .listing-empty {
   text-align: center;
   color: hsl(var(--muted-foreground));
