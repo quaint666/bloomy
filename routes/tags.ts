@@ -8,12 +8,21 @@ import { Router } from "express";
 import pool = require("../db");
 import type { TagsBody } from "../shared/api-types";
 
-type TagKind = "flower" | "color";
+type TagKind = "flower" | "color" | "occasion";
 interface TagRow { id: number; kind: TagKind; name: string }
 
 const router = Router();
 
-const TAG_KIND_LABELS: Record<TagKind, string> = { flower: "Loại hoa", color: "Màu sắc" };
+// The order here is the order the groups are shown in (the listing's chips and the product page).
+const TAG_KIND_LABELS: Record<TagKind, string> = { flower: "Loại hoa", color: "Màu sắc", occasion: "Dịp" };
+
+// One order for tags everywhere: by group, then by name (Vietnamese alphabet), except the occasions, which run in
+// calendar order (Tết first), which is the order they were added in: their ids. Peekbox links to them by name.
+const KIND_RANK = Object.keys(TAG_KIND_LABELS);
+const compareTags = (a: TagRow, b: TagRow): number =>
+  a.kind !== b.kind ? KIND_RANK.indexOf(a.kind) - KIND_RANK.indexOf(b.kind)
+  : a.kind === "occasion" ? a.id - b.id
+  : a.name.localeCompare(b.name, "vi");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -24,12 +33,11 @@ router.get("/", async (req, res, next) => {
        JOIN products p ON p.id = pt.product_id
        WHERE p.status <> 'discontinued'`
     );
-    const vi = (a: TagRow, b: TagRow) => a.name.localeCompare(b.name, "vi");
     const groups = Object.entries(TAG_KIND_LABELS)
       .map(([kind, label]) => ({
         kind,
         label,
-        tags: rows.filter((r) => r.kind === kind).sort(vi).map(({ id, name }) => ({ id, name })),
+        tags: rows.filter((r) => r.kind === kind).sort(compareTags).map(({ id, name }) => ({ id, name })),
       }))
       .filter((g) => g.tags.length > 0);
     const body: TagsBody = { groups };
@@ -39,4 +47,4 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-export = Object.assign(router, { TAG_KIND_LABELS });
+export = Object.assign(router, { TAG_KIND_LABELS, compareTags });

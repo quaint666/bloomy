@@ -37,7 +37,7 @@
 
 import { Router } from "express";
 import pool = require("../db");
-import { TAG_KIND_LABELS } from "./tags";
+import { TAG_KIND_LABELS, compareTags } from "./tags";
 import type { ProductStatus, SizePrice } from "../types";
 import type { CategoryRef, ProductDetailBody, ProductDetailSize, ProductListItem, ProductPage, ProductType } from "../shared/api-types";
 import { LISTING_PAGE_SIZE } from "../shared/rules";
@@ -255,9 +255,10 @@ router.get("/:id", async (req, res, next) => {
     // and the category with its parent — what the product page's tabs show.
     const { rows: tags } = await pool.query<{ id: number; kind: TagKind; name: string }>(
       `SELECT t.id, t.kind, t.name FROM product_tags pt JOIN tags t ON t.id = pt.tag_id
-       WHERE pt.product_id = $1 ORDER BY t.kind, t.name`,
+       WHERE pt.product_id = $1`,
       [id]
     );
+    tags.sort(compareTags);
     const { rows: images } = await pool.query<{ image: string }>(
       `SELECT image FROM product_images WHERE product_id = $1 ORDER BY sort_order, id`,
       [id]

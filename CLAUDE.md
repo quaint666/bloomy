@@ -18,7 +18,7 @@ node tests/<name>_test.mjs    # from the repo root
 ```
 
 ## Rules and gotchas
-- Every `tests/*_test.mjs` must end with `0 failed` (16 suites, 1,412 checks, all green on 2026-11-20 on Node 26.13.0; the first 15 were also green on 2026-10-10, on Node 26.13.1 on 2026-11-13 and on PostgreSQL 18.6 on 2026-11-11); CI runs all of them on every push (`.github/workflows/build.yml`, from source on the Dockerfile's Node, before any image is pushed), so a red suite blocks the publish; still run them locally first.
+- Every `tests/*_test.mjs` must end with `0 failed` (17 suites, 1,427 checks, all green on 2026-11-20 on Node 26.13.0; the first 15 were also green on 2026-10-10, on Node 26.13.1 on 2026-11-13 and on PostgreSQL 18.6 on 2026-11-11); CI runs all of them on every push (`.github/workflows/build.yml`, from source on the Dockerfile's Node, before any image is pushed), so a red suite blocks the publish; still run them locally first.
 - `TOTP_ENCRYPTION_KEY` is required (the server exits 1 without it) and `twofa_test` needs the same value as the running server; never use the production key.
 - The order endpoints share a 20-per-15-minutes limiter: run the whole set at most twice per 15 minutes.
 - Suites write real rows and restore them: local DB only, never production, never against a server with `EMAIL_MODE=send`.
