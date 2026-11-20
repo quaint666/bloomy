@@ -47,7 +47,7 @@
    shape as .cart-layout ---- */
 .checkout-layout {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); /* minmax(0, ...): a bare fr cannot shrink below its content, see cart.css */
   gap: 32px;
   align-items: start;
 }
@@ -403,7 +403,7 @@
 
 @media (max-width: 900px) {
   .checkout-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr); /* not a bare 1fr: the form pushed the page 12-24px wide at 360px */
   }
 
   .checkout-field-row {

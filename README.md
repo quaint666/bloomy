@@ -54,6 +54,8 @@ npm test                        # all suites, on a fresh server and a throwaway 
 npm test -- listing tags        # only the suites whose file name contains one of the words
 ```
 
+For layout in real browsers (Firefox and WebKit, no extra packages): start a local server, then `node tests/cross_browser_check.mjs [baseUrl] [--only firefox|webkit] [--shots <folder>]`.
+
 Only `DB_HOST`, `DB_PORT`, `DB_USER` and `DB_PASSWORD` of a local Postgres are needed (it refuses another host). To run one suite by hand against a server you started (with the same `TOTP_ENCRYPTION_KEY`): `node tests/render_test.mjs`; it ends with "0 failed", writes real rows and restores them, so use a local database only, and restart that server if you see 429s (the order limiter is 20 requests per 15 minutes). jsdom cannot see CSS or layout, so how the pages look is not covered by the suites.
 
 ## Layout

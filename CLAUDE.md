@@ -37,7 +37,7 @@ node tests/<name>_test.mjs    # one suite by hand, against the server you starte
 - Before pushing a change to `.github/workflows/build.yml`, a Dockerfile or anything CI builds, run `python3 deploy/scripts/ci_dryrun.py`; it skips the steps that only run on `main` (login and push).
 - CI publishes to GHCR (`ghcr.io/quaint666/bloomy` and `bloomy-schema`) only from `main`, tagged with the first 12 characters of the commit, never `latest`, with the run's own `GITHUB_TOKEN`. It never deploys and holds no other secret. The run summary prints the tag and both digests as one pin command.
 - Ask before `git push` to `main`: it publishes images. A push that changes only `docs/**` or `*.md` starts no run.
-- jsdom cannot see CSS or layout: say plainly that how it looks is unverified; never claim a visual result.
+- jsdom cannot see CSS or layout: say plainly that how it looks is unverified; never claim a visual result. For layout, `node tests/cross_browser_check.mjs` (not a suite, not in CI) drives real Firefox and WebKit (MiniBrowser) over a local server at 1440, 390 and 360 px: columns, horizontal scroll, the page bar, clicks, the cart and checkout. Run it against a freshly started server (the order limiter), and after any CSS change. It says nothing about real Safari, the dark theme, or how it looks to the eye.
 - One branch per task, small commits, one pull request per branch (`.github/pull_request_template.md`; CI only builds a branch that has one); the user reviews the diff and merges. `.github/CODEOWNERS` is `* @quaint666`.
 
 ## Docs (open when the task touches them)

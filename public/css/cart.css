@@ -324,7 +324,7 @@
 
 @media (max-width: 900px) {
   .cart-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr); /* not a bare 1fr: it grew to the width of a cart photo at phone width */
   }
 
   .cart-summary {
@@ -344,7 +344,9 @@
 @media (max-width: 600px) {
   .cart-item {
     display: grid;
-    grid-template-columns: 1fr auto;
+    /* minmax(0, 1fr), not 1fr: a bare 1fr cannot shrink below its content, and the photo's own width (560px) pushed the
+       row past the screen edge at phone width (found by tests/cross_browser_check.mjs in Firefox and WebKit). */
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       "link  link"
       "qty   size"
