@@ -74,7 +74,7 @@
 .listing-filters {
   position: sticky;
   top: var(--nav-height);
-  z-index: 40;
+  z-index: var(--z-sticky);
   /* Same see-through, blurred glass as the header above it (.site-nav in style.css). */
   background-color: hsl(var(--background) / 0.8);
   backdrop-filter: blur(12px);

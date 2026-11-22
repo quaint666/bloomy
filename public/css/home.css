@@ -40,7 +40,7 @@
 
 .hero__note {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-note);
   left: -28%;
   top: 75%;
   width: 50%;

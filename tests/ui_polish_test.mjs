@@ -82,6 +82,30 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
     });
   }
   check("no customer stylesheet types a duration: every transition and animation uses a --motion-* token", rawDurations.length === 0, rawDurations.join(", "));
+  // Enforced: a customer stylesheet types no z-index number and no hex colour. Layers are --z-* tokens and the two advisory
+  // colours are tokens, all in style.css :root. Exempt: a hex inside a mask (it is an alpha mask, not a colour); admin sheets.
+  const zTok = Object.fromEntries([...stripComments(style).matchAll(/--(z-[a-z-]+):\s*(\d+)\s*;/g)].map((m) => [m[1], Number(m[2])]));
+  check("the layer tokens exist", ["z-note", "z-float", "z-sticky", "z-nav-backdrop", "z-nav-panel", "z-nav", "z-top", "z-nav-popover", "z-bar", "z-toast"].every((n) => n in zTok), JSON.stringify(zTok));
+  check("layers stack as the comments promise: float and sticky under the header, the toast above all, the header's inner layers in order",
+    zTok["z-float"] < zTok["z-nav"] && zTok["z-sticky"] < zTok["z-nav"] && zTok["z-nav"] < zTok["z-top"] && zTok["z-top"] <= zTok["z-bar"] && zTok["z-bar"] < zTok["z-toast"] &&
+    zTok["z-nav-backdrop"] < zTok["z-nav-panel"] && zTok["z-nav-panel"] < zTok["z-nav-popover"], JSON.stringify(zTok));
+  const rawZ = [], rawHex = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((n) => n.endsWith(".css") && !n.startsWith("admin"))) {
+    stripComments(css(f)).split("\n").forEach((line, i) => {
+      if (/z-index\s*:\s*-?\d/.test(line)) rawZ.push(`${f}:${i + 1}`);
+      if (/^\s*[a-z-]+\s*:[^;]*#[0-9a-fA-F]{3,8}(?![-\w])/i.test(line) && !/mask-image/.test(line) && !/^\s*--advisory-/.test(line)) rawHex.push(`${f}:${i + 1}`);
+    });
+  }
+  check("no customer stylesheet types a z-index number: every layer is a --z-* token", rawZ.length === 0, rawZ.join(", "));
+  check("no customer stylesheet types a hex colour (the advisory tints are tokens; a mask is exempt)", rawHex.length === 0, rawHex.join(", "));
+  // A var(--z-...) or var(--advisory-...) that names no token computes to "auto" or nothing, silently, and jsdom cannot see it:
+  // every one used (admin sheets too) must be defined in :root.
+  const definedTok = new Set([...Object.keys(zTok), ...[...stripComments(style).matchAll(/--(advisory-[a-z-]+):/g)].map((m) => m[1])]);
+  const usedTok = new Set();
+  for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((n) => n.endsWith(".css"))) {
+    for (const m of stripComments(css(f)).matchAll(/var\(--(z-[a-z-]+|advisory-[a-z-]+)\)/g)) usedTok.add(m[1]);
+  }
+  check("every --z-* and --advisory-* token a stylesheet uses is defined (all 12 are used)", usedTok.size >= 12 && [...usedTok].every((n) => definedTok.has(n)), [...usedTok].filter((n) => !definedTok.has(n)).join(", ") || `used ${usedTok.size}`);
   // The page cross-fade: on for customer pages without reduce-motion, short, the header stays put, admin pages opt out.
   const fadeStyle = stripComments(style), fadeAdmin = stripComments(css("admin.css"));
   check("page cross-fade: opted into only under no-preference, over --motion-page (group, old and new: the group alone otherwise holds the fade open for 250 ms), with the header named so it stays put", /@media \(prefers-reduced-motion: no-preference\)\s*\{\s*@view-transition\s*\{\s*navigation:\s*auto;?\s*\}[^@]*::view-transition-group\(\*\),\s*::view-transition-old\(\*\),\s*::view-transition-new\(\*\)\s*\{\s*animation-duration:\s*var\(--motion-page\);?\s*\}\s*\.site-nav\s*\{\s*view-transition-name:\s*site-nav;?\s*\}/.test(fadeStyle) && (fadeStyle.match(/@view-transition/g) || []).length === 1);

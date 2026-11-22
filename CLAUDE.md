@@ -19,7 +19,7 @@ node tests/<name>_test.mjs    # one suite by hand, against the server you starte
 ```
 
 ## Rules and gotchas
-- Every `tests/*_test.mjs` must end with `0 failed` (29 suites, 1,755 checks, all green on 2026-11-22 on Node 26.13.0; the first 15 were also green on 2026-10-10, on Node 26.13.1 on 2026-11-13 and on PostgreSQL 18.6 on 2026-11-11); CI runs all of them on every pull request and every push to `main` (`.github/workflows/build.yml`, from source on the Dockerfile's Node, before any image is pushed), so a red suite blocks the publish; still run them locally first.
+- Every `tests/*_test.mjs` must end with `0 failed` (29 suites, 1,784 checks, all green on 2026-11-22 on Node 26.13.0; the first 15 were also green on 2026-10-10, on Node 26.13.1 on 2026-11-13 and on PostgreSQL 18.6 on 2026-11-11); CI runs all of them on every pull request and every push to `main` (`.github/workflows/build.yml`, from source on the Dockerfile's Node, before any image is pushed), so a red suite blocks the publish; still run them locally first.
 - `TOTP_ENCRYPTION_KEY` is required (the server exits 1 without it) and `twofa_test` needs the same value as the running server; never use the production key.
 - `npm test` (`tests/run_all.mjs`) creates `bloomy_test_<id>`, loads `schema.sql` and the seeds, starts its own server, runs every suite and drops the database, so the limiters and leftover test rows never matter and your `bloomy` database is untouched. A suite run by hand against a long-running server still shares that server's 20-per-15-minutes order limiter: restart the server if you see 429s.
 - Suites write real rows and restore them: local DB only, never production, never against a server with `EMAIL_MODE=send`.
@@ -39,8 +39,10 @@ node tests/<name>_test.mjs    # one suite by hand, against the server you starte
 - Ask before `git push` to `main`: it publishes images. A push that changes only `docs/**` or `*.md` starts no run.
 - Pink: `--primary` (soft) is for fills and large text (heading accents, big numerals, graphics); `--primary-text` (deeper, 4.6:1 on white and cream) is for small text and for any button or badge with white text. `ui_polish_test` computes the contrast from the stylesheet and fails for a small text colour or a white-text fill on the soft pink.
 - Grid columns on customer pages are written `minmax(0, 1fr)`, never a bare `1fr` / `repeat(n, 1fr)`: a bare `fr` cannot shrink below its content and pushes the page sideways on a phone (`ui_polish_test` fails on it; the admin stylesheets are exempt).
+- Layers and tints are tokens: a customer stylesheet never types a `z-index` number (use `var(--z-*)`) or a hex colour (the sold-out advisory's two tints are `--advisory-text` / `--advisory-bg`; colours are otherwise `hsl(var(--…))`). All are in `style.css` `:root`; `ui_polish_test` fails on a typed one, on a token that is used but not defined, and on a wrong stacking order (the admin stylesheets are exempt).
 - jsdom cannot see CSS or layout: say plainly that how it looks is unverified; never claim a visual result. For layout, `node tests/cross_browser_check.mjs` (not a suite, not in CI) drives real Firefox and WebKit (MiniBrowser) over a local server at 1440, 390 and 360 px: columns, horizontal scroll, the page bar, clicks, the cart and checkout. Run it against a freshly started server (the order limiter), and after any CSS change. It says nothing about real Safari, the dark theme, or how it looks to the eye.
-- One branch per task, small commits, one pull request per branch (`.github/pull_request_template.md`; CI only builds a branch that has one); the user reviews the diff and merges. `.github/CODEOWNERS` is `* @quaint666`.
+- One branch per task, small commits, one pull request per branch of about 300 changed lines or fewer (say why if more; docs, images and lockfiles do not count) (`.github/pull_request_template.md`; CI only builds a branch that has one); the user reviews the diff and merges. `.github/CODEOWNERS` is `* @quaint666`.
 
 ## Docs (open when the task touches them)
-- `docs/00-HANDOFF.md`: architecture and API table (§5), locked decisions (§6), tests (§10).
+- `docs/01-ARCHITECTURE.md`: a short, current picture of how the app works.
+- `docs/00-HANDOFF.md`: architecture detail and API table (§5), locked decisions (§6), tests (§10).

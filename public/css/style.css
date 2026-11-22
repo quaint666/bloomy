@@ -101,6 +101,24 @@
 
   /* The header's height before main.ts measures the real one (74 px, the same at every width). */
   --nav-height: 74px;
+
+  /* Layers on the customer pages. Same numbers as before; a number typed anywhere else fails ui_polish_test.
+     --z-nav-backdrop, --z-nav-panel and --z-nav-popover only order things inside .site-nav, which has its own
+     stacking context (sticky + z-index), so they never compete with the page. */
+  --z-note: 2;            /* the hero's note over its own photo */
+  --z-float: 30;          /* the floating contact button, the share menu */
+  --z-sticky: 40;         /* the listing filter bar */
+  --z-nav-backdrop: 40;   /* dims the page behind the open mobile menu */
+  --z-nav-panel: 41;      /* the open mobile menu, above its backdrop */
+  --z-nav: 50;            /* the header */
+  --z-top: 55;            /* back to top */
+  --z-nav-popover: 60;    /* the search results, above the header's own row */
+  --z-bar: 60;            /* the blog reading bar */
+  --z-toast: 80;          /* the add-to-cart toast, above everything */
+
+  /* The sold-out advisory's orange tint: the product page and the low-stock row in Kho hoa. Hex, kept exact. */
+  --advisory-text: #b5670a;
+  --advisory-bg: #fdf1e0;
 }
 
 /* ---- Reset ---- */
@@ -235,7 +253,7 @@ summary:focus-visible,
 .site-nav {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: var(--z-nav);
   background-color: hsl(var(--background) / 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -336,7 +354,7 @@ summary:focus-visible,
   padding: 8px;
   max-height: 320px;
   overflow-y: auto;
-  z-index: 60; /* above .site-nav's z-index: 50 */
+  z-index: var(--z-nav-popover);
 }
 
 .site-nav__search-result {
@@ -618,7 +636,7 @@ summary:focus-visible,
     inset: 0;
     top: var(--nav-height);
     background-color: hsl(var(--foreground) / 0.35);
-    z-index: 40;
+    z-index: var(--z-nav-backdrop);
   }
 
   .site-nav.is-open .site-nav__backdrop {
@@ -633,7 +651,7 @@ summary:focus-visible,
     top: var(--nav-height);
     left: 0;
     right: 0;
-    z-index: 41;
+    z-index: var(--z-nav-panel);
     background-color: hsl(var(--background) / 0.9);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -1049,8 +1067,7 @@ summary:focus-visible,
   position: fixed;
   right: 20px;
   bottom: 20px;
-  z-index: 30; /* below the mobile nav backdrop (40) and panel (41), so it
-                  doesn't float over the open mobile menu */
+  z-index: var(--z-float); /* below the header (--z-nav), so it doesn't float over the open mobile menu */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1318,7 +1335,7 @@ html {
   left: 50%;
   bottom: 24px;
   transform: translateX(-50%);
-  z-index: 80;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1402,7 +1419,7 @@ html {
   position: fixed;
   left: 24px;
   bottom: 24px;
-  z-index: 55;
+  z-index: var(--z-top);
   width: 44px;
   height: 44px;
   display: flex;
