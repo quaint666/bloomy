@@ -91,6 +91,16 @@
   --motion-enter: 400ms;     /* something arriving: a card rising, the "added" pop, the cart badge */
   --motion-page: 150ms;      /* one page fading into the next */
   --motion-stagger: 40ms;    /* the pause between one card and the next */
+
+  /* The warm wash behind the home and landing heroes, the circle and the hairline of the arch frame. */
+  --hero-blush: 350 45% 97%;
+  --hero-peach: 24 70% 96.5%;
+  --hero-sun: 24 85% 90%;
+  --hero-line: 350 33% 78%;
+  --hero-wash: linear-gradient(100deg, hsl(var(--hero-blush)) 0%, hsl(var(--hero-peach)) 100%);
+
+  /* The header's height before main.ts measures the real one (74 px, the same at every width). */
+  --nav-height: 74px;
 }
 
 /* ---- Reset ---- */
@@ -169,10 +179,10 @@ summary:focus-visible,
 }
 
 /* Any anchor-jump target (e.g. #featured) needs this, or the sticky nav
-   covers its top ~73px, making the landing spot look like it's still on
+   covers its top ~74px, making the landing spot look like it's still on
    the previous section. */
 [id] {
-  scroll-margin-top: var(--nav-height, 73px);
+  scroll-margin-top: var(--nav-height);
 }
 
 /* ---- Shared layout container ---- */
@@ -524,6 +534,28 @@ summary:focus-visible,
   font-style: italic;
 }
 
+/* The arch frame: the home hero photo and a campaign picture on the landing page look the same (a 460 x 524 arch, its top radius
+   half the width, a hairline outline offset from it) with the peach circle behind. ONE rule each, so the two cannot drift. */
+.hero__arch,
+.landing-hero__media {
+  aspect-ratio: 460 / 524;
+  border-radius: 50% 50% 28px 28px / 43.9% 43.9% 28px 28px;
+  outline: 1.5px solid hsl(var(--hero-line));
+  outline-offset: 12px;
+}
+
+.hero__sun,
+.landing-hero__media::before {
+  content: "";
+  position: absolute;
+  top: -4%;
+  right: -11%;
+  width: 63%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: hsl(var(--hero-sun));
+}
+
 .section-heading__lead {
   color: hsl(var(--muted-foreground));
 }
@@ -584,7 +616,7 @@ summary:focus-visible,
     display: none;
     position: fixed;
     inset: 0;
-    top: var(--nav-height, 73px);
+    top: var(--nav-height);
     background-color: hsl(var(--foreground) / 0.35);
     z-index: 40;
   }
@@ -598,7 +630,7 @@ summary:focus-visible,
   .site-nav__mobile-panel {
     display: none;
     position: fixed;
-    top: var(--nav-height, 73px);
+    top: var(--nav-height);
     left: 0;
     right: 0;
     z-index: 41;
@@ -609,7 +641,7 @@ summary:focus-visible,
     box-shadow: 0 16px 32px hsl(var(--foreground) / 0.12);
     padding: 12px 16px 16px;
     flex-direction: column;
-    max-height: calc(100vh - var(--nav-height, 73px));
+    max-height: calc(100vh - var(--nav-height));
     overflow-y: auto;
   }
 
@@ -898,7 +930,7 @@ summary:focus-visible,
   border-radius: var(--radius);
   padding: 28px;
   position: sticky;
-  top: calc(var(--nav-height, 73px) + 24px);
+  top: calc(var(--nav-height) + 24px);
 }
 
 .checkout-summary__title {

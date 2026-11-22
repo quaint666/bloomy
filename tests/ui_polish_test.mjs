@@ -102,14 +102,15 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   check("pink: white text on --primary-text-hover (the button under the mouse) is 4.5:1 or better", have && cr([0, 0, 100], hoverPink) >= 4.5, have ? cr([0, 0, 100], hoverPink).toFixed(2) : "token missing");
   const parseRules = (src) => [...stripComments(src).matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim().replace(/\s+/g, " "), body: m[2] }));
   const FILL_OK = new Set([".reading-progress__bar", ".hero__badge::before", '.tag-chip[aria-pressed="true"]::before', ".timeline__dot"]);
+  const LARGE_PINK = new Set([".about-stat__number", ".process-step__number", ".process-step__icon"]); // a big numeral (32 px) and a graphic: 3:1 is enough
   const softText = [], softFill = [];
   for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((n) => n.endsWith(".css") && !n.startsWith("admin"))) {
     for (const { sel, body } of parseRules(css(f))) {
-      if (/(?:^|[;\s])color:\s*hsl\(var\(--primary\)\)/.test(body) && !(/(^|\s)em$/.test(sel) || sel === ".about-stat__number")) softText.push(`${f}: ${sel}`);
+      if (/(?:^|[;\s])color:\s*hsl\(var\(--primary\)\)/.test(body) && !(/(^|\s)em$/.test(sel) || LARGE_PINK.has(sel))) softText.push(`${f}: ${sel}`);
       if (/background(?:-color)?:\s*hsl\(var\(--primary\)(?:\s*\/\s*0\.9)?\)/.test(body) && !FILL_OK.has(sel)) softFill.push(`${f}: ${sel}`);
     }
   }
-  check("pink: small text uses --primary-text; the soft --primary is only a heading accent (`em`) or the big numeral", softText.length === 0, softText.slice(0, 4).join(" | "));
+  check("pink: small text uses --primary-text; the soft --primary is only a heading accent (`em`), a big numeral or a graphic", softText.length === 0, softText.slice(0, 4).join(" | "));
   check("pink: a fill under white text uses --primary-text (the soft --primary is a fill only for the four decorative bits)", softFill.length === 0, softFill.slice(0, 4).join(" | "));
   // ---- The home hero: the photo in an arch beside the text, on a blush-to-peach wash. The text never sits on the photo, so its
   // contrast is a calculation from the two ends of the wash (not a guess about a picture).
@@ -119,11 +120,11 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   check("hero: the photo has alt text and its size (the page does not jump while it loads), and no scrim is left over it", !!heroArch && (heroArch.getAttribute("alt") || "").length > 0 && heroArch.hasAttribute("width") && heroArch.hasAttribute("height") && !heroDoc.querySelector(".hero__scrim, .hero__bg"));
   check("hero: the note is a link to the custom bouquet page, and that page does have the message step the note promises", !!heroNote && heroNote.getAttribute("href") === "custom-bouquet.html" && /Lời nhắn/.test(publicFile("custom-bouquet.html")) && /lời nhắn/i.test(heroNote.textContent || ""));
   const homeCss = stripComments(css("home.css"));
-  const heroTok = (n) => { const m = homeCss.match(new RegExp(`--${n}:\\s*(\\d+(?:\\.\\d+)?) (\\d+(?:\\.\\d+)?)% (\\d+(?:\\.\\d+)?)%`)); return m ? m.slice(1, 4).map(Number) : null; };
+  const heroTok = (n) => { const m = stripComments(style).match(new RegExp(`--${n}:\\s*(\\d+(?:\\.\\d+)?) (\\d+(?:\\.\\d+)?)% (\\d+(?:\\.\\d+)?)%`)); return m ? m.slice(1, 4).map(Number) : null; };
   const blush = heroTok("hero-blush"), peach = heroTok("hero-peach"), mutedFg = hslTok("muted-foreground");
   const heroOk = !!(blush && peach && mutedFg && textPink && [blush, peach].every((bg) => cr(textPink, bg) >= 4.5 && cr(mutedFg, bg) >= 4.5));
   check("hero: the pink small text and the muted text pass AA (4.5:1) on both ends of the wash", heroOk, heroOk ? "" : "token missing or too light");
-  check("hero: the text column is never wider than the page: its grid columns are minmax(0, ...) and the arch has a fixed aspect ratio", /\.hero__grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,/.test(homeCss) && /\.hero__arch\s*\{[^}]*aspect-ratio:\s*460\s*\/\s*524/.test(homeCss));
+  check("hero: the text column is never wider than the page: its grid columns are minmax(0, ...)", /\.hero__grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,/.test(homeCss));
   // ---- The heading accent (the pink italic words) is ONE rule in style.css, and every <em> in a customer heading is covered by it.
   const accentRule = parseRules(style).find((r) => /(^|[,\s])\.hero__heading em\b/.test(r.sel) && /color:\s*hsl\(var\(--primary\)\)/.test(r.body) && /font-style:\s*italic/.test(r.body));
   const accentSels = accentRule ? accentRule.sel.split(",").map((x) => x.trim()) : [];
@@ -139,6 +140,19 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   }
   check("heading accent: every <em> inside a customer page's h1 or h2 is covered by the shared rule", accentSels.length > 0 && uncovered.length === 0, uncovered.slice(0, 3).join(" | "));
   check("header: a 3px pink line above it (the site's mark; the measured --nav-height includes it)", /\.site-nav\s*\{[^}]*border-top:\s*3px solid hsl\(var\(--primary\)\)/.test(stripComments(style)));
+  // ---- One wash and one arch frame for the home hero and the landing page's campaign picture; the step icons; one --nav-height.
+  const landingCss = stripComments(css("landing.css")), styleClean = stripComments(style);
+  const frameRule = parseRules(style).find((r) => /(^|,)\s*\.hero__arch\s*(,|$)/.test(r.sel) && /\.landing-hero__media\s*(,|$)/.test(r.sel) && /aspect-ratio:\s*460\s*\/\s*524/.test(r.body) && /outline:/.test(r.body));
+  check("arch frame: the home photo and the landing picture share ONE rule in style.css (ratio, radius, outline); neither page stylesheet repeats it", !!frameRule && !/43\.9%|outline:\s*1\.5px/.test(homeCss) && !/43\.9%|outline:\s*1\.5px|aspect-ratio:\s*5 \/ 4|aspect-ratio:\s*16 \/ 10/.test(landingCss));
+  check("wash: --hero-wash is defined once in :root and both the home hero and the landing hero use it", /--hero-wash:\s*linear-gradient/.test(styleClean) && /\.hero\s*\{[^}]*background:\s*var\(--hero-wash\)/.test(homeCss) && /\.landing-hero\s*\{[^}]*background:\s*var\(--hero-wash\)/.test(landingCss));
+  check("landing hero: the band clips the peach circle (it pokes past the picture: sideways scroll at 1100 px otherwise) and the picture is 76% wide and centred on a narrow screen", /\.landing-hero\s*\{[^}]*overflow:\s*hidden/.test(landingCss) && /\.landing-hero__media\s*\{[^}]*order:\s*-1[^}]*width:\s*76%/.test(landingCss));
+  const stepDoc = new JSDOM(publicFile("commitment.html")).window.document;
+  const stepIcons = [...stepDoc.querySelectorAll(".process-step")].map((st) => st.querySelector("svg.process-step__icon"));
+  check("steps: each of the four steps has its own icon (four different drawings, not one repeated shape), hidden from screen readers", stepIcons.length === 4 && stepIcons.every((i) => i && i.getAttribute("aria-hidden") === "true") && new Set(stepIcons.map((i) => i.innerHTML)).size === 4);
+  check("steps: the numerals are the full soft pink (no alpha: the old 25% was 1.3:1)", /\.process-step__number\s*\{[^}]*color:\s*hsl\(var\(--primary\)\)/.test(stripComments(css("commitment.css"))));
+  const navFallbacks = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((n) => n.endsWith(".css") && !n.startsWith("admin"))) if (/var\(--nav-height\s*,/.test(stripComments(css(f)))) navFallbacks.push(f);
+  check("--nav-height: one default in :root (main.ts measures the real height); no stylesheet repeats a fallback number", /:root\s*\{[^}]*--nav-height:\s*\d+px/.test(styleClean) && navFallbacks.length === 0, navFallbacks.join(", "));
   const adminPages = fs.readdirSync(path.join(ROOT, "public")).filter((f) => /^admin-.*\.html$/.test(f));
   const adminOrder = adminPages.filter((f) => { const h = fs.readFileSync(path.join(ROOT, "public", f), "utf8"); return h.indexOf("css/style.css") >= 0 && h.indexOf("css/admin.css") > h.indexOf("css/style.css"); });
   check("page cross-fade: admin.css opts out (navigation: none) and every admin page loads it after style.css, so the later rule wins", /@view-transition\s*\{\s*navigation:\s*none;?\s*\}/.test(fadeAdmin) && adminPages.length >= 14 && adminOrder.length === adminPages.length, `${adminOrder.length}/${adminPages.length}`);

@@ -189,7 +189,7 @@
   border-radius: var(--radius);
   padding: 28px;
   position: sticky;
-  top: calc(var(--nav-height, 73px) + 24px);
+  top: calc(var(--nav-height) + 24px);
 }
 
 .cart-summary__title {
