@@ -40,7 +40,8 @@ node tests/<name>_test.mjs    # one suite by hand, against the server you starte
 - Pink: `--primary` (soft) is for fills and large text (heading accents, big numerals, graphics); `--primary-text` (deeper, 4.6:1 on white and cream) is for small text and for any button or badge with white text. `ui_polish_test` computes the contrast from the stylesheet and fails for a small text colour or a white-text fill on the soft pink.
 - Grid columns on customer pages are written `minmax(0, 1fr)`, never a bare `1fr` / `repeat(n, 1fr)`: a bare `fr` cannot shrink below its content and pushes the page sideways on a phone (`ui_polish_test` fails on it; the admin stylesheets are exempt).
 - jsdom cannot see CSS or layout: say plainly that how it looks is unverified; never claim a visual result. For layout, `node tests/cross_browser_check.mjs` (not a suite, not in CI) drives real Firefox and WebKit (MiniBrowser) over a local server at 1440, 390 and 360 px: columns, horizontal scroll, the page bar, clicks, the cart and checkout. Run it against a freshly started server (the order limiter), and after any CSS change. It says nothing about real Safari, the dark theme, or how it looks to the eye.
-- One branch per task, small commits, one pull request per branch (`.github/pull_request_template.md`; CI only builds a branch that has one); the user reviews the diff and merges. `.github/CODEOWNERS` is `* @quaint666`.
+- One branch per task, small commits, one pull request per branch of about 300 changed lines or fewer (say why if more; docs, images and lockfiles do not count) (`.github/pull_request_template.md`; CI only builds a branch that has one); the user reviews the diff and merges. `.github/CODEOWNERS` is `* @quaint666`.
 
 ## Docs (open when the task touches them)
-- `docs/00-HANDOFF.md`: architecture and API table (§5), locked decisions (§6), tests (§10).
+- `docs/01-ARCHITECTURE.md`: a short, current picture of how the app works.
+- `docs/00-HANDOFF.md`: architecture detail and API table (§5), locked decisions (§6), tests (§10).

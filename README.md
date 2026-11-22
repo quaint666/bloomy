@@ -25,7 +25,7 @@ Live: https://bloomy.quaintshomelabdomain.uk
 - **29 test suites, 1,779 checks** against a real server and database, using jsdom for the pages.
 - **CI on GitHub Actions** builds the images, checks the schema against a throwaway PostgreSQL, runs the suites, and publishes to GHCR from `main`.
 
-Architecture, the API table and the locked design decisions are in [`docs/00-HANDOFF.md`](docs/00-HANDOFF.md).
+How it works is in [`docs/01-ARCHITECTURE.md`](docs/01-ARCHITECTURE.md); the API table and the locked design decisions are in [`docs/00-HANDOFF.md`](docs/00-HANDOFF.md).
 
 ## Run it locally
 
