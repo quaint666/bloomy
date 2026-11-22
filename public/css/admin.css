@@ -566,7 +566,7 @@
    Flowers ("Kho hoa")
    ========================================================================== */
 .admin-table__row--low > td {
-  background-color: #fdf1e0; /* same orange tint as the sold-out advisory */
+  background-color: var(--advisory-bg); /* same orange tint as the sold-out advisory */
 }
 
 .admin-flowers__stock {

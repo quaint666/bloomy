@@ -151,8 +151,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #b5670a;
-  background-color: #fdf1e0;
+  color: var(--advisory-text);
+  background-color: var(--advisory-bg);
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 0.85rem;
@@ -515,7 +515,7 @@
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  z-index: 30;
+  z-index: var(--z-float);
   display: flex;
   flex-direction: column;
   min-width: 220px;
