@@ -4,56 +4,89 @@
    featured products, features ("Vì sao chọn Bloomy"), testimonials, footer.
    ========================================================================== */
 
-/* ---- Hero ---- */
+/* ---- Hero ----
+   Text on the left, the photo in an arch on the right, on a blush-to-peach wash. The text always sits on a plain colour
+   (so its contrast does not depend on the photo, and ui_polish_test computes it), the photo is shown at about its own size
+   (hero-bouquet.webp is 700 px wide), and the "Hoa tự chọn" note is a real link to the page where a message can be written.
+   The arch is 460 x 524 at full size (--arch ratio below); its top radius is half the width, written as 50% / 43.9%. */
 .hero {
+  --hero-blush: 350 45% 97%;
+  --hero-peach: 24 70% 96.5%;
+  --hero-sun: 24 85% 90%;
+  --hero-line: 350 33% 78%;
   position: relative;
   overflow: hidden;
-  min-height: 620px;
-  display: flex;
+  padding-block: 56px;
+  background: linear-gradient(100deg, hsl(var(--hero-blush)) 0%, hsl(var(--hero-peach)) 100%);
+}
+
+.hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, clamp(340px, 38vw, 460px));
+  gap: 48px;
   align-items: center;
-  padding-block: 64px;
 }
 
-.hero__bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-}
-
-/* Two overlays, matching what the real mockup uses (confirmed via
-   DevTools) — a left-to-right fade so the text sits on solid background,
-   plus a subtle top/bottom vignette on the photo itself. */
-.hero__scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-
-.hero__scrim--horizontal {
-  background: linear-gradient(
-    to right,
-    hsl(var(--background) / 0.85) 0%,
-    hsl(var(--background) / 0.4) 50%,
-    hsl(var(--background) / 0) 100%
-  );
-}
-
-.hero__scrim--vertical {
-  background: linear-gradient(
-    to top,
-    hsl(var(--background) / 0.6) 0%,
-    hsl(var(--background) / 0) 50%,
-    hsl(var(--background) / 0.2) 100%
-  );
-}
-
-.hero .container {
+.hero__art {
   position: relative;
-  z-index: 2;
   width: 100%;
+  justify-self: end;
+}
+
+.hero__sun {
+  position: absolute;
+  top: -4%;
+  right: -11%;
+  width: 63%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: hsl(var(--hero-sun));
+}
+
+.hero__arch {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 460 / 524;
+  object-fit: cover;
+  object-position: 58% 50%;
+  border-radius: 50% 50% 28px 28px / 43.9% 43.9% 28px 28px;
+  outline: 1.5px solid hsl(var(--hero-line));
+  outline-offset: 12px;
+}
+
+.hero__note {
+  position: absolute;
+  z-index: 2;
+  left: -28%;
+  top: 75%;
+  width: 50%;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background-color: hsl(var(--background));
+  box-shadow: 0 12px 30px hsl(var(--primary) / 0.2);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: hsl(var(--muted-foreground));
+  text-wrap: balance;
+  transform: rotate(-2deg);
+  transition: transform var(--motion-base) ease, box-shadow var(--motion-base) ease;
+}
+
+.hero__note strong {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: hsl(var(--foreground));
+}
+
+.hero__note:hover {
+  transform: rotate(-2deg) translateY(-2px);
+  box-shadow: 0 16px 36px hsl(var(--primary) / 0.28);
 }
 
 .hero__content {
@@ -164,14 +197,20 @@
 
 @media (max-width: 900px) {
   .hero {
-    min-height: 600px;
+    padding-block: 36px 44px;
   }
 
-  /* Full-width heavier fade instead of the desktop left-to-right one —
-     at this width the text column spans the whole viewport, so the whole
-     photo needs subduing, not just its left half. */
-  .hero__scrim--horizontal {
-    background: hsl(var(--background) / 0.9);
+  .hero__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
+  }
+
+  /* The photo comes first on a narrow screen, the text below it. */
+  .hero__art {
+    order: -1;
+    justify-self: center;
+    width: 76%;
+    max-width: 380px;
   }
 
   .hero__content {
@@ -182,9 +221,29 @@
     font-size: 2.25rem;
   }
 
+  .hero__note {
+    left: -8%;
+    top: 76%;
+    width: 62%;
+    padding: 11px 14px;
+    font-size: 0.74rem;
+  }
+}
+
+/* The three facts stay on one row on a phone (they used to wrap, leaving "100+" alone on a line). */
+@media (max-width: 600px) {
   .hero__stats {
-    flex-wrap: wrap;
-    row-gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .hero__stat {
+    padding-right: 8px;
+  }
+
+  .hero__stat-number {
+    font-size: 1.15rem;
   }
 }
 

@@ -111,6 +111,19 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   }
   check("pink: small text uses --primary-text; the soft --primary is only a heading accent (`em`) or the big numeral", softText.length === 0, softText.slice(0, 4).join(" | "));
   check("pink: a fill under white text uses --primary-text (the soft --primary is a fill only for the four decorative bits)", softFill.length === 0, softFill.slice(0, 4).join(" | "));
+  // ---- The home hero: the photo in an arch beside the text, on a blush-to-peach wash. The text never sits on the photo, so its
+  // contrast is a calculation from the two ends of the wash (not a guess about a picture).
+  const publicFile = (f) => fs.readFileSync(path.join(ROOT, "public", f), "utf8");
+  const heroDoc = new JSDOM(publicFile("index.html")).window.document;
+  const heroArch = heroDoc.querySelector(".hero__arch"), heroNote = heroDoc.querySelector(".hero__note");
+  check("hero: the photo has alt text and its size (the page does not jump while it loads), and no scrim is left over it", !!heroArch && (heroArch.getAttribute("alt") || "").length > 0 && heroArch.hasAttribute("width") && heroArch.hasAttribute("height") && !heroDoc.querySelector(".hero__scrim, .hero__bg"));
+  check("hero: the note is a link to the custom bouquet page, and that page does have the message step the note promises", !!heroNote && heroNote.getAttribute("href") === "custom-bouquet.html" && /Lời nhắn/.test(publicFile("custom-bouquet.html")) && /lời nhắn/i.test(heroNote.textContent || ""));
+  const homeCss = stripComments(css("home.css"));
+  const heroTok = (n) => { const m = homeCss.match(new RegExp(`--${n}:\\s*(\\d+(?:\\.\\d+)?) (\\d+(?:\\.\\d+)?)% (\\d+(?:\\.\\d+)?)%`)); return m ? m.slice(1, 4).map(Number) : null; };
+  const blush = heroTok("hero-blush"), peach = heroTok("hero-peach"), mutedFg = hslTok("muted-foreground");
+  const heroOk = !!(blush && peach && mutedFg && textPink && [blush, peach].every((bg) => cr(textPink, bg) >= 4.5 && cr(mutedFg, bg) >= 4.5));
+  check("hero: the pink small text and the muted text pass AA (4.5:1) on both ends of the wash", heroOk, heroOk ? "" : "token missing or too light");
+  check("hero: the text column is never wider than the page: its grid columns are minmax(0, ...) and the arch has a fixed aspect ratio", /\.hero__grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,/.test(homeCss) && /\.hero__arch\s*\{[^}]*aspect-ratio:\s*460\s*\/\s*524/.test(homeCss));
   const adminPages = fs.readdirSync(path.join(ROOT, "public")).filter((f) => /^admin-.*\.html$/.test(f));
   const adminOrder = adminPages.filter((f) => { const h = fs.readFileSync(path.join(ROOT, "public", f), "utf8"); return h.indexOf("css/style.css") >= 0 && h.indexOf("css/admin.css") > h.indexOf("css/style.css"); });
   check("page cross-fade: admin.css opts out (navigation: none) and every admin page loads it after style.css, so the later rule wins", /@view-transition\s*\{\s*navigation:\s*none;?\s*\}/.test(fadeAdmin) && adminPages.length >= 14 && adminOrder.length === adminPages.length, `${adminOrder.length}/${adminPages.length}`);
