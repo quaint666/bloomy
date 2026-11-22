@@ -6,6 +6,7 @@ import path from "path";
 import express from "express";
 import type { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import session from "express-session";
 import connectPgSimple = require("connect-pg-simple");
 import { config } from "dotenv";
@@ -169,6 +170,36 @@ app.use(
 // Needed from here on — Checkout's POST /api/orders is the first route with
 // a JSON request body; every route before it has been GET-only.
 app.use(express.json());
+
+// A browser sends an Origin header on a cross-site form post or fetch. Our own pages send either none or ours, so a state-changing
+// request that names another site is refused. The session cookie is already SameSite=strict and the bodies are JSON only; this is
+// the second lock. ZaloPay's callback and the test suites send no Origin and are not affected. "Ours" is the address the site is
+// published at (BLOOMY_BASE_URL) or the host the request came in on (as Express reads it behind the proxy).
+const OWN_ORIGIN_HOST = new URL(process.env.BLOOMY_BASE_URL!).host;
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS") return next();
+  const origin = req.get("origin");
+  if (origin === undefined) return next();
+  let host: string | null = null;
+  try { host = new URL(origin).host; } catch { /* "null" or junk: not ours */ }
+  if (host !== null && (host === OWN_ORIGIN_HOST || host === req.host)) return next();
+  res.status(403).json({ error: "cross_site_request" });
+});
+
+// A backstop for the whole site, per address: every route below it (pages, the API, the sitemap) shares it, on top of the stricter
+// limiters some routes have (login, orders, quotes, reviews). It is far above what a person or the shop's own screens use (the POS
+// polls every 3 s while a QR is open), so it only meets a script. Pictures, styles, scripts, fonts and the health check are not
+// counted: a page loads many of them, and the health check must never be refused.
+const SITE_REQUESTS_PER_15_MIN = Number(process.env.SITE_REQUESTS_PER_15_MIN || 3000);
+if (!Number.isInteger(SITE_REQUESTS_PER_15_MIN) || SITE_REQUESTS_PER_15_MIN < 10) {
+  console.error("Bloomy: SITE_REQUESTS_PER_15_MIN must be a whole number of 10 or more");
+  process.exit(1);
+}
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: SITE_REQUESTS_PER_15_MIN,
+  skip: (req) => req.path === "/healthz" || /^\/(css|js|images|fonts)\//.test(req.path),
+}));
 
 // Keep the admin pages out of search results. Sent as a header, not a
 // <meta> tag, so one rule covers every admin-*.html page, current and future.

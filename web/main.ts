@@ -409,12 +409,12 @@ function getSessionId(): string | undefined {
   try {
     let id = sessionStorage.getItem(SESSION_ID_KEY);
     if (!id) {
-      // crypto.randomUUID only exists in secure contexts (HTTPS/localhost),
-      // so plain-http dev access needs the fallback.
+      // crypto.randomUUID only exists in secure contexts (HTTPS/localhost), so plain-http dev
+      // access needs the fallback; getRandomValues works everywhere (24 hex characters).
       id =
-        typeof crypto !== "undefined" && crypto.randomUUID
+        typeof crypto.randomUUID === "function"
           ? crypto.randomUUID()
-          : Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+          : Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, "0")).join("");
       sessionStorage.setItem(SESSION_ID_KEY, id);
     }
     return id;
