@@ -41,6 +41,7 @@ function flowerById(id: number): BuilderFlower {
 // the keyboard focus stays on the button that was pressed.
 function buildFlowerList(): void {
   const box = byId("custom-families");
+  box.replaceChildren(); // the grey placeholder rows
   const families = new Map<string, BuilderFlower[]>();
   data().flowers.forEach((f) => {
     let group = families.get(f.family);
@@ -248,6 +249,7 @@ async function initBuilder(): Promise<void> {
     onChange();
   } catch (err) {
     console.error("Bloomy: builder failed to load", err);
+    byId("custom-families").replaceChildren();
     byId("custom-error").textContent = "Không tải được danh sách hoa. Vui lòng tải lại trang.";
     byId("custom-error").hidden = false;
   } finally {

@@ -46,7 +46,15 @@
     <!-- ============ 1. FLOWERS ============ -->
     <section class="custom-flowers" aria-labelledby="custom-flowers-title">
       <h2 id="custom-flowers-title" class="custom-step__title"><span class="custom-step__num">1</span> Chọn hoa</h2>
-      <div id="custom-families"></div>
+      <div id="custom-families">
+        <!-- placeholder rows until the flowers arrive (buildFlowerList clears them; on a failure the error line shows) -->
+        <div class="custom-skeleton" aria-hidden="true">
+          <div class="skeleton-card__line custom-skeleton__row"></div>
+          <div class="skeleton-card__line custom-skeleton__row"></div>
+          <div class="skeleton-card__line custom-skeleton__row"></div>
+          <div class="skeleton-card__line custom-skeleton__row"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ============ YOUR BOUQUET ============ -->
