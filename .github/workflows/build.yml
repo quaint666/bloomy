@@ -199,6 +199,12 @@ jobs:
       # runs from source (render_test hashes the unminified CSS/JS, the image serves minified).
       # They use the throwaway database above, which the seed step filled; the suites restore the rows
       # they touch. The key is random per run and shared by the server and twofa_test.
+      # release_diff_test needs git and bash, which the node alpine test container below does not have (and installing them
+      # there needs the alpine mirror, which failed once with a TLS error and held back a publish). The runner has both and a
+      # Node, and the test uses nothing else, so it runs here; inside the container it says it was skipped.
+      - name: Test deploy/scripts/release_diff.sh on the runner
+        run: node tests/release_diff_test.mjs
+
       - name: Run all test suites on the pinned Node, from source
         run: |
           NODE_IMAGE=$(sed -n 's/^FROM \(node:[^ ]*\) AS compile$/\1/p' Dockerfile)
@@ -212,7 +218,6 @@ jobs:
             -e EMAIL_MODE=log -e NODE_ENV=development -e PORT=3000 -e BASE=http://localhost:3000 \
             -e TOTP_ENCRYPTION_KEY="$(openssl rand -base64 32)" \
             "$NODE_IMAGE" sh -ec '
-              apk add --no-cache git bash > /dev/null   # release_diff_test builds a throwaway git repository and runs the bash script (the node image has neither)
               npm ci --silent
               (cd tests && npm ci --silent)
               npm run build --silent
