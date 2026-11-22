@@ -128,6 +128,13 @@ try {
   {
     const p = await open();
     check("cards: one per product, in the campaign's order", await until(() => p.cards().length === apiNow.length) && JSON.stringify(p.cards().map((c) => Number(c.dataset.id))) === JSON.stringify(apiNow.map((x) => x.id)), JSON.stringify(p.cards().map((c) => c.dataset.id)));
+    {
+      // the hero's facts under the buttons: how many, from what price, and up to three pictures (all from the same API)
+      const facts = p.w.document.getElementById("landing-facts");
+      const minPrice = Math.min(...apiNow.map((x) => x.price));
+      check("hero facts: shown, with the number of products and the lowest price", facts.classList.contains("is-ready") && !facts.hidden && facts.textContent.replace(/\s+/g, " ").trim() === `${apiNow.length} mẫu hoa trong chương trình, từ ${money(minPrice)}`, facts.textContent);
+      check("…with up to three pictures, the campaign's first ones", JSON.stringify([...facts.querySelectorAll("img")].map((i) => i.getAttribute("src"))) === JSON.stringify(apiNow.slice(0, 3).map((x) => x.image).filter(Boolean)));
+    }
     check("cards: each has a name linking to its product page, a photo and a price", p.cards().every((c) => c.querySelector(".landing-card__name a").getAttribute("href").startsWith("product.html?id=") && c.querySelector("img").getAttribute("src") && /đ$/.test(c.querySelector(".landing-card__price").textContent)));
     const okSizes = apiNow.every((x) => {
       const c = p.card(x.id), chips = [...c.querySelectorAll('input[type="radio"]')];

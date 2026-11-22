@@ -89,6 +89,7 @@ try {
     const scripts = [...d.querySelectorAll("script[src]")].map((s) => s.getAttribute("src").replace(/\?v=[0-9a-f]{8}$/, ""));
     check("…loads main.js first, then landing.js and checkout.js", scripts[0] === "js/main.js" && scripts.slice(1).sort().join() === "js/checkout.js,js/landing.js" && [...d.querySelectorAll("script[src]")].every((s) => s.hasAttribute("defer")), scripts.join());
     check("…no hero photo element when the campaign has none", d.querySelector(".landing-hero__media") === null && d.querySelector(".landing-hero__image") === null);
+    check("…two buttons under the headline (to the cards, to all products) and a facts strip landing.js fills", d.querySelector(".landing-hero__actions a.btn-primary")?.getAttribute("href") === "#landing-grid" && d.querySelector(".landing-hero__actions a.btn-outline")?.getAttribute("href") === "products.html" && !!d.getElementById("landing-facts") && !!d.getElementById("landing-grid"));
     check("…the shared header and footer are there", !!d.querySelector("header.site-nav") && !!d.querySelector("footer.site-footer") && !!d.querySelector(".floating-contact"));
   }
 

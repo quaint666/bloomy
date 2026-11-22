@@ -329,6 +329,27 @@
   color: hsl(var(--muted-foreground));
 }
 
+/* The way into the builder stands out from the white outline buttons: pink outline on a faint tint, solid pink under the mouse,
+   deeper while pressed (the lift and the shrink on press come from the shared .btn rules). */
+.listing-custom .btn {
+  border: 1.5px solid hsl(var(--primary-text));
+  background-color: hsl(var(--primary) / 0.08);
+  color: hsl(var(--primary-text));
+  transition: background-color var(--motion-fast) ease, border-color var(--motion-fast) ease, color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+}
+
+.listing-custom .btn:hover {
+  background-color: hsl(var(--primary-text));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 6px 18px hsl(var(--primary) / 0.35);
+}
+
+.listing-custom .btn:active {
+  background-color: hsl(var(--primary-text-hover));
+  border-color: hsl(var(--primary-text-hover));
+  color: hsl(var(--primary-foreground));
+}
+
 /* ---- Sub-pills, tag chips and "Xóa bộ lọc" (built by listing.js) ---- */
 .category-pills--sub {
   gap: 22px;
