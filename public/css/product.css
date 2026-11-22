@@ -198,6 +198,7 @@
   font-weight: 600;
   font-size: 0.9rem;
   margin-bottom: 2px;
+  text-wrap: balance; /* "Hoa tươi mỗi / ngày" wrapped one word onto its own line */
 }
 
 .detail-feature__desc {
@@ -227,6 +228,13 @@
 
   .product-detail__actions {
     flex-wrap: wrap;
+  }
+
+  /* Three sizes share one row instead of leaving the last pill alone. */
+  .size-picker__option {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 12px;
   }
 
   .product-detail__actions #add-to-cart {

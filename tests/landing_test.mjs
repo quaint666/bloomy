@@ -66,6 +66,8 @@ const baseCoupon = { type: "percent", value: 20, min_subtotal: 0, starts_on: vnD
 try {
   await pool.query("UPDATE settings SET active_campaign_id=$1", [camp.id]);
   await setCoupon(baseCoupon);
+  // The seed gives every campaign a picture; section 1 checks the page of one without (the original row is restored at the end).
+  await pool.query("UPDATE campaigns SET hero_image=NULL WHERE id=$1", [camp.id]);
 
   // ------------------------------------------------------------ 1. the landing page says what the database says
   {
@@ -87,6 +89,7 @@ try {
     const scripts = [...d.querySelectorAll("script[src]")].map((s) => s.getAttribute("src").replace(/\?v=[0-9a-f]{8}$/, ""));
     check("…loads main.js first, then landing.js and checkout.js", scripts[0] === "js/main.js" && scripts.slice(1).sort().join() === "js/checkout.js,js/landing.js" && [...d.querySelectorAll("script[src]")].every((s) => s.hasAttribute("defer")), scripts.join());
     check("…no hero photo element when the campaign has none", d.querySelector(".landing-hero__media") === null && d.querySelector(".landing-hero__image") === null);
+    check("…two buttons under the headline (to the cards, to all products) and a facts strip landing.js fills", d.querySelector(".landing-hero__actions a.btn-primary")?.getAttribute("href") === "#landing-grid" && d.querySelector(".landing-hero__actions a.btn-outline")?.getAttribute("href") === "products.html" && !!d.getElementById("landing-facts") && !!d.getElementById("landing-grid"));
     check("…the shared header and footer are there", !!d.querySelector("header.site-nav") && !!d.querySelector("footer.site-footer") && !!d.querySelector(".floating-contact"));
   }
 
@@ -109,6 +112,7 @@ try {
     await setCoupon({ ...baseCoupon, starts_on: vnDate(-10), ends_on: vnDate(-1) });
     c = await chip();
     check("a coupon whose window has ended: no chip and an empty data-coupon", c.text === undefined && c.data === "", JSON.stringify(c));
+    check("…and the homepage card's button no longer says \"ưu đãi\"", dom(await (await get("/")).text()).querySelector(".campaign-card a.btn")?.textContent === "Xem bộ sưu tập");
     await setCoupon({ ...baseCoupon, starts_on: vnDate(-1), ends_on: vnDate(0) });
     check("a window that ends today still shows (today is not over)", (await chip()).text !== undefined);
     await setCoupon(baseCoupon);

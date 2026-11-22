@@ -44,7 +44,8 @@ function fill(settings: AdminSettingsBody): void {
   // The campaign dropdown: "Không có" stays first, the rest come from the server.
   const select = byId("set-campaign", HTMLSelectElement);
   select.length = 1;
-  (settings.campaigns || []).forEach((c) => select.append(new Option(c.name, String(c.id))));
+  // A campaign whose coupon is off or over says so here: its homepage card then has no chip.
+  (settings.campaigns || []).forEach((c) => select.append(new Option(c.offer_ended ? `${c.name} (mã giảm giá đã hết hạn)` : c.name, String(c.id))));
   const values = new Map<string, unknown>(Object.entries(settings));
   FIELDS.forEach((f) => {
     fieldById(f.input).value = String(values.get(f.key) ?? "");

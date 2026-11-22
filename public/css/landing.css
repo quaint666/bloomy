@@ -53,16 +53,16 @@
 }
 
 .landing-hero__headline {
-  max-width: 22ch;
+  max-width: 17ch;
   font-family: var(--font-display);
-  font-size: 2.6rem;
+  font-size: clamp(2.6rem, 3.6vw, 3.4rem);
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .landing-hero__sub {
-  max-width: 50ch;
-  font-size: 1.05rem;
+  max-width: 44ch;
+  font-size: 1.2rem;
   color: hsl(var(--muted-foreground));
 }
 
@@ -72,6 +72,60 @@
 
 .landing-hero .campaign-chip {
   margin-top: 6px;
+}
+
+.landing-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+/* Three of the campaign's pictures overlapping, then how many there are and from what price. Its height is reserved
+   (min-height) and it stays invisible until landing.js has the products, so the hero does not jump when they arrive. */
+.landing-hero__facts {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 44px;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.92rem;
+}
+
+.landing-hero__facts:not(.is-ready) {
+  visibility: hidden;
+}
+
+.landing-hero__facts[hidden] {
+  display: none;
+}
+
+.landing-hero__thumbs {
+  display: flex;
+}
+
+.landing-hero__thumb {
+  width: 44px;
+  height: 44px;
+  margin-left: -12px;
+  border: 2px solid hsl(var(--background));
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 1px 4px hsl(0 0% 0% / 0.12);
+}
+
+.landing-hero__thumb:first-child {
+  margin-left: 0;
+}
+
+.landing-hero__facts b {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+
+/* "Chọn hoa ngay" scrolls to the cards: they must not end up under the sticky header. */
+.landing-grid {
+  scroll-margin-top: calc(var(--nav-height) + 16px);
 }
 
 /* ---- Product cards ---- */
@@ -245,6 +299,10 @@ body.is-paying .landing-order__title {
 
   .landing-hero__headline {
     font-size: 2.1rem;
+  }
+
+  .landing-hero__sub {
+    font-size: 1.05rem;
   }
 }
 

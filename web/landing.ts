@@ -131,6 +131,31 @@ grid.addEventListener("click", (e) => {
   Bloomy.track?.("add_to_cart");
 });
 
+// The hero's facts under the buttons: three of the campaign's pictures, how many there are, and the lowest price.
+function fillHeroFacts(): void {
+  const facts = byId("landing-facts");
+  if (products.length === 0) {
+    facts.hidden = true;
+    return;
+  }
+  const thumbs = byId("landing-thumbs");
+  thumbs.replaceChildren();
+  for (const p of products.slice(0, 3)) {
+    if (!p.image) continue;
+    const img = document.createElement("img");
+    img.className = "landing-hero__thumb";
+    img.src = p.image;
+    img.alt = "";
+    img.loading = "lazy";
+    thumbs.append(img);
+  }
+  const text = byId("landing-facts-text");
+  const count = document.createElement("b");
+  count.textContent = `${products.length} mẫu hoa`;
+  text.replaceChildren(count, ` trong chương trình, từ ${Bloomy.formatVND(Math.min(...products.map((p) => p.price)))}`);
+  facts.classList.add("is-ready");
+}
+
 async function load(): Promise<void> {
   try {
     const res = await fetch("/api/campaigns/active");
@@ -138,11 +163,13 @@ async function load(): Promise<void> {
     const campaign: ActiveCampaign = await res.json();
     products = (campaign.products ?? []).map((p) => ({ ...p, sizes: p.sizes ?? [] }));
     render();
+    fillHeroFacts();
     // Every product of the campaign may have been discontinued since it was set up.
     byId("landing-empty").hidden = products.length > 0;
   } catch (err) {
     console.error("Bloomy: failed to load the campaign's products", err);
     byId("landing-grid").replaceChildren(); // the grey placeholders must not stay
+    byId("landing-facts").hidden = true;
     byId("landing-error").hidden = false;
   }
 }

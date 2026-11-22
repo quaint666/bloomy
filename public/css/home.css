@@ -269,6 +269,29 @@
   color: hsl(var(--primary-text));
 }
 
+/* Six category tiles: three per row on a phone (two per row left about 600 px of tiles and gaps). */
+@media (max-width: 600px) {
+  .category-nav {
+    padding-block: 48px;
+  }
+
+  .category-nav__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px 12px;
+  }
+
+  .category-nav__item {
+    width: auto;
+  }
+
+  .category-nav__item img {
+    width: min(110px, 100%);
+    height: auto;
+    aspect-ratio: 1;
+  }
+}
+
 /* ---- Featured products ---- */
 .featured {
   padding-block: 80px;
@@ -486,8 +509,9 @@
   background-color: hsl(var(--secondary));
 }
 
+/* The picture sits on the left: the hero's photo is on the right, so the two alternate. */
 .campaign-card:has(.campaign-card__media) {
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
 }
 
 .campaign-card__text {
@@ -498,6 +522,7 @@
 }
 
 .campaign-card__media {
+  order: -1;
   aspect-ratio: 5 / 4;
   overflow: hidden;
   border-radius: calc(var(--radius) - 8px);

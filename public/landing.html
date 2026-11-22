@@ -41,6 +41,15 @@
         <h1 class="landing-hero__headline">{{campaign_headline}}</h1>
         <p class="landing-hero__sub">{{campaign_subheadline}}</p>
         {{campaign_coupon}}
+        <div class="landing-hero__actions">
+          <a class="btn btn-primary" href="#landing-grid">Chọn hoa ngay</a>
+          <a class="btn btn-outline" href="products.html">Xem tất cả hoa</a>
+        </div>
+        <!-- Filled by landing.js from the campaign's products (their number, the lowest price, three pictures); it takes its room from the start so the hero does not jump. -->
+        <p id="landing-facts" class="landing-hero__facts">
+          <span id="landing-thumbs" class="landing-hero__thumbs" aria-hidden="true"></span>
+          <span id="landing-facts-text"></span>
+        </p>
       </div>
       {{campaign_hero_image}}
     </div>

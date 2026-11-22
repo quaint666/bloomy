@@ -1,6 +1,6 @@
 #!/bin/sh
 # Bloomy — adds the second catalogue (54 products for Peekbox's six occasions, the six occasion tags and their links
-# to the first 50 products) to a database that ALREADY has a shop in it. The opposite of seed.sh: that one refuses a
+# to the first 50 products, and four occasion campaigns with their coupons) to a database that ALREADY has a shop in it. The opposite of seed.sh: that one refuses a
 # database with data, this one needs the first catalogue and never overwrites anything.
 #
 # It ships in the schema image (Dockerfile.schema) next to seed.sh. Same connection variables (PGHOST, PGUSER,
@@ -32,4 +32,4 @@ if ! psql -q -v ON_ERROR_STOP=1 --single-transaction -f /seeds/seed-products-2.s
   exit 1
 fi
 after=$(psql -tAq -c "SELECT count(*) FROM products")
-echo "Bloomy seed-more: products $before -> $after ($((after - before)) added; 0 means it was already there)"
+echo "Bloomy seed-more: products $before -> $after ($((after - before)) added; 0 means it was already there); campaigns $(psql -tAq -c "SELECT count(*) FROM campaigns")"
