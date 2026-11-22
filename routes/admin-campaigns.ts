@@ -13,6 +13,8 @@
 // there is no upload code to attack. The server accepts only a file that is in that list.
 
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
+import { SITE_LIMIT } from "./site-limit";
 import type { Request } from "express";
 import fs from "fs";
 import path from "path";
@@ -29,6 +31,8 @@ interface CampaignValues {
 type Cleaned = { values: CampaignValues; field?: undefined } | { field: keyof CampaignValues; values?: undefined };
 
 const router = Router();
+// The site-wide cap, here as well as in server.ts: CodeQL cannot follow this file's `export = Object.assign(router, ...)` to the app-wide one.
+router.use(rateLimit(SITE_LIMIT));
 
 const IMAGES_DIR = process.env.BLOOMY_IMAGES_DIR || path.join(__dirname, "..", "public", "images");
 const IMAGE_RE = /\.(webp|jpe?g|png)$/i;

@@ -6,6 +6,7 @@ import { Router } from "express";
 import { z } from "zod";
 import QRCode from "qrcode";
 import rateLimit from "express-rate-limit";
+import { SITE_LIMIT } from "./site-limit";
 import type { PoolClient } from "pg";
 import pool = require("../db");
 import { notifyOrderConfirmed } from "../email";
@@ -58,6 +59,8 @@ interface ZpCreateResponse { return_code: number; return_message: string; order_
 interface ZpQueryResponse { return_code: number; is_processing: boolean; amount: number; zp_trans_id: string }
 
 const router = Router();
+// The site-wide cap, here as well as in server.ts: CodeQL cannot follow this file's `export = Object.assign(router, ...)` to the app-wide one.
+router.use(rateLimit(SITE_LIMIT));
 
 // ---------------------------------------------------------------------------
 // Vietnam-time helpers. The server may run in UTC (a container usually does) — every date/time
