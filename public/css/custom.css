@@ -298,3 +298,6 @@
     position: static;
   }
 }
+
+/* The placeholder rows shown until the flowers arrive (shape and shimmer from the shared skeleton in style.css). */
+.custom-skeleton__row { width: 100%; height: 56px; margin-bottom: 12px; border-radius: var(--radius); }

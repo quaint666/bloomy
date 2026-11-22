@@ -104,6 +104,7 @@ function renderProduct(product: ProductDetailBody): void {
   }
   injectProductJsonLd(product);
 
+  byId("product-skeleton").hidden = true;
   byId("product-detail").hidden = false;
   // Tabs, gallery thumbnails, attributes and reviews. They must never take the
   // product itself down with them.
@@ -234,6 +235,7 @@ async function checkUpcomingCutoffs(): Promise<void> {
 }
 
 function renderNotFound(): void {
+  byId("product-skeleton").hidden = true;
   byId("not-found").hidden = false;
   document.body.classList.add("is-ready");
   byId("breadcrumb-name").textContent = "";

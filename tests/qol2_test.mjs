@@ -297,6 +297,27 @@ try {
     const lf = await openPage("/landing", { rejectApi: /^\/api\/campaigns\/active$/ });
     check("landing page, API down: the placeholders go and the error shows", await until(() => lf.$("landing-error").hidden === false) && lf.d.querySelectorAll("#landing-grid .skeleton-card").length === 0);
     lf.close();
+
+    // A product page and the custom-bouquet builder load their data after the page: grey shapes stand in until it arrives.
+    const sk = async (p) => new JSDOM(await (await fetch(`${BASE}${p}`, { redirect: "manual" })).text()).window.document;
+    const pd = await sk("/product.html?id=1"), cb = await sk("/custom-bouquet.html");
+    check("the product page sends a hidden-from-screen-readers placeholder, shown (not hidden) until the product arrives", pd.querySelectorAll("#product-skeleton[aria-hidden=\"true\"]:not([hidden])").length === 1 && pd.querySelectorAll("#product-skeleton .skeleton-card__image, #product-skeleton .skeleton-card__line").length >= 4 && pd.getElementById("product-detail").hidden === true);
+    check("the custom-bouquet page sends placeholder rows inside the flower list, hidden from screen readers", cb.querySelectorAll("#custom-families .custom-skeleton[aria-hidden=\"true\"] .custom-skeleton__row").length === 4);
+    const pp = await openPage("/product.html?id=1");
+    check("product page: once the product arrives the placeholder is hidden and the product is shown", await until(() => pp.$("product-detail").hidden === false) && pp.$("product-skeleton").hidden === true);
+    pp.close();
+    const pf = await openPage("/product.html?id=1", { rejectApi: /^\/api\/products\/1$/ });
+    check("product page, API down: the placeholder goes and \"not found\" shows (not left shimmering)", await until(() => pf.$("not-found").hidden === false) && pf.$("product-skeleton").hidden === true);
+    pf.close();
+    const pn = await openPage("/product.html?id=abc");
+    check("product page, a bad id: the placeholder goes and \"not found\" shows", await until(() => pn.$("not-found").hidden === false) && pn.$("product-skeleton").hidden === true);
+    pn.close();
+    const cp = await openPage("/custom-bouquet.html");
+    check("custom-bouquet: once the flowers arrive the placeholder rows are gone and the flower list is there", await until(() => cp.d.querySelectorAll("#custom-families .custom-skeleton").length === 0 && cp.d.querySelectorAll("#custom-families input, #custom-families button").length > 5));
+    cp.close();
+    const cf = await openPage("/custom-bouquet.html", { rejectApi: /^\/api\/flowers$/ });
+    check("custom-bouquet, API down: the placeholder rows go and the error says so", await until(() => cf.$("custom-error").hidden === false) && cf.d.querySelectorAll("#custom-families .custom-skeleton").length === 0 && /Không tải được danh sách hoa/.test(cf.$("custom-error").textContent));
+    cf.close();
   }
 
   // ============================================================ F. the copyable coupon

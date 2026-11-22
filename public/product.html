@@ -47,6 +47,17 @@
       <a href="products.html" class="btn btn-primary">Xem tất cả sản phẩm</a>
     </div>
 
+    <!-- ============ PLACEHOLDER: grey shapes until the product arrives (product.ts hides it whatever the answer) ============ -->
+    <section id="product-skeleton" class="product-detail" aria-hidden="true">
+      <div class="product-detail__gallery"><div class="skeleton-card__image"></div></div>
+      <div class="product-detail__info">
+        <div class="skeleton-card__line product-skeleton__title"></div>
+        <div class="skeleton-card__line"></div>
+        <div class="skeleton-card__line skeleton-card__line--short"></div>
+        <div class="skeleton-card__line product-skeleton__button"></div>
+      </div>
+    </section>
+
     <!-- ============ PRODUCT DETAIL (populated by product.js) ============ -->
     <section id="product-detail" class="product-detail" hidden>
       <div class="product-detail__gallery">
