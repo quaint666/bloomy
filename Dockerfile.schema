@@ -17,7 +17,7 @@
 # Pinned to the release tag that the round-trip spike was re-run against
 # (a database built from schema.sql, then `plan`: "No changes detected.").
 # Bump tag and digest together (checked 2026-11-22) and re-run that spike; do not switch to a floating tag.
-FROM pgplex/pgschema:1.13.1@sha256:076070f4d04d3bad89f70fedfd8a345f9407d2449a1fe911508ec805e7c23625
+FROM pgplex/pgschema:1.14.1@sha256:9473269754062985f740e6eee60dfa8a557a5dc38c65656468d1669d07dffd88
 
 # plan and apply start an embedded PostgreSQL to check schema.sql against, and the base image does not
 # contain one: every run (each in a fresh container) would download it from Maven Central, and fail
