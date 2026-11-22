@@ -195,11 +195,12 @@ if (!Number.isInteger(SITE_REQUESTS_PER_15_MIN) || SITE_REQUESTS_PER_15_MIN < 10
   console.error("Bloomy: SITE_REQUESTS_PER_15_MIN must be a whole number of 10 or more");
   process.exit(1);
 }
-app.use(rateLimit({
+const siteLimiter = () => rateLimit({
   windowMs: 15 * 60 * 1000,
   max: SITE_REQUESTS_PER_15_MIN,
   skip: (req) => req.path === "/healthz" || /^\/(css|js|images|fonts)\//.test(req.path),
-}));
+});
+app.use(siteLimiter());
 
 // Keep the admin pages out of search results. Sent as a header, not a
 // <meta> tag, so one rule covers every admin-*.html page, current and future.
@@ -334,14 +335,16 @@ async function checkTotpKey(): Promise<void> {
 checkTotpKey();
 
 app.use("/api/products", productsRouter);
-app.use("/api/orders", ordersRouter);
+// The four routers below also carry their own copy of the cap (its own counter, the same figure): CodeQL did not see the
+// app-wide one in front of their unlimited handlers (the public order lookup, the tag list, the ward list, the campaign admin).
+app.use("/api/orders", siteLimiter(), ordersRouter);
 app.use("/api/events", eventsRouter);
 app.use("/api/admin", adminAuthRouter);
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/orders", adminOrdersRouter);
 app.use("/api/admin/stats", adminStatsRouter);
 app.use("/api/admin/cutoffs", adminCutoffsRouter);
-app.use("/api/settings", settingsRouter);
+app.use("/api/settings", siteLimiter(), settingsRouter);
 app.use("/api/admin/flowers", adminFlowersRouter);
 app.use("/api/admin/users", adminUsersRouter);
 app.use("/api/admin/pos", adminPosRouter);
@@ -351,8 +354,8 @@ app.use("/api/flowers", flowersRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/campaigns", campaignsRouter);
 app.use("/api/admin/seo", adminSeoRouter);
-app.use("/api/admin/campaigns", adminCampaignsRouter);
-app.use("/api/tags", tagsRouter);
+app.use("/api/admin/campaigns", siteLimiter(), adminCampaignsRouter);
+app.use("/api/tags", siteLimiter(), tagsRouter);
 app.use("/api/admin/reviews", adminReviewsRouter);
 // /api/products/:id/reviews and /api/reviews/latest — after the products router,
 // which only answers /api/products/<one segment>, so this never competes with it.
