@@ -171,6 +171,12 @@ app.use(
 // Needed from here on — Checkout's POST /api/orders is the first route with
 // a JSON request body; every route before it has been GET-only.
 app.use(express.json());
+// No body, or one that was not JSON, leaves req.body undefined; the handlers read fields off it (`const { status } = req.body`), so an
+// empty one stops that being a TypeError and a 500: the handler's own check then answers 400 for the missing field.
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  if (req.body === undefined) req.body = {};
+  next();
+});
 
 // A browser sends an Origin header on a cross-site form post or fetch. Our own pages send either none or ours, so a state-changing
 // request that names another site is refused. The session cookie is already SameSite=strict and the bodies are JSON only; this is
@@ -352,6 +358,14 @@ app.use("/api", reviewsRouter);
 // missed (e.g. a thrown error in middleware before the route handler runs).
 // Must be defined last, after all other app.use()/routes.
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => { // Express needs all four to treat it as an error handler
+  // A request the client got wrong is the client's error, not ours: body-parser says so with a 4xx status (a body that is not
+  // valid JSON, one that is too large, an encoding it does not read). Those are answered as such and not logged as faults.
+  const status = typeof err === "object" && err !== null && "status" in err && typeof err.status === "number" ? err.status : 0;
+  if (status >= 400 && status < 500) {
+    const type = typeof err === "object" && err !== null && "type" in err ? err.type : "";
+    const error = type === "entity.parse.failed" ? "invalid_json" : type === "entity.too.large" ? "payload_too_large" : "bad_request";
+    return res.status(status).json({ error });
+  }
   console.error(err);
   res.status(500).json({ error: "Internal server error" });
 });
