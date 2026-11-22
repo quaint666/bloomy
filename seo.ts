@@ -54,7 +54,9 @@ function missingWords(text: string, keyword: string): string[] {
 // The site's own address, for absolute URLs (canonical, og:url, og:image). server.js now refuses to start with a
 // BLOOMY_BASE_URL that ends in a slash, so the trim below only matters to seo_test, which sets such a value directly.
 function baseUrl(req: Pick<Request, "protocol" | "get">): string {
-  return (process.env.BLOOMY_BASE_URL || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
+  let base = process.env.BLOOMY_BASE_URL || `${req.protocol}://${req.get("host")}`;
+  while (base.endsWith("/")) base = base.slice(0, -1); // a loop, not /\/+$/ (that one is slow on a long run of slashes)
+  return base;
 }
 
 // Cuts at a word boundary and adds "…", so a preview shows what a search engine would.

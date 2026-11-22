@@ -480,7 +480,7 @@ try {
     for (const f of ["admin-login.html", "admin-account.html"]) {
       const html = read(f);
       check(`${f}: loads admin-twofa.css after admin.css`, html.indexOf("css/admin-twofa.css") > html.indexOf("css/admin.css") && html.includes('href="css/admin-twofa.css"'));
-      check(`${f}: no inline style attributes and no inline scripts (the site's CSP forbids both)`, !/\sstyle\s*=/.test(html) && ![...html.matchAll(/<script\b([^>]*)>/g)].some((m) => !/\bsrc=/.test(m[1])));
+      check(`${f}: no inline style attributes and no inline scripts (the site's CSP forbids both)`, !/\sstyle\s*=/.test(html) && ![...html.matchAll(/<script\b([^>]*)>/gi)].some((m) => !/\bsrc=/.test(m[1])));
     }
     check("the account page keeps its existing password form and the nav script", /id="admin-account-form"/.test(read("admin-account.html")) && /js\/admin-nav\.js/.test(read("admin-account.html")));
   }

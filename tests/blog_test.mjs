@@ -230,7 +230,7 @@ try {
       ["a missing title", edit((l) => { delete l[0].title; }), /"title" is missing/],
       ["a post whose fragment file is missing", (d) => fs.rmSync(path.join(d, "posts", `${good[0].slug}.html`)), /cannot read/],
       ["a misspelt product marker", (d) => fs.appendFileSync(path.join(d, "posts", `${good[0].slug}.html`), "\n[[produt:5]]\n"), /not a \[\[product:N\]\] marker/],
-      ["a <script> in a fragment", (d) => fs.appendFileSync(path.join(d, "posts", `${good[0].slug}.html`), "\n<script>alert(1)</script>\n"), /<script>/],
+      ["a <script> in a fragment", (d) => fs.appendFileSync(path.join(d, "posts", `${good[0].slug}.html`), "\n<script>alert(1)</script>\n"), /<script>/i],
       ["a missing template", (d) => fs.rmSync(path.join(d, "blog-post.html")), /cannot read/],
       ["no content folder at all", (d) => { fs.rmSync(d, { recursive: true }); }, /cannot read/],
     ];
