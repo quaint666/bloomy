@@ -6,9 +6,9 @@
 # image: no build tools, no dev dependencies, and bcrypt ships a musl prebuild, so nothing is compiled there.
 # The HTML pages are not minified.
 #
-# All stages are pinned to the exact Node version already running in production.
-# Bump it deliberately; don't switch to a floating tag.
-FROM node:26.13.1-alpine3.24 AS assets
+# All stages are pinned by tag and digest (checked 2026-11-22) to the exact Node version already running in production.
+# Bump tag and digest together, deliberately (docker buildx imagetools inspect <tag>); do not switch to a floating tag.
+FROM node:26.13.1-alpine3.24@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS assets
 
 WORKDIR /build
 
@@ -34,7 +34,7 @@ RUN find public -type f \( -name '*.js' -o -name '*.css' \) -print0 \
  && [ "$(find /out -type f | wc -l)" -gt 0 ] \
  && [ "$(find /out -type f | wc -l)" -eq "$(find public -type f \( -name '*.js' -o -name '*.css' \) | wc -l)" ]
 
-FROM node:26.13.1-alpine3.24 AS compile
+FROM node:26.13.1-alpine3.24@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS compile
 
 WORKDIR /build
 
@@ -50,7 +50,7 @@ COPY shared ./shared
 RUN node_modules/.bin/tsc --outDir /out \
  && [ -f /out/server.js ] && [ -d /out/routes ]
 
-FROM node:26.13.1-alpine3.24
+FROM node:26.13.1-alpine3.24@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5
 
 # Set here (not only in compose) so a forgotten compose line can't silently
 # drop the Secure flag on the session cookie again. Compose/CI can still
