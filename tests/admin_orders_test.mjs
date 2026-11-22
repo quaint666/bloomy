@@ -42,15 +42,15 @@ const stock = async () => (await pool.query("SELECT stock FROM flowers WHERE id 
 const tokens = [];
 
 // An order as the checkout leaves it: the row, one line of two bouquets, the flowers one bouquet uses, and the stems taken.
-async function order({ method = "zalopay", payment = "paid", fulfillment = "new", type = "pickup", wardId = null } = {}) {
+async function order({ method = "zalopay", payment = "paid", fulfillment = "new", type = "pickup", wardId = null, sender = "Kiểm thử gửi" } = {}) {
   const token = crypto.randomBytes(24).toString("hex");
   tokens.push(token);
   const delivery = type === "delivery";
   const { rows } = await pool.query(
     `INSERT INTO orders (token, channel, fulfillment_type, sender_name, sender_phone, recipient_name, recipient_phone, ward_id, delivery_address,
                          delivery_date, delivery_window, subtotal, discount, shipping_fee, total_amount, vat_rate, payment_method, payment_status, fulfillment_status, app_trans_id)
-     VALUES ($1, 'web', $2, 'Kiểm thử gửi', '0912345678', 'Kiểm thử nhận', '0987654321', $3, $4, $5, 'morning', 900000, 0, 0, 900000, 10, $6, $7, $8, $9) RETURNING id`,
-    [token, type, delivery ? wardId : null, delivery ? "1 Đường thử" : null, date, method, payment, fulfillment, method === "zalopay" ? `t${crypto.randomBytes(4).toString("hex")}` : null]);
+     VALUES ($1, 'web', $2, $10, '0912345678', 'Kiểm thử nhận', '0987654321', $3, $4, $5, 'morning', 900000, 0, 0, 900000, 10, $6, $7, $8, $9) RETURNING id`,
+    [token, type, delivery ? wardId : null, delivery ? "1 Đường thử" : null, date, method, payment, fulfillment, method === "zalopay" ? `t${crypto.randomBytes(4).toString("hex")}` : null, sender]);
   const id = rows[0].id;
   const item = (await pool.query("INSERT INTO order_items (order_id, product_id, name, size, style, quantity, price_at_purchase) SELECT $1, id, 'Bó thử', 'm', style, $2, 450000 FROM products WHERE id = 9 RETURNING id", [id, QTY])).rows[0].id;
   await pool.query("INSERT INTO order_item_flowers (order_item_id, flower_id, stems, price_per_stem) VALUES ($1, $2, $3, 1000)", [item, flower.id, STEMS]);
@@ -174,7 +174,33 @@ try {
     const before = sheet.pending_zalopay_count;
     check("pending_zalopay_count counts the unpaid ZaloPay order and not the refunded or cancelled ones", before >= 1 && before === Number((await pool.query("SELECT COUNT(*) FROM orders WHERE delivery_date=$1 AND channel='web' AND payment_method='zalopay' AND payment_status IN ('pending','failed') AND fulfillment_status<>'cancelled'", [date])).rows[0].count), String(before));
   }
+
+  // ---- 5. the CSV export: a cell that a spreadsheet would read as a formula is made text
+  {
+    const names = ['=HYPERLINK("http://x.example")', "\t=1+1", "\r@SUM(A1)", "-2+3", "+1", "Bình thường"];
+    for (const sender of names) await order({ payment: "pending", sender });
+    const csv = await api("GET", "/api/admin/orders/orders.csv");
+    const text = csv.text;
+    const raw = new Uint8Array(await (await fetch(`${BASE}/api/admin/orders/orders.csv`, { headers: { cookie: manager.cookie } })).arrayBuffer());
+    check("the export is a CSV download that starts with a byte-order mark (Excel then reads the Vietnamese as UTF-8)", csv.status === 200 && /text\/csv/.test(csv.res.headers.get("content-type") ?? "") && raw[0] === 0xef && raw[1] === 0xbb && raw[2] === 0xbf);
+    check("a name that starts with = + - @ is written as text (a leading quote)", text.includes('"\'=HYPERLINK(""http://x.example"")"') && text.includes('"\'-2+3"') && text.includes('"\'+1"') && !text.includes(',"=HYPERLINK'));
+    check("…also one that starts with a tab or a carriage return", text.includes('"\'\t=1+1"') && text.includes('"\'\r@SUM(A1)"'));
+    check("…and an ordinary name is left alone", text.includes('"Bình thường"') && !text.includes("'Bình thường"));
+  }
+
+  // ---- 6. the order list is capped at the newest 1000
+  {
+    await pool.query(
+      `INSERT INTO orders (token, channel, fulfillment_type, sender_name, sender_phone, recipient_name, recipient_phone, delivery_date, delivery_window,
+                           subtotal, discount, shipping_fee, total_amount, vat_rate, payment_method, payment_status, fulfillment_status, created_at)
+       SELECT 'zz-limit-' || g, 'web', 'pickup', 'Giới hạn', '0912345678', 'Giới hạn', '0987654321', $1, 'morning', 1000, 0, 0, 1000, 10, 'cash', 'pending', 'new', now() + g * interval '1 second'
+       FROM generate_series(1, 1001) g`, [date]);
+    const list = await api("GET", "/api/admin/orders");
+    check("with more than 1000 orders the list holds 1000, the newest first (the 1001st-newest is left out)", list.status === 200 && list.data.length === 1000 && list.data[0].token === "zz-limit-1001" && !list.data.some((o) => o.token === "zz-limit-1"), `${list.data?.length}`);
+    check("…and the CSV export still has every order", (await api("GET", "/api/admin/orders/orders.csv")).text.split("\r\n").length > 1001);
+  }
 } finally {
+  await pool.query("DELETE FROM orders WHERE token LIKE 'zz-limit-%'");
   if (tokens.length) await pool.query("DELETE FROM orders WHERE token = ANY($1)", [tokens]);
   await pool.query("UPDATE flowers SET stock = $2 WHERE id = $1", [flower.id, flowerStockBefore]);
   await manager.cleanup();

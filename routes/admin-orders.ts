@@ -21,7 +21,7 @@ import ordersRouter = require("./orders");
 import { vatAmount } from "../pricing";
 import { isRealDate } from "./dates";
 import { csvSafe, sendCsv } from "./csv";
-import { ALLOWED_FULFILLMENT_TRANSITIONS, isFulfillmentStatus } from "../shared/rules";
+import { ADMIN_ORDER_LIST_LIMIT, ALLOWED_FULFILLMENT_TRANSITIONS, isFulfillmentStatus } from "../shared/rules";
 import type { FulfillmentStatus, PaymentMethod, PaymentStatus, ProductSize, TimeWindow } from "../types";
 import type { AdminOrder, AdminOrderItem, AdminOrderRow, DeliverySheetBody, PaymentStatusBody } from "../shared/api-types";
 
@@ -68,8 +68,10 @@ async function withItems(orders: AdminOrderRow[]): Promise<AdminOrder[]> {
 
 router.get("/", requireAdmin, async (_req, res, next) => {
   try {
+    // The newest ADMIN_ORDER_LIST_LIMIT: the screen loads them all at once and filters in the browser; orders.csv has every order.
     const result = await pool.query<AdminOrderRow>(
-      `SELECT ${ORDER_LIST_COLUMNS} ${ORDER_FROM} ORDER BY o.created_at DESC`
+      `SELECT ${ORDER_LIST_COLUMNS} ${ORDER_FROM} ORDER BY o.created_at DESC, o.id DESC LIMIT $1`,
+      [ADMIN_ORDER_LIST_LIMIT]
     );
     const orders: AdminOrder[] = await withItems(result.rows);
     res.json(orders);

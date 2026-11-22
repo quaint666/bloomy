@@ -9,7 +9,7 @@
 import type {
   AdminOrdersResponse, DeliverySheetResponse, FulfillmentStatus, PaymentMethod, PaymentStatus, PaymentStatusBody, TimeWindow,
 } from "../shared/api-types";
-import { ALLOWED_FULFILLMENT_TRANSITIONS, WINDOW_TEXT } from "../shared/rules";
+import { ADMIN_ORDER_LIST_LIMIT, ALLOWED_FULFILLMENT_TRANSITIONS, WINDOW_TEXT } from "../shared/rules";
 import { adminApi } from "./lib/api";
 import { byId, el } from "./lib/dom";
 import { formatVND } from "./lib/format";
@@ -304,6 +304,10 @@ async function loadOrders(): Promise<void> {
     if (result.res.status === 401) return; // adminApi has already sent the person to the login page
     if (!result.ok) throw new Error("Failed to load orders");
     allOrders = result.data;
+    // The server sends the newest ADMIN_ORDER_LIST_LIMIT; with that many the shop may have more, so say what is shown.
+    const limitNote = byId("admin-orders-limit");
+    limitNote.textContent = `Đang hiển thị ${ADMIN_ORDER_LIST_LIMIT} đơn mới nhất. Dùng “Xuất CSV” để xem tất cả đơn.`;
+    limitNote.hidden = allOrders.length < ADMIN_ORDER_LIST_LIMIT;
     applyFilters();
   } catch (err) {
     errorEl.textContent = "Không thể tải danh sách đơn hàng.";

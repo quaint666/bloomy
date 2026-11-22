@@ -213,8 +213,10 @@
 /* ---- Products page header row (title + search) ---- */
 .admin-page__header {
   display: flex;
+  flex-wrap: wrap;           /* a title, a search box and a button do not fit one line on a phone */
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
@@ -949,7 +951,7 @@
 
 @media (max-width: 900px) {
   .pos-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);   /* not a bare 1fr: that cannot shrink below the product cards and widened the page */
   }
 
   .pos-ticket {
@@ -1274,7 +1276,18 @@
   margin-left: auto;
 }
 
+/* On a narrow screen a table scrolls sideways inside the page instead of making the whole page wider than the screen (the orders
+   table already sits in its own scrolling box; the others did not, so on a phone their page was 250 to 410 px too wide). */
+@media (max-width: 900px) {
+  .admin-table { display: block; max-width: 100%; overflow-x: auto; }
+}
+
 @media (max-width: 640px) {
+  /* The bar wraps instead of pushing "Đăng xuất" off a phone's screen: the logo, the menu button and the sign-out button share the
+     first line, who is signed in takes the next one. */
+  .admin-nav__inner { flex-wrap: wrap; gap: 8px 12px; }
+  .admin-nav__logo { white-space: nowrap; }
+  .admin-nav__inner .admin-nav__who { order: 3; flex-basis: 100%; margin-left: 0; }
   .admin-nav__links.is-collapsible {
     grid-template-columns: 1fr 1fr;
     min-width: 0;

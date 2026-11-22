@@ -18,9 +18,10 @@ export async function makeAdmin(pool, BASE, suite, role) {
   const cookie = login.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
   const api = async (method, p, body, headers = {}) => {
     const res = await fetch(BASE + p, { method, headers: { cookie, ...(body === undefined ? {} : { "Content-Type": "application/json" }), ...headers }, body: body === undefined ? undefined : JSON.stringify(body) });
+    const text = await res.text();
     let data = null;
-    try { data = await res.json(); } catch { /* not JSON (a CSV, an empty answer) */ }
-    return { status: res.status, data, res };
+    try { data = JSON.parse(text); } catch { /* not JSON (a CSV, an empty answer): `text` has it */ }
+    return { status: res.status, data, text, res };
   };
   return { id, name, cookie, api, cleanup: () => pool.query("DELETE FROM admin_users WHERE id = $1", [id]) };
 }
