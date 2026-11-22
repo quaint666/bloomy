@@ -20,11 +20,6 @@
   margin-bottom: 12px;
 }
 
-.blog-hero__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
-}
-
 .blog-hero__sub {
   color: hsl(var(--muted-foreground));
 }

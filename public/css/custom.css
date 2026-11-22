@@ -13,9 +13,8 @@
   margin-block: 8px 12px;
 }
 
-/* Same soft pink as the other headings' emphasis, but upright. */
+/* The shared heading accent (style.css) is pink italic; this one page keeps it upright. */
 .custom-hero__title em {
-  color: hsl(var(--primary));
   font-style: normal;
 }
 

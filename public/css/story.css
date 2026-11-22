@@ -42,11 +42,6 @@
   margin-bottom: 20px;
 }
 
-.story-hero__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
-}
-
 .story-hero__desc {
   font-size: 1rem;
   line-height: 1.7;
@@ -150,11 +145,6 @@
   font-size: 2rem;
   font-weight: 500;
   margin-bottom: 28px;
-}
-
-.story-cta__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
 }
 
 /* ---- Responsive ---- */

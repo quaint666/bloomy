@@ -38,10 +38,6 @@
   margin-bottom: 20px;
 }
 
-.about-hero__heading em {
-  color: hsl(var(--primary));
-}
-
 .about-hero__desc {
   font-size: 1rem;
   line-height: 1.7;
@@ -194,11 +190,6 @@
   line-height: 1.4;
   font-style: normal;
   margin-bottom: 20px;
-}
-
-.about-mission__quote em {
-  color: hsl(var(--primary));
-  font-style: italic;
 }
 
 .about-mission__author {

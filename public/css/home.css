@@ -123,11 +123,6 @@
   margin-bottom: 24px;
 }
 
-.hero__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
-}
-
 .hero__lead {
   font-size: 1.05rem;
   color: hsl(var(--muted-foreground));

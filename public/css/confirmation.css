@@ -45,11 +45,6 @@
   margin-bottom: 16px;
 }
 
-.confirmation-hero__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
-}
-
 .confirmation-hero__subtitle {
   color: hsl(var(--muted-foreground));
   margin-bottom: 28px;

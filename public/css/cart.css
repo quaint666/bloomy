@@ -35,11 +35,6 @@
   margin-bottom: 12px;
 }
 
-.cart-hero__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
-}
-
 .cart-hero__subtitle {
   color: hsl(var(--muted-foreground));
 }

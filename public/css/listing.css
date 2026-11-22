@@ -28,10 +28,6 @@
   margin-bottom: 16px;
 }
 
-.listing-hero__heading em {
-  color: hsl(var(--primary));
-}
-
 .listing-hero__subtitle {
   font-size: 1rem;
   color: hsl(var(--muted-foreground));

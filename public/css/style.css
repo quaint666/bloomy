@@ -229,6 +229,7 @@ summary:focus-visible,
   background-color: hsl(var(--background) / 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  border-top: 3px solid hsl(var(--primary));
   border-bottom: 1px solid transparent;
 }
 
@@ -501,7 +502,24 @@ summary:focus-visible,
   margin-bottom: 12px;
 }
 
-.section-heading__title em {
+/* The pink italic words in a heading: ONE rule for every page (a page that forgets to list its heading here gets the
+   browser's plain italic, and ui_polish_test fails). custom.css sets its own upright version. */
+.about-hero__heading em,
+.about-mission__quote em,
+.blog-hero__heading em,
+.cart-empty__heading em,
+.cart-hero__heading em,
+.checkout-hero__heading em,
+.commitment-hero__heading em,
+.confirmation-hero__heading em,
+.custom-hero__title em,
+.hero__heading em,
+.listing-hero__heading em,
+.payment-waiting__heading em,
+.quality-callout__heading em,
+.section-heading__title em,
+.story-cta__heading em,
+.story-hero__heading em {
   color: hsl(var(--primary));
   font-style: italic;
 }
@@ -865,11 +883,6 @@ summary:focus-visible,
   margin-bottom: 12px;
 }
 
-.cart-empty__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
-}
-
 .cart-empty__subtitle {
   color: hsl(var(--muted-foreground));
   margin-bottom: 28px;
@@ -1100,11 +1113,6 @@ summary:focus-visible,
   font-size: 1.8rem;
   font-weight: 500;
   margin-bottom: 12px;
-}
-
-.payment-waiting__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
 }
 
 .payment-waiting__subtitle {

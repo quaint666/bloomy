@@ -34,11 +34,6 @@
   margin-bottom: 12px;
 }
 
-.checkout-hero__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
-}
-
 .checkout-hero__subtitle {
   color: hsl(var(--muted-foreground));
 }

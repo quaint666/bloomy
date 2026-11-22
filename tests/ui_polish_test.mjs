@@ -124,6 +124,21 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   const heroOk = !!(blush && peach && mutedFg && textPink && [blush, peach].every((bg) => cr(textPink, bg) >= 4.5 && cr(mutedFg, bg) >= 4.5));
   check("hero: the pink small text and the muted text pass AA (4.5:1) on both ends of the wash", heroOk, heroOk ? "" : "token missing or too light");
   check("hero: the text column is never wider than the page: its grid columns are minmax(0, ...) and the arch has a fixed aspect ratio", /\.hero__grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,/.test(homeCss) && /\.hero__arch\s*\{[^}]*aspect-ratio:\s*460\s*\/\s*524/.test(homeCss));
+  // ---- The heading accent (the pink italic words) is ONE rule in style.css, and every <em> in a customer heading is covered by it.
+  const accentRule = parseRules(style).find((r) => /(^|[,\s])\.hero__heading em\b/.test(r.sel) && /color:\s*hsl\(var\(--primary\)\)/.test(r.body) && /font-style:\s*italic/.test(r.body));
+  const accentSels = accentRule ? accentRule.sel.split(",").map((x) => x.trim()) : [];
+  const accentElsewhere = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((n) => n.endsWith(".css") && !n.startsWith("admin") && n !== "style.css")) {
+    for (const { sel, body } of parseRules(css(f))) if (/(^|\s)em$/.test(sel) && /color:/.test(body)) accentElsewhere.push(`${f}: ${sel}`);
+  }
+  check("heading accent: one shared rule in style.css (pink, italic, 10+ headings), no other stylesheet colours an `em`", accentSels.length >= 10 && accentElsewhere.length === 0, accentElsewhere.join(" | ") || `${accentSels.length} selectors`);
+  const uncovered = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public")).filter((n) => n.endsWith(".html") && !n.startsWith("admin-"))) {
+    const d = new JSDOM(publicFile(f)).window.document;
+    d.querySelectorAll("h1 em, h2 em").forEach((em) => { if (!accentSels.some((sel) => em.matches(sel))) uncovered.push(`${f}: <${em.parentElement.tagName.toLowerCase()} class="${em.parentElement.className}">`); });
+  }
+  check("heading accent: every <em> inside a customer page's h1 or h2 is covered by the shared rule", accentSels.length > 0 && uncovered.length === 0, uncovered.slice(0, 3).join(" | "));
+  check("header: a 3px pink line above it (the site's mark; the measured --nav-height includes it)", /\.site-nav\s*\{[^}]*border-top:\s*3px solid hsl\(var\(--primary\)\)/.test(stripComments(style)));
   const adminPages = fs.readdirSync(path.join(ROOT, "public")).filter((f) => /^admin-.*\.html$/.test(f));
   const adminOrder = adminPages.filter((f) => { const h = fs.readFileSync(path.join(ROOT, "public", f), "utf8"); return h.indexOf("css/style.css") >= 0 && h.indexOf("css/admin.css") > h.indexOf("css/style.css"); });
   check("page cross-fade: admin.css opts out (navigation: none) and every admin page loads it after style.css, so the later rule wins", /@view-transition\s*\{\s*navigation:\s*none;?\s*\}/.test(fadeAdmin) && adminPages.length >= 14 && adminOrder.length === adminPages.length, `${adminOrder.length}/${adminPages.length}`);
