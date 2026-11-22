@@ -3,14 +3,15 @@
 import type { Response } from "express";
 
 // Formula-injection guard: a leading =, +, -, or @ is read as a formula by
-// Excel/Sheets on open — prefixing with a plain single quote forces the
-// cell to be read as text instead. Applied to every field, not just
+// Excel/Sheets on open, and so can a leading tab or carriage return (the cell is then
+// read after them) — prefixing with a plain single quote forces the cell to be read
+// as text instead. Applied to every field, not just
 // customer-typed ones, since it's cheap and future-proof against a column
 // added later that does carry customer text.
 function csvSafe(value: unknown): string {
   if (value === null || value === undefined) return "";
   let v = String(value);
-  if (/^[=+\-@]/.test(v)) v = `'${v}`;
+  if (/^[=+\-@\t\r]/.test(v)) v = `'${v}`;
   return `"${v.replace(/"/g, '""')}"`;
 }
 

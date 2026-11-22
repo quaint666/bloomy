@@ -41,5 +41,9 @@ export const WINDOW_END_MINUTES: Record<TimeWindow, number> = {
   evening: 21 * 60,
 };
 
+// How many orders the staff order screen loads at once (the newest first). It filters and searches what it has loaded, so a shop
+// with more orders than this sees a note saying so; "Xuất CSV" has them all.
+export const ADMIN_ORDER_LIST_LIMIT = 1000;
+
 // The cutoff for a date with no override: this hour, Vietnam time, on the delivery date itself.
 export const DEFAULT_CUTOFF_HOUR_VN = 14;

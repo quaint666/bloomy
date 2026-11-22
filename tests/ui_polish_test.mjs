@@ -83,6 +83,14 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   const gridAt = admin.indexOf(".admin-nav__links.is-collapsible {");
   const hiddenAt = admin.indexOf(".admin-nav__links.is-collapsible[hidden]");
   check("admin.css: the menu panel's own hidden rule comes AFTER its grid rule (equal specificity: the later one wins)", gridAt > 0 && hiddenAt > gridAt, `${gridAt} / ${hiddenAt}`);
+  // The admin pages on a phone (found with a real Firefox and WebKit at 390 px: the sign-out button sat off the screen and six pages were
+  // 120 to 410 px wider than it). jsdom cannot see layout, so these pin the rules that fixed it; the browser pass looks at the result.
+  const adminMedia = (query) => { const out = []; let at = admin.indexOf(`@media (${query}) {`); while (at >= 0) { let depth = 0, k = admin.indexOf("{", at); const start = k; for (; k < admin.length; k++) { if (admin[k] === "{") depth++; else if (admin[k] === "}" && --depth === 0) break; } out.push(admin.slice(start, k)); at = admin.indexOf(`@media (${query}) {`, k); } return out.join("\n"); };
+  const narrow = adminMedia("max-width: 640px");
+  check("admin.css: at 640 px the admin bar wraps (the sign-out button stays on the screen) and who is signed in takes its own line", /\.admin-nav__inner\s*\{[^}]*flex-wrap:\s*wrap/.test(narrow) && /\.admin-nav__who\s*\{[^}]*flex-basis:\s*100%/.test(narrow));
+  check("admin.css: at 900 px an admin table scrolls inside the page instead of widening it", /\.admin-table\s*\{[^}]*display:\s*block[^}]*overflow-x:\s*auto/.test(adminMedia("max-width: 900px")));
+  check("admin.css: the page header wraps (title, search and button do not fit one line on a phone)", /\.admin-page__header\s*\{[^}]*flex-wrap:\s*wrap/.test(admin));
+  check("admin.css: the POS layout is one column of minmax(0, 1fr) on a narrow screen, never a bare 1fr", /\.pos-layout\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/.test(adminMedia("max-width: 900px")) && !/\.pos-layout\s*\{[^}]*grid-template-columns:\s*1fr\s*;/.test(adminMedia("max-width: 900px")));
   check("no second scroll offset on the page (the site already has [id] { scroll-margin-top }, a scroll-padding on top of it doubles the gap)", /\[id\]\s*\{\s*scroll-margin-top/.test(clean) && !/scroll-padding-top/.test(clean));
   // ---- .admin-form__hint is absolutely positioned: only valid inside .admin-form__field
   const adminHtml = fs.readdirSync(path.join(ROOT, "public")).filter((f) => /^admin-.*\.html$/.test(f));
