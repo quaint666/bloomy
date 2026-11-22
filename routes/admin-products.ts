@@ -28,6 +28,8 @@ const router = Router();
 // the only place the number lives: the admin page gets it with the product
 // list, and the homepage just shows whatever is featured (it never counts).
 const FEATURED_LIMIT = 4;
+// Any fixed number: all featured ticks queue on the same advisory lock (the staff screen uses 41001).
+const FEATURED_LOCK = 41002;
 
 const VALID_STATUSES: ProductStatus[] = ["available", "sold_out_today", "discontinued"];
 
@@ -120,16 +122,29 @@ router.patch("/:id/featured", requireAdmin, async (req, res, next) => {
     if (isNaN(id)) return res.status(400).json({ error: "Invalid product id" });
     if (typeof featured !== "boolean") return res.status(400).json({ error: "Invalid featured" });
 
-    // Ticking a box is refused once FEATURED_LIMIT products are already
-    // featured (a product that is already featured stays so). The count and
-    // the update are one statement, so the page greying out the boxes is a
-    // convenience, not the rule — the rule holds even for a stale tab.
-    const result = await pool.query<{ id: number; featured: boolean }>(
-      `UPDATE products SET featured = $1
-       WHERE id = $2 AND ($1 = false OR featured OR (SELECT COUNT(*) FROM products WHERE featured) < $3)
-       RETURNING id, featured`,
-      [featured, id, FEATURED_LIMIT]
-    );
+    // Ticking a box is refused once FEATURED_LIMIT products are already featured (a product that is already featured stays so).
+    // The count and the update are one statement, so the page greying out the boxes is a convenience, not the rule: it holds
+    // even for a stale tab. One statement is not enough for two ticks at the same moment (each counts before the other has
+    // written, and both pass: three at once left 6 featured), so ticks take turns on an advisory lock held to the end of the
+    // transaction; the next statement then counts what the one before wrote.
+    const client = await pool.connect();
+    let result;
+    try {
+      await client.query("BEGIN");
+      await client.query("SELECT pg_advisory_xact_lock($1)", [FEATURED_LOCK]);
+      result = await client.query<{ id: number; featured: boolean }>(
+        `UPDATE products SET featured = $1
+         WHERE id = $2 AND ($1 = false OR featured OR (SELECT COUNT(*) FROM products WHERE featured) < $3)
+         RETURNING id, featured`,
+        [featured, id, FEATURED_LIMIT]
+      );
+      await client.query("COMMIT");
+    } catch (err) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw err;
+    } finally {
+      client.release();
+    }
     if (result.rows.length === 0) {
       const exists = await pool.query("SELECT 1 FROM products WHERE id = $1", [id]);
       if (exists.rows.length === 0) return res.status(404).json({ error: "Product not found" });
