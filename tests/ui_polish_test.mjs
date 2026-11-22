@@ -98,7 +98,7 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   check(".admin-note is in the normal flow (no absolute positioning)", /\.admin-note\s*\{[^}]*\}/.test(admin) && !/\.admin-note\s*\{[^}]*position:\s*(absolute|fixed)/.test(admin));
 
   const listing = stripComments(css("listing.css"));
-  const rule = (sel) => (listing.match(new RegExp(`(?:^|\\})\\s*${sel.replace(/[.\[\]()]/g, "\\$&")}\\s*\\{([^}]*)\\}`)) || [])[1] || "";
+  const rule = (sel) => (listing.match(new RegExp(`(?:^|\\})\\s*${sel.replace(/[.\[\]()\\]/g, "\\$&")}\\s*\\{([^}]*)\\}`)) || [])[1] || "";
   const bar = rule(".listing-filters");
   check("the category bar is see-through and blurred like the header (80% background, backdrop blur)", /background-color:\s*hsl\(var\(--background\)\s*\/\s*0\.8\)/.test(bar) && /backdrop-filter:\s*blur\(12px\)/.test(bar) && /-webkit-backdrop-filter:\s*blur\(12px\)/.test(bar), bar.replace(/\s+/g, " "));
   const header = stripComments(style).match(/\.site-nav\s*\{([^}]*)\}/)[1];
