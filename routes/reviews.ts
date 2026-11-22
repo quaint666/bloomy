@@ -10,11 +10,11 @@
 //  - the lengths are enforced here and by the database (schema.sql);
 //  - a hidden "website" field catches simple bots: if it is filled the request is
 //    answered as a success and silently dropped;
-//  - an IP can only post so many in an hour;
+//  - an IP can only post so many in an hour (10 in all, 2 for any one product);
 //  - every page puts the text in with textContent, never as markup.
 
 import { Router } from "express";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { z } from "zod";
 import pool = require("../db");
 import type { LatestReview, PublicReview, ReviewsBody, ReviewSummary } from "../shared/api-types";
@@ -32,6 +32,17 @@ const LATEST_MAX = 12;
 const postLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 10,
+});
+
+// One person cannot pile reviews onto one product: 2 per hour per address per product, counted only when the review was
+// accepted (a mistake in the form, a 400, does not use one up). It runs before the limiter above, so a refused request
+// does not spend that one either.
+const REVIEWS_PER_PRODUCT_PER_HOUR = 2;
+const productLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: REVIEWS_PER_PRODUCT_PER_HOUR,
+  skipFailedRequests: true,
+  keyGenerator: (req) => `${ipKeyGenerator(req.ip ?? "")}|${String(req.params.id)}`,
 });
 
 const reviewSchema = z.object({
@@ -68,7 +79,7 @@ router.get("/products/:id/reviews", async (req, res, next) => {
   }
 });
 
-router.post("/products/:id/reviews", postLimiter, async (req, res, next) => {
+router.post("/products/:id/reviews", productLimiter, postLimiter, async (req, res, next) => {
   try {
     const id = parseInt(String(req.params.id), 10);
     if (isNaN(id) || !(await productExists(id))) return res.status(404).json({ error: "Product not found" });
