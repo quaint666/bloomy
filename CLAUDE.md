@@ -19,7 +19,7 @@ node tests/<name>_test.mjs    # one suite by hand, against the server you starte
 ```
 
 ## Rules and gotchas
-- Every `tests/*_test.mjs` must end with `0 failed` (24 suites, 1,569 checks, all green on 2026-11-22 on Node 26.13.0; the first 15 were also green on 2026-10-10, on Node 26.13.1 on 2026-11-13 and on PostgreSQL 18.6 on 2026-11-11); CI runs all of them on every pull request and every push to `main` (`.github/workflows/build.yml`, from source on the Dockerfile's Node, before any image is pushed), so a red suite blocks the publish; still run them locally first.
+- Every `tests/*_test.mjs` must end with `0 failed` (24 suites, 1,568 checks, all green on 2026-11-22 on Node 26.13.0; the first 15 were also green on 2026-10-10, on Node 26.13.1 on 2026-11-13 and on PostgreSQL 18.6 on 2026-11-11); CI runs all of them on every pull request and every push to `main` (`.github/workflows/build.yml`, from source on the Dockerfile's Node, before any image is pushed), so a red suite blocks the publish; still run them locally first.
 - `TOTP_ENCRYPTION_KEY` is required (the server exits 1 without it) and `twofa_test` needs the same value as the running server; never use the production key.
 - `npm test` (`tests/run_all.mjs`) creates `bloomy_test_<id>`, loads `schema.sql` and the seeds, starts its own server, runs every suite and drops the database, so the limiters and leftover test rows never matter and your `bloomy` database is untouched. A suite run by hand against a long-running server still shares that server's 20-per-15-minutes order limiter: restart the server if you see 429s.
 - Suites write real rows and restore them: local DB only, never production, never against a server with `EMAIL_MODE=send`.
