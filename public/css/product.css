@@ -86,7 +86,7 @@
   color: hsl(var(--foreground));
   font: inherit;
   cursor: pointer;
-  transition: border-color 0.15s, background-color 0.15s;
+  transition: border-color var(--motion-fast), background-color var(--motion-fast);
 }
 
 .size-picker__option:hover {

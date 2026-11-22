@@ -1,6 +1,7 @@
 // The quality-of-life changes, checked as far as a DOM can:
 //   A. the stylesheet rules (nothing to run: the CSS files are read)
 //        - the motion block is scoped to customer pages, short, and does not override reduced-motion
+//        - every duration is a --motion-* token (a typed number in a customer stylesheet fails); the page cross-fade rules
 //        - the category filter bar is see-through like the header, its underline is 3px
 //   A2. no customer stylesheet has a bare `fr` grid column (it cannot shrink: sideways scroll on a phone)
 //   B. the cart badge pops only when the count goes UP; the add buttons pop (product page, landing page)
@@ -66,8 +67,28 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   check("the only unscoped rules are the sticky-header scroll padding, nothing that animates", unscopedHtml.length === 0);
   const keyframes = rules.filter((r) => r.startsWith("@keyframes")).length;
   check("three keyframes (rise, pop, badge)", keyframes === 3, String(keyframes));
-  const secs = [...block.matchAll(/(?:animation|transition)(?:-duration)?:[^;]*?(\d*\.?\d+)(ms|s)\b/g)].map((m) => (m[2] === "ms" ? Number(m[1]) / 1000 : Number(m[1])));
+  // The durations are tokens (--motion-* in :root); read them, then look at what each rule resolves to.
+  const tokens = Object.fromEntries([...stripComments(style).matchAll(/--(motion-[a-z]+):\s*(\d+)ms/g)].map((m) => [m[1], Number(m[2]) / 1000]));
+  check("the motion tokens exist (press, fast, base, slow, enter, page, stagger)", ["motion-press", "motion-fast", "motion-base", "motion-slow", "motion-enter", "motion-page", "motion-stagger"].every((n) => n in tokens), JSON.stringify(tokens));
+  const resolved = block.replace(/var\(--(motion-[a-z]+)\)/g, (_m, n) => `${tokens[n] ?? "NaN"}s`);
+  const secs = [...resolved.matchAll(/(?:animation|transition)(?:-duration)?:[^;]*?(\d*\.?\d+)(ms|s)\b/g)].map((m) => (m[2] === "ms" ? Number(m[1]) / 1000 : Number(m[1])));
   check("every duration in the motion block is half a second or less", secs.length >= 6 && secs.every((s) => s <= 0.5), JSON.stringify(secs));
+  // Enforced: a customer stylesheet never types a duration; it uses a token. Exempt: the loading shimmer (a loop, not an
+  // interaction), the footer failsafe (a timer, not motion) and the reduced-motion rule's 0.01ms. Admin stylesheets are exempt.
+  const rawDurations = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((n) => n.endsWith(".css") && !n.startsWith("admin"))) {
+    stripComments(css(f)).split("\n").forEach((line, i) => {
+      if (/(?:^|[\s{;])(?:transition|animation)(?:-duration|-delay)?\s*:/.test(line) && /\d(?:ms|s)\b/.test(line) && !/shimmer|failsafe|0\.01ms/.test(line)) rawDurations.push(`${f}:${i + 1}`);
+    });
+  }
+  check("no customer stylesheet types a duration: every transition and animation uses a --motion-* token", rawDurations.length === 0, rawDurations.join(", "));
+  // The page cross-fade: on for customer pages without reduce-motion, short, the header stays put, admin pages opt out.
+  const fadeStyle = stripComments(style), fadeAdmin = stripComments(css("admin.css"));
+  check("page cross-fade: opted into only under no-preference, over --motion-page (group, old and new: the group alone otherwise holds the fade open for 250 ms), with the header named so it stays put", /@media \(prefers-reduced-motion: no-preference\)\s*\{\s*@view-transition\s*\{\s*navigation:\s*auto;?\s*\}[^@]*::view-transition-group\(\*\),\s*::view-transition-old\(\*\),\s*::view-transition-new\(\*\)\s*\{\s*animation-duration:\s*var\(--motion-page\);?\s*\}\s*\.site-nav\s*\{\s*view-transition-name:\s*site-nav;?\s*\}/.test(fadeStyle) && (fadeStyle.match(/@view-transition/g) || []).length === 1);
+  check("page cross-fade: it is short (the page ignores clicks while it plays): --motion-page is 200 ms or less", tokens["motion-page"] <= 0.2, String(tokens["motion-page"]));
+  const adminPages = fs.readdirSync(path.join(ROOT, "public")).filter((f) => /^admin-.*\.html$/.test(f));
+  const adminOrder = adminPages.filter((f) => { const h = fs.readFileSync(path.join(ROOT, "public", f), "utf8"); return h.indexOf("css/style.css") >= 0 && h.indexOf("css/admin.css") > h.indexOf("css/style.css"); });
+  check("page cross-fade: admin.css opts out (navigation: none) and every admin page loads it after style.css, so the later rule wins", /@view-transition\s*\{\s*navigation:\s*none;?\s*\}/.test(fadeAdmin) && adminPages.length >= 14 && adminOrder.length === adminPages.length, `${adminOrder.length}/${adminPages.length}`);
   check("cards rise from 40% opacity, never from 0 (an element at opacity 0 delays the page's Largest Contentful Paint)", /@keyframes bloomy-rise\s*\{\s*from\s*\{[^}]*opacity:\s*0\.4/.test(block) && !/@keyframes bloomy-rise\s*\{\s*from\s*\{[^}]*opacity:\s*0[;\s]/.test(block));
   const reduced = style.slice(0, style.indexOf(marker));
   check("the site-wide reduced-motion rule is still there and still zeroes every animation and transition", /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?animation-duration:\s*0\.01ms !important[\s\S]*?transition-duration:\s*0\.01ms !important/.test(reduced));

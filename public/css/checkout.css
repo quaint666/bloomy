@@ -273,7 +273,7 @@
   padding: 16px;
   cursor: pointer;
   background-color: hsl(var(--background));
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: border-color var(--motion-fast) ease, background-color var(--motion-fast) ease;
 }
 
 .window-option:has(input:checked) {
@@ -330,7 +330,7 @@
   padding: 16px;
   cursor: pointer;
   background-color: hsl(var(--background));
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: border-color var(--motion-fast) ease, background-color var(--motion-fast) ease;
 }
 
 .payment-option:has(input:checked) {

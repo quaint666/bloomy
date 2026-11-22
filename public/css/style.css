@@ -79,6 +79,16 @@
   --font-heading: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Lora", ui-serif, Georgia, serif;
+
+  /* Motion: every duration on the customer pages is one of these; a test fails for a number typed
+     anywhere else (admin stylesheets, the loading shimmer and the footer failsafe are exempt). */
+  --motion-press: 50ms;      /* a button pressed down */
+  --motion-fast: 150ms;      /* colour and border changes, small presses */
+  --motion-base: 200ms;      /* a lift or a shadow on hover */
+  --motion-slow: 250ms;      /* the nav underline, a card photo zoom, the toast */
+  --motion-enter: 400ms;     /* something arriving: a card rising, the "added" pop, the cart badge */
+  --motion-page: 150ms;      /* one page fading into the next */
+  --motion-stagger: 40ms;    /* the pause between one card and the next */
 }
 
 /* ---- Reset ---- */
@@ -180,7 +190,7 @@ summary:focus-visible,
   font-size: 0.95rem;
   font-weight: 600;
   border: 1px solid transparent;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color var(--motion-fast) ease, border-color var(--motion-fast) ease;
   white-space: nowrap;
 }
 
@@ -408,7 +418,7 @@ summary:focus-visible,
   object-fit: cover;
   border-radius: var(--radius);
   margin-bottom: 16px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform var(--motion-slow) ease, box-shadow var(--motion-slow) ease;
 }
 
 .product-card:hover .product-card__image {
@@ -419,7 +429,7 @@ summary:focus-visible,
 .product-card__name {
   font-weight: 600;
   margin-bottom: 4px;
-  transition: color 0.2s ease;
+  transition: color var(--motion-base) ease;
 }
 
 .product-card:hover .product-card__name {
@@ -1010,7 +1020,7 @@ summary:focus-visible,
   align-items: center;
   justify-content: center;
   box-shadow: 0 8px 24px hsl(var(--foreground) / 0.25);
-  transition: transform 0.15s ease, background-color 0.15s ease;
+  transition: transform var(--motion-fast) ease, background-color var(--motion-fast) ease;
 }
 
 .floating-contact__zalo:hover {
@@ -1030,7 +1040,7 @@ summary:focus-visible,
   font-weight: 600;
   box-shadow: 0 8px 24px hsl(var(--foreground) / 0.18);
   white-space: nowrap;
-  transition: background-color 0.15s ease;
+  transition: background-color var(--motion-fast) ease;
 }
 
 .floating-contact__hotline:hover {
@@ -1280,7 +1290,7 @@ html {
 }
 
 .toast.is-visible {
-  animation: bloomy-toast-in 0.25s ease;
+  animation: bloomy-toast-in var(--motion-slow) ease;
 }
 
 @keyframes bloomy-toast-in {
@@ -1363,7 +1373,7 @@ html {
   backdrop-filter: blur(8px);
   box-shadow: 0 6px 18px hsl(0 0% 0% / 0.12);
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  transition: transform var(--motion-fast) ease, box-shadow var(--motion-base) ease;
 }
 
 .back-to-top:hover {
@@ -1420,7 +1430,7 @@ html {
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.12s ease;
+  transition: background-color var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .campaign-chip__copy:hover {
@@ -1432,7 +1442,7 @@ html {
 }
 
 .campaign-chip__copy.is-added {
-  animation: bloomy-pop 0.35s ease;
+  animation: bloomy-pop var(--motion-enter) ease;
 }
 
 /* On a narrow screen the three parts no longer fit on one line. A fully rounded (999px) box that grows
@@ -1496,7 +1506,7 @@ html {
 }
 
 body:not([data-min-role]):not(.admin-login-page) .btn {
-  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  transition: background-color var(--motion-fast) ease, border-color var(--motion-fast) ease, transform var(--motion-fast) ease, box-shadow var(--motion-base) ease;
 }
 
 body:not([data-min-role]):not(.admin-login-page) .btn:hover:not(:disabled) {
@@ -1509,17 +1519,17 @@ body:not([data-min-role]):not(.admin-login-page) .btn-primary:hover:not(:disable
 
 body:not([data-min-role]):not(.admin-login-page) .btn:active:not(:disabled) {
   transform: translateY(0) scale(0.97);
-  transition-duration: 0.05s;
+  transition-duration: var(--motion-press);
 }
 
 /* "Đã thêm ✓": the add button pops once (class set by product.js and landing.js). */
 body:not([data-min-role]):not(.admin-login-page) .btn.is-added {
-  animation: bloomy-pop 0.35s ease;
+  animation: bloomy-pop var(--motion-enter) ease;
 }
 
 /* The cart count in the header pops when it goes UP (class set by main.js). */
 body:not([data-min-role]):not(.admin-login-page) [data-cart-count].is-bumped {
-  animation: bloomy-badge 0.4s ease;
+  animation: bloomy-badge var(--motion-enter) ease;
 }
 
 /* Header links: a line draws in from the left. */
@@ -1529,7 +1539,7 @@ body:not([data-min-role]):not(.admin-login-page) .site-nav__links a {
   background-repeat: no-repeat;
   background-position: 0 100%;
   background-size: 0 2px;
-  transition: background-size 0.25s ease;
+  transition: background-size var(--motion-slow) ease;
 }
 
 body:not([data-min-role]):not(.admin-login-page) .site-nav__links a:hover,
@@ -1540,20 +1550,20 @@ body:not([data-min-role]):not(.admin-login-page) .site-nav__links a:focus-visibl
 /* Product cards rise in, one after another (the first eight; the rest arrive together). */
 body:not([data-min-role]):not(.admin-login-page) .product-card,
 body:not([data-min-role]):not(.admin-login-page) .landing-card {
-  animation: bloomy-rise 0.4s ease both;
+  animation: bloomy-rise var(--motion-enter) ease both;
 }
 
-body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(2) { animation-delay: 40ms; }
-body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(3) { animation-delay: 80ms; }
-body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(4) { animation-delay: 120ms; }
-body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(5) { animation-delay: 160ms; }
-body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(6) { animation-delay: 200ms; }
-body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(7) { animation-delay: 240ms; }
-body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(8) { animation-delay: 280ms; }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(2) { animation-delay: calc(1 * var(--motion-stagger)); }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(3) { animation-delay: calc(2 * var(--motion-stagger)); }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(4) { animation-delay: calc(3 * var(--motion-stagger)); }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(5) { animation-delay: calc(4 * var(--motion-stagger)); }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(6) { animation-delay: calc(5 * var(--motion-stagger)); }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(7) { animation-delay: calc(6 * var(--motion-stagger)); }
+body:not([data-min-role]):not(.admin-login-page) :is(.product-card, .landing-card):nth-child(8) { animation-delay: calc(7 * var(--motion-stagger)); }
 
 /* Small presses: quantity buttons, size chips, the floating contact buttons. */
 body:not([data-min-role]):not(.admin-login-page) .qty-stepper button {
-  transition: transform 0.12s ease, background-color 0.15s ease;
+  transition: transform var(--motion-fast) ease, background-color var(--motion-fast) ease;
 }
 
 body:not([data-min-role]):not(.admin-login-page) .qty-stepper button:hover:not(:disabled) {
@@ -1566,7 +1576,7 @@ body:not([data-min-role]):not(.admin-login-page) .qty-stepper button:active:not(
 
 body:not([data-min-role]):not(.admin-login-page) .floating-contact__zalo,
 body:not([data-min-role]):not(.admin-login-page) .floating-contact__hotline {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--motion-base) ease, box-shadow var(--motion-base) ease;
 }
 
 body:not([data-min-role]):not(.admin-login-page) .floating-contact__zalo:hover,
@@ -1575,20 +1585,23 @@ body:not([data-min-role]):not(.admin-login-page) .floating-contact__hotline:hove
   box-shadow: 0 8px 20px hsl(0 0% 0% / 0.15);
 }
 
-/* Soft cross-fade between pages in browsers that support it (the header stays put). Only for people who
-   have not asked for less motion: with reduced motion the pages do not opt in at all. To switch this
-   off entirely, delete this block. */
-/* @media (prefers-reduced-motion: no-preference) {
+/* Soft cross-fade between pages in browsers that support it (Chrome 126, Safari 18.2; Firefox has none, so
+   there the pages just change). The header stays put. Only for people who have not asked for less motion.
+   Admin pages opt out in admin.css (both pages must opt in for a fade to run). It is short on purpose: the
+   page ignores clicks while it plays. To switch it off entirely, delete this block. */
+@media (prefers-reduced-motion: no-preference) {
   @view-transition {
     navigation: auto;
   }
 
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 0.2s;
+  /* The group too: the header's own group would otherwise keep the browser's 250 ms and hold the whole fade open. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: var(--motion-page);
   }
 
   .site-nav {
     view-transition-name: site-nav;
   }
-}*/
+}

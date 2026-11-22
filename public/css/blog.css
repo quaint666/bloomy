@@ -41,7 +41,7 @@
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   background-color: hsl(var(--background));
-  transition: border-color 0.2s;
+  transition: border-color var(--motion-base);
 }
 
 .blog-list__link:hover {

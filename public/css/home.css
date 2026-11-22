@@ -215,7 +215,7 @@
   height: 110px;
   border-radius: 50%;
   object-fit: cover;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--motion-base) ease, box-shadow var(--motion-base) ease;
 }
 
 .category-nav__item:hover img {
@@ -226,7 +226,7 @@
 .category-nav__item span {
   font-size: 0.9rem;
   font-weight: 600;
-  transition: color 0.2s ease;
+  transition: color var(--motion-base) ease;
 }
 
 .category-nav__item:hover span {
