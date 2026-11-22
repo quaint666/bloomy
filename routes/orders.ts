@@ -828,7 +828,11 @@ router.post("/", orderLimiter, async (req, res, next) => {
 // ---------------------------------------------------------------------------
 router.post("/ipn", async (req, res) => {
   try {
-    const { data, mac } = req.body;
+    // Not the shape ZaloPay sends: refuse it (-1, "do not retry"). Only a real server fault answers 0, which asks ZaloPay to try again.
+    const { data, mac } = req.body ?? {};
+    if (typeof data !== "string" || typeof mac !== "string") {
+      return res.json({ return_code: -1, return_message: "invalid request" });
+    }
     const expectedMac = hmacSHA256(ZP_KEY2, data);
 
     const macBuf = Buffer.from(mac || "", "hex");
@@ -839,7 +843,16 @@ router.post("/ipn", async (req, res) => {
       return res.json({ return_code: -1, return_message: "mac not equal" });
     }
 
-    const payload = JSON.parse(data);
+    // A correctly signed body that is not what we expect is still not a reason to retry.
+    let payload: { app_trans_id?: unknown; amount?: unknown; zp_trans_id?: unknown };
+    try {
+      payload = JSON.parse(data);
+    } catch {
+      return res.json({ return_code: -1, return_message: "invalid data" });
+    }
+    if (typeof payload !== "object" || payload === null || typeof payload.app_trans_id !== "string") {
+      return res.json({ return_code: -1, return_message: "invalid data" });
+    }
     const { rows } = await pool.query<{ id: number; total_amount: number; payment_status: PaymentStatus }>(
       `SELECT id, total_amount, payment_status FROM orders WHERE app_trans_id = $1`,
       [payload.app_trans_id]
@@ -857,7 +870,7 @@ router.post("/ipn", async (req, res) => {
       return res.json({ return_code: -1, return_message: "amount mismatch" });
     }
 
-    await markOrderPaid(order.id, payload.zp_trans_id); // idempotent — safe on ZaloPay's retries too
+    await markOrderPaid(order.id, String(payload.zp_trans_id ?? "")); // idempotent — safe on ZaloPay's retries too
 
     return res.json({ return_code: 1, return_message: "success" });
   } catch (err) {
