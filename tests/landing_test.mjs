@@ -66,6 +66,8 @@ const baseCoupon = { type: "percent", value: 20, min_subtotal: 0, starts_on: vnD
 try {
   await pool.query("UPDATE settings SET active_campaign_id=$1", [camp.id]);
   await setCoupon(baseCoupon);
+  // The seed gives every campaign a picture; section 1 checks the page of one without (the original row is restored at the end).
+  await pool.query("UPDATE campaigns SET hero_image=NULL WHERE id=$1", [camp.id]);
 
   // ------------------------------------------------------------ 1. the landing page says what the database says
   {

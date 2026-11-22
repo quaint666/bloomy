@@ -147,6 +147,88 @@ def build():
                          price=price, sizes=sizes_for(cat, style, recipe, price)))
     return rows
 
+# Four occasion campaigns for the live shop, next to 20/10 and 20/11 in seed-reference.sql. The wording is page copy; a
+# coupon's value and window are read live from `coupons`. The windows are checked against the DELIVERY date, and are a
+# draft for the owner (Tết 2027 starts 6/2, Trung thu 2027 is 15/9: check both). hero_image is a file in public/images/.
+CAMPAIGNS = [
+    # name, headline, subheadline, coupon, picture, SKUs in display order
+    ('Hoa đón Tết 2027', 'Một bó hoa, một năm mới an lành',
+     'Hoa Tết để chưng và để biếu gia đình, đặt sớm để kịp ngày giao.',
+     'TET20', 'images/bohoatetdoanvien.webp',
+     ['BLM-0052', 'BLM-0053', 'BLM-0054', 'BLM-0055', 'BLM-0059', 'BLM-0060']),
+    ('Valentine 14/2', 'Hoa cho người thương, đúng ngày hẹn',
+     'Một bó hồng hoặc một hộp quà ngọt ngào, đặt sớm để giao đúng ngày.',
+     'VALENTINE20', 'images/bohongpeonydemvalentine.webp',
+     ['BLM-0009', 'BLM-0062', 'BLM-0065', 'BLM-0066', 'BLM-0070', 'BLM-0041']),
+    ('Trung thu đoàn viên', 'Một bó hoa cho đêm rằm sum họp',
+     'Sắc hoa thu ấm áp để chưng cạnh mâm cỗ trăng rằm.',
+     'TRUNGTHU20', 'images/bohoamuathuam.webp',
+     ['BLM-0037', 'BLM-0039', 'BLM-0095', 'BLM-0096', 'BLM-0097', 'BLM-0098']),
+    ('Giáng sinh ấm áp', 'Một bó hoa cho mùa Noel thêm ấm',
+     'Hoa đỏ trắng cho gia đình, bạn bè và người thương cuối năm.',
+     'NOEL20', 'images/bohoanoelthanhlich.webp',
+     ['BLM-0100', 'BLM-0101', 'BLM-0102', 'BLM-0103', 'BLM-0105', 'BLM-0043']),
+]
+COUPONS = [  # code, percent, starts_on, ends_on
+    ('TET20', 20, '2027-01-25', '2027-02-05'),
+    ('VALENTINE20', 20, '2027-02-10', '2027-02-14'),
+    ('TRUNGTHU20', 20, '2027-09-08', '2027-09-15'),
+    ('NOEL20', 20, '2026-12-18', '2026-12-25'),
+]
+# The two campaigns of seed-reference.sql get a picture only where the shop has not chosen one.
+OLD_CAMPAIGN_PICTURES = [
+    ('Gửi một chút thương ngày 20/10', 'images/bohongpastel2010.webp'),
+    ('Gửi lời thương đến thầy cô', 'images/bohoalykinhtangthayco.webp'),
+]
+
+def campaign_sql():
+    o = []
+    w = o.append
+    w("-- ---- Four more occasion campaigns (each: a 20% coupon, six products, a picture) ----")
+    w("INSERT INTO coupons (code, type, value, min_subtotal, starts_on, ends_on) VALUES")
+    w(",\n".join(f"({q(c)}, 'percent', {v}, 0, {q(a)}, {q(b)})" for c, v, a, b in COUPONS))
+    w("ON CONFLICT (code) DO NOTHING;")
+    w("")
+    # A campaign is skipped when one with its name exists (a name is not unique in the schema, so look it up).
+    w("INSERT INTO campaigns (name, headline, subheadline, coupon_code, hero_image)")
+    w("SELECT v.name, v.headline, v.subheadline, v.coupon_code, v.hero_image")
+    w("FROM (VALUES")
+    w(",\n".join(f"({q(n)}, {q(h)}, {q(sub)}, {q(c)}, {q(img)})" for n, h, sub, c, img, _ in CAMPAIGNS))
+    w(") AS v(name, headline, subheadline, coupon_code, hero_image)")
+    w("WHERE NOT EXISTS (SELECT 1 FROM campaigns c WHERE c.name = v.name);")
+    w("")
+    w("INSERT INTO campaign_products (campaign_id, product_id, sort_order)")
+    w("SELECT c.id, p.id, v.sort_order")
+    w("FROM (VALUES")
+    rows_ = []
+    for n, _h, _s, _c, _i, skus in CAMPAIGNS:
+        for i, sku in enumerate(skus, 1):
+            rows_.append(f"({q(n)}, {q(sku)}, {i})")
+    w(",\n".join(rows_))
+    w(") AS v(campaign_name, sku, sort_order)")
+    w("JOIN campaigns c ON c.name = v.campaign_name")
+    w("JOIN products p ON p.sku = v.sku")
+    w("ON CONFLICT (campaign_id, product_id) DO NOTHING;")
+    w("")
+    w("UPDATE campaigns SET hero_image = v.image")
+    w("FROM (VALUES")
+    w(",\n".join(f"({q(n)}, {q(img)})" for n, img in OLD_CAMPAIGN_PICTURES))
+    w(") AS v(name, image)")
+    w("WHERE campaigns.name = v.name AND campaigns.hero_image IS NULL;")
+    w("")
+    w("-- A mistyped SKU or name would quietly add fewer rows; stop instead.")
+    w("DO $$")
+    w("BEGIN")
+    w(f"  IF (SELECT count(*) FROM campaigns WHERE name IN ({', '.join(q(c[0]) for c in CAMPAIGNS)})) <> {len(CAMPAIGNS)} THEN")
+    w("    RAISE EXCEPTION 'campaigns: expected the four new ones';")
+    w("  END IF;")
+    w(f"  IF (SELECT count(*) FROM campaign_products cp JOIN campaigns c ON c.id = cp.campaign_id WHERE c.name IN ({', '.join(q(c[0]) for c in CAMPAIGNS)})) <> {sum(len(c[5]) for c in CAMPAIGNS)} THEN")
+    w(f"    RAISE EXCEPTION 'campaign_products: expected {sum(len(c[5]) for c in CAMPAIGNS)} rows for the four new campaigns';")
+    w("  END IF;")
+    w("END $$;")
+    w("")
+    return o
+
 def main():
     rows = build()
     assert len(rows) == 54, len(rows)
@@ -158,15 +240,18 @@ def main():
 
     out = []
     w = out.append
-    w("-- Bloomy — second product seed: 54 products for Peekbox's six occasions, the six occasion tags, and the")
-    w("-- occasion links of the first 50 products.")
+    w("-- Bloomy — second seed: 54 products for Peekbox's six occasions, the six occasion tags, the occasion links of")
+    w("-- the first 50 products, and (at the end) four more occasion campaigns with their coupons: Tết, Valentine,")
+    w("-- Trung thu and Giáng sinh, next to the two in seed-reference.sql (20/10 and 20/11).")
     w("-- GENERATED by gen_products2.py, do not hand-edit row by row. Pricing as in the first seed (Nhỏ/Lớn are 70%/140% of")
     w("-- Vừa, stems 60%/150%); a bouquet costs its stems / 0.78 plus the style fee, a set about twice its stems.")
     w("--")
     w("-- ADDITIVE and IDEMPOTENT: no fixed ids; everything is looked up by SKU or by (kind, name); every INSERT ends in")
     w("-- ON CONFLICT DO NOTHING. So it loads after the first seed on a fresh database (seed.sh) AND runs on a live shop")
     w("-- (seed-more.sh): a second run changes nothing, and a product that already exists is never overwritten.")
-    w("-- Must run AFTER seed-categories.sql, seed-flowers.sql and seed-products.sql (it needs the first 50 products).")
+    w("-- Must run AFTER seed-categories.sql, seed-flowers.sql and seed-products.sql (it needs the first 50 products), and")
+    w("-- AFTER seed-reference.sql on a fresh database (that file inserts campaigns 1 and 2 with fixed ids; these four take the")
+    w("-- next ones). seed.sh loads it last.")
     w("-- category_id: 1 sinh nhật, 2 cưới, 3 khai trương, 6 set quà tặng, 7 Tết, 8 mùa xuân, 10 mùa thu, 11 mùa đông.")
     w("-- Flower quantities are DRAFTS for the team to review, like the first seed's.")
     w("")
@@ -222,6 +307,8 @@ def main():
     w("JOIN tags t ON t.kind = v.kind::tag_kind AND t.name = v.name")
     w("ON CONFLICT (product_id, tag_id) DO NOTHING;")
     w("")
+    for line in campaign_sql():
+        w(line)
     open('seed-products-2.sql', 'w', encoding='utf-8').write("\n".join(out))
 
     print(f"{len(rows)} products, {len(sizes_sql)} size rows, {len(recipe_sql)} recipe rows, {len(tag_sql)} tag links")

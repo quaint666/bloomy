@@ -8,7 +8,8 @@
 #
 # It refuses, and changes nothing, when products or settings already hold rows: the seeds are demo data and must never
 # be loaded over a live shop. The seven files run in ONE transaction, so a failure leaves nothing behind. The load order
-# matters (products need categories and flowers; the campaigns pick their products by SKU) and is written here only.
+# matters (products need categories and flowers; the campaigns pick their products by SKU; seed-products-2.sql goes LAST
+# because it adds four campaigns after the two in seed-reference.sql, which have fixed ids) and is written here only.
 set -eu
 
 if ! n=$(psql -tAq -c "SELECT (SELECT count(*) FROM products) + (SELECT count(*) FROM settings)"); then
@@ -22,7 +23,7 @@ fi
 
 cd /seeds
 set --
-for f in seed-categories.sql seed-flowers.sql seed-products.sql seed-products-2.sql seed-gallery.sql seed-reviews.sql seed-reference.sql; do
+for f in seed-categories.sql seed-flowers.sql seed-products.sql seed-gallery.sql seed-reviews.sql seed-reference.sql seed-products-2.sql; do
   set -- "$@" -f "$f"
 done
 if ! psql -q -v ON_ERROR_STOP=1 --single-transaction "$@" > /dev/null; then
