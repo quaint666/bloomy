@@ -73,7 +73,7 @@
    (primary-coloured text on white is only ~3:1 contrast). */
 .listing-filters {
   position: sticky;
-  top: var(--nav-height, 73px);
+  top: var(--nav-height);
   z-index: 40;
   /* Same see-through, blurred glass as the header above it (.site-nav in style.css). */
   background-color: hsl(var(--background) / 0.8);
@@ -228,7 +228,7 @@
 /* Pagination under the grid, in the pills' look. scroll-margin-top is where a page change lands the top of the grid:
    under the sticky nav and filter bar (the 60px for the bar is a guess, not measured). */
 .listing-grid-section {
-  scroll-margin-top: calc(var(--nav-height, 73px) + 60px);
+  scroll-margin-top: calc(var(--nav-height) + 60px);
 }
 
 .pagination {

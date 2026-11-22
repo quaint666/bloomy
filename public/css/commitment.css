@@ -101,14 +101,20 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  color: hsl(var(--primary-text));
   margin-bottom: 16px;
+}
+
+/* The soft pink, at full strength: the icon is a graphic (3:1 is enough) and the numeral is large text (32 px). */
+.process-step__icon {
+  flex: none;
+  color: hsl(var(--primary));
 }
 
 .process-step__number {
   font-family: var(--font-display);
   font-size: 2rem;
-  color: hsl(var(--primary) / 0.25);
+  line-height: 1;
+  color: hsl(var(--primary));
 }
 
 .process-step__title {

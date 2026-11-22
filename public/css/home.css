@@ -8,16 +8,12 @@
    Text on the left, the photo in an arch on the right, on a blush-to-peach wash. The text always sits on a plain colour
    (so its contrast does not depend on the photo, and ui_polish_test computes it), the photo is shown at about its own size
    (hero-bouquet.webp is 700 px wide), and the "Hoa tự chọn" note is a real link to the page where a message can be written.
-   The arch is 460 x 524 at full size (--arch ratio below); its top radius is half the width, written as 50% / 43.9%. */
+   The arch frame and the peach circle are shared with the landing page: see "The arch frame" in style.css. */
 .hero {
-  --hero-blush: 350 45% 97%;
-  --hero-peach: 24 70% 96.5%;
-  --hero-sun: 24 85% 90%;
-  --hero-line: 350 33% 78%;
   position: relative;
   overflow: hidden;
   padding-block: 56px;
-  background: linear-gradient(100deg, hsl(var(--hero-blush)) 0%, hsl(var(--hero-peach)) 100%);
+  background: var(--hero-wash);
 }
 
 .hero__grid {
@@ -33,27 +29,13 @@
   justify-self: end;
 }
 
-.hero__sun {
-  position: absolute;
-  top: -4%;
-  right: -11%;
-  width: 63%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background-color: hsl(var(--hero-sun));
-}
-
 .hero__arch {
   position: relative;
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 460 / 524;
   object-fit: cover;
   object-position: 58% 50%;
-  border-radius: 50% 50% 28px 28px / 43.9% 43.9% 28px 28px;
-  outline: 1.5px solid hsl(var(--hero-line));
-  outline-offset: 12px;
 }
 
 .hero__note {
