@@ -1,6 +1,6 @@
 // Bloomy — Shop settings ("Cài đặt"). Owner only.
 // GET   /api/admin/settings   — the single settings row
-//                               (also lists the campaigns, for the dropdown)
+//                               (also lists the campaigns, for the dropdown, each with offer_ended)
 // PATCH /api/admin/settings   — any of: shop_address, contact_phone, contact_email,
 //                               vat_rate, ring1_fee, ring2_fee, ring3_fee,
 //                               style_fee_bo, style_fee_gio, style_fee_hop,
@@ -13,6 +13,7 @@
 import { Router } from "express";
 import pool = require("../db");
 import { requireRole } from "./admin-auth";
+import { todayVNDateString } from "../shared/vn-time";
 import type { AdminSettingsBody, AdminSettingsRow } from "../shared/api-types";
 
 // `v` is a raw JSON value from req.body, of any type: each cleaner checks its own.
@@ -49,9 +50,15 @@ const FIELDS: Record<string, Cleaner> = {
 // exists, which needs a lookup (the PATCH below does it).
 const COLUMNS = [...Object.keys(FIELDS), "active_campaign_id"].join(", ");
 
-// The settings row plus the campaigns to choose from (id and name, for the dropdown).
+// The settings row plus the campaigns to choose from (id and name, for the dropdown). offer_ended is true when a campaign's
+// coupon is switched off or its window is over: the homepage card then has no chip, and the owner should see why in the list.
 async function readSettings(row: AdminSettingsRow): Promise<AdminSettingsBody> {
-  const { rows: campaigns } = await pool.query<{ id: number; name: string }>("SELECT id, name FROM campaigns ORDER BY id");
+  const { rows: campaigns } = await pool.query<{ id: number; name: string; offer_ended: boolean }>(
+    `SELECT c.id, c.name,
+            (co.code IS NOT NULL AND (NOT co.active OR (co.ends_on IS NOT NULL AND co.ends_on < $1::date))) AS offer_ended
+     FROM campaigns c LEFT JOIN coupons co ON co.code = c.coupon_code
+     ORDER BY c.id`,
+    [todayVNDateString()]);
   return { ...row, campaigns };
 }
 

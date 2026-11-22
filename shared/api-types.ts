@@ -140,7 +140,7 @@ export interface AdminSettingsRow {
   style_fee_bo: number; style_fee_gio: number; style_fee_hop: number;
   active_campaign_id: number | null;
 }
-export interface AdminSettingsBody extends AdminSettingsRow { campaigns: { id: number; name: string }[] }
+export interface AdminSettingsBody extends AdminSettingsRow { campaigns: { id: number; name: string; offer_ended: boolean }[] }
 
 // GET /api/flowers (routes/flowers.ts): the settings page reads the wrap styles and their fees from it.
 export interface FlowerStyle { key: CustomStyle; label: string; fee: number }

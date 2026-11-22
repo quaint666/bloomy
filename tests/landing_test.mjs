@@ -111,6 +111,7 @@ try {
     await setCoupon({ ...baseCoupon, starts_on: vnDate(-10), ends_on: vnDate(-1) });
     c = await chip();
     check("a coupon whose window has ended: no chip and an empty data-coupon", c.text === undefined && c.data === "", JSON.stringify(c));
+    check("…and the homepage card's button no longer says \"ưu đãi\"", dom(await (await get("/")).text()).querySelector(".campaign-card a.btn")?.textContent === "Xem bộ sưu tập");
     await setCoupon({ ...baseCoupon, starts_on: vnDate(-1), ends_on: vnDate(0) });
     check("a window that ends today still shows (today is not over)", (await chip()).text !== undefined);
     await setCoupon(baseCoupon);

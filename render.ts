@@ -124,6 +124,8 @@ function couponChip(coupon: CouponRow | null): Chip | null {
 
 // The homepage card: name, headline, subheadline, the chip, and the way in; the campaign's picture
 // beside them when it has one (decorative: the headline says it all, so alt is empty).
+const CARD_BUTTON_WITH_OFFER = "Xem ưu đãi";
+const CARD_BUTTON_WITHOUT_OFFER = "Xem bộ sưu tập"; // no chip (no coupon, or its window ended): the button must not promise a discount
 function campaignCard(c: Campaign, chip: Chip | null): string {
   const media = c.hero_image
     ? `\n        <div class="campaign-card__media"><img class="campaign-card__image" src="${escapeHtml(c.hero_image)}" alt="" loading="lazy" decoding="async"></div>`
@@ -134,7 +136,7 @@ function campaignCard(c: Campaign, chip: Chip | null): string {
         <div class="campaign-card__text">
           <p class="campaign-card__name">${escapeHtml(c.name)}</p>
           <h2 class="campaign-card__headline">${escapeHtml(c.headline)}</h2>${c.subheadline ? `\n          <p class="campaign-card__sub">${escapeHtml(c.subheadline)}</p>` : ""}${chip ? `\n          ${chip.html}` : ""}
-          <a class="btn btn-primary" href="landing">Xem ưu đãi</a>
+          <a class="btn btn-primary" href="landing">${chip ? CARD_BUTTON_WITH_OFFER : CARD_BUTTON_WITHOUT_OFFER}</a>
         </div>${media}
       </div>
     </div>

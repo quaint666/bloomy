@@ -172,7 +172,22 @@ try {
 
   const g = await o.get();
   check("owner GET: 200 with active_campaign_id and the campaign list", g.status === 200 && "active_campaign_id" in g.data && Array.isArray(g.data.campaigns) && g.data.campaigns.length === campaigns.length, JSON.stringify(g.data)?.slice(0, 120));
-  check("…the list is {id, name} for each campaign", g.data.campaigns.every((x) => Object.keys(x).sort().join() === "id,name"));
+  check("…the list is {id, name, offer_ended} for each campaign", g.data.campaigns.every((x) => Object.keys(x).sort().join() === "id,name,offer_ended" && typeof x.offer_ended === "boolean"));
+  {
+    // offer_ended: the coupon is switched off or its window is over (what makes the homepage card lose its chip)
+    const code = campaigns[0].coupon_code;
+    const orig = (await pool.query("SELECT starts_on, ends_on, active FROM coupons WHERE code=$1", [code])).rows[0];
+    const ended = async () => (await o.get()).data.campaigns.find((x) => x.id === campaigns[0].id).offer_ended;
+    await pool.query("UPDATE coupons SET starts_on=NULL, ends_on=(now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date + 30, active=true WHERE code=$1", [code]);
+    check("offer_ended is false while the coupon is on and its window is ahead", (await ended()) === false);
+    await pool.query("UPDATE coupons SET ends_on=(now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date - 1 WHERE code=$1", [code]);
+    check("…true once its window has ended", (await ended()) === true);
+    await pool.query("UPDATE coupons SET ends_on=(now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date WHERE code=$1", [code]);
+    check("…false on the last day (today is not over)", (await ended()) === false);
+    await pool.query("UPDATE coupons SET active=false WHERE code=$1", [code]);
+    check("…true when the coupon is switched off", (await ended()) === true);
+    await pool.query("UPDATE coupons SET starts_on=$2, ends_on=$3, active=$4 WHERE code=$1", [code, orig.starts_on, orig.ends_on, orig.active]);
+  }
   check("…and the current value is the real one (none right now)", g.data.active_campaign_id === null);
 
   const setOn = await o.patch({ active_campaign_id: campaigns[1].id });
@@ -209,7 +224,9 @@ try {
     const d = dom.window.document, sel = d.getElementById("set-campaign");
     const loaded = await until(() => sel.options.length === campaigns.length + 1 && sel.value === String(campaigns[1].id));
     check("Cài đặt page: the dropdown lists \"Không có\" and every campaign, with the current one chosen", loaded, `${sel.options.length} options, value=${sel.value}`);
-    check("…the options carry the campaign names", [...sel.options].slice(1).map((o) => o.textContent).join("|") === campaigns.map((x) => x.name).join("|"));
+    const SUFFIX = " (mã giảm giá đã hết hạn)";
+    const api = (await o.get()).data.campaigns;
+    check("…the options carry the campaign names, plus a note on those whose offer is over", [...sel.options].slice(1).map((opt) => opt.textContent.replace(SUFFIX, "")).join("|") === campaigns.map((x) => x.name).join("|") && [...sel.options].slice(1).every((opt, i) => opt.textContent.endsWith(SUFFIX) === api[i].offer_ended));
     const save = async () => { d.getElementById("admin-settings-form").requestSubmit(); return until(async () => /Đã lưu/.test(d.getElementById("admin-settings-msg").textContent) && !d.getElementById("admin-settings-msg").hidden); };
     sel.value = "";
     d.getElementById("admin-settings-msg").hidden = true;
