@@ -110,7 +110,7 @@
 }
 
 .landing-card__name a:hover {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .landing-card__price {

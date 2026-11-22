@@ -23,7 +23,7 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-bottom: 12px;
 }
 
@@ -78,7 +78,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background-color: hsl(var(--primary));
+  background-color: hsl(var(--primary-text));
   color: hsl(var(--primary-foreground));
   display: flex;
   align-items: center;
@@ -99,7 +99,7 @@
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   background-color: hsl(var(--primary) / 0.12);
   padding: 4px 10px;
   border-radius: 999px;
@@ -121,7 +121,7 @@
 
 .checkout-cutoff-notice svg {
   flex-shrink: 0;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-top: 1px;
 }
 
@@ -178,7 +178,7 @@
 }
 
 .checkout-consent__label a {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .checkout-consent__label a:hover {
@@ -293,7 +293,7 @@
 }
 
 .window-option:has(input:checked) .window-option__icon {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .window-option__text {
@@ -311,7 +311,7 @@
 }
 
 .window-option:has(input:checked) .window-option__label {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .window-option__time {
@@ -344,7 +344,7 @@
 }
 
 .payment-option:has(input:checked) .payment-option__icon {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .payment-option__text {
@@ -366,7 +366,7 @@
 }
 
 .payment-option__check {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   opacity: 0;
   flex-shrink: 0;
 }
@@ -446,7 +446,7 @@
 }
 
 .checkout-invoice__fields a {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .checkout-invoice__fields a:hover {
@@ -492,7 +492,7 @@
 }
 
 .checkout-pickup-info__address a {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .checkout-summary__coupon-msg {

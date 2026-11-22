@@ -30,7 +30,7 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-bottom: 12px;
 }
 
@@ -100,7 +100,7 @@
   display: block;
   font-family: var(--font-display);
   font-size: 1.1rem;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-bottom: 4px;
 }
 

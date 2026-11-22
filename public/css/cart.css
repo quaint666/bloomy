@@ -24,7 +24,7 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-bottom: 12px;
 }
 
@@ -80,7 +80,7 @@
 }
 
 .cart-item__link:hover .cart-item__name {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .cart-item__info {
@@ -130,7 +130,7 @@
 
 .cart-item__line-subtotal-value {
   font-weight: 600;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .cart-item__remove {
@@ -174,7 +174,7 @@
 }
 
 .cart-continue:hover {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .cart-clear {
@@ -213,7 +213,7 @@
 }
 
 .cart-summary__free {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   font-weight: 600;
 }
 
@@ -265,7 +265,7 @@
 }
 
 .cart-coupon__msg.is-ok {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .cart-coupon__msg.is-error {
@@ -296,7 +296,7 @@
 .cart-summary__total span:last-child {
   font-family: var(--font-display);
   font-size: 1.5rem;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .cart-checkout-btn {

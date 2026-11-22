@@ -22,7 +22,7 @@
   height: 64px;
   border-radius: 50%;
   background-color: hsl(var(--primary) / 0.12);
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,7 +34,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-bottom: 12px;
 }
 
@@ -74,7 +74,7 @@
 .order-code-chip__value {
   font-family: var(--font-display);
   font-weight: 600;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   font-size: 1.05rem;
 }
 
@@ -93,7 +93,7 @@
 
 .order-code-chip button:hover {
   background-color: hsl(var(--background));
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 /* ---- Two-column layout: detail cards left, order recap right — same
@@ -125,7 +125,7 @@
   font-size: 1.25rem;
   font-weight: 500;
   margin-bottom: 20px;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .confirmation-info-row {
@@ -215,7 +215,7 @@
   height: 40px;
   border-radius: 50%;
   background-color: hsl(var(--primary) / 0.12);
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   display: flex;
   align-items: center;
   justify-content: center;

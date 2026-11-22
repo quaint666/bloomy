@@ -86,6 +86,31 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   const fadeStyle = stripComments(style), fadeAdmin = stripComments(css("admin.css"));
   check("page cross-fade: opted into only under no-preference, over --motion-page (group, old and new: the group alone otherwise holds the fade open for 250 ms), with the header named so it stays put", /@media \(prefers-reduced-motion: no-preference\)\s*\{\s*@view-transition\s*\{\s*navigation:\s*auto;?\s*\}[^@]*::view-transition-group\(\*\),\s*::view-transition-old\(\*\),\s*::view-transition-new\(\*\)\s*\{\s*animation-duration:\s*var\(--motion-page\);?\s*\}\s*\.site-nav\s*\{\s*view-transition-name:\s*site-nav;?\s*\}/.test(fadeStyle) && (fadeStyle.match(/@view-transition/g) || []).length === 1);
   check("page cross-fade: it is short (the page ignores clicks while it plays): --motion-page is 200 ms or less", tokens["motion-page"] <= 0.2, String(tokens["motion-page"]));
+  // ---- The pink. --primary (the soft one) is for fills and LARGE text; --primary-text (deeper) is for small text and for a button
+  // with white text. The token values are checked against WCAG AA here (computed from the stylesheet itself), and a rule that sets
+  // the soft pink as a small-text colour or as a fill under white text fails. Heading accents (`... em`) and the one big numeral
+  // are the large-text exceptions; the four fills below carry no text.
+  const hslTok = (name) => { const m = stripComments(style).match(new RegExp(`--${name}:\\s*(\\d+(?:\\.\\d+)?) (\\d+(?:\\.\\d+)?)% (\\d+(?:\\.\\d+)?)%`)); return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null; };
+  const toRgb = ([h, sat, l]) => { sat /= 100; l /= 100; const k = (n) => (n + h / 30) % 12, a = sat * Math.min(l, 1 - l); const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1)); return [f(0), f(8), f(4)].map((v) => Math.round(v * 255)); };
+  const relLum = (c) => { const [r, g, b] = c.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const contrast = (a, b) => { const x = relLum(a), y = relLum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const white = [255, 255, 255], softPink = hslTok("primary"), textPink = hslTok("primary-text"), hoverPink = hslTok("primary-text-hover"), cream = hslTok("secondary");
+  const have = softPink && textPink && hoverPink && cream;
+  const cr = (fg, bg) => (have ? contrast(toRgb(fg), toRgb(bg)) : 0);
+  check("pink: --primary is 3:1 or better on white and on the cream sections (large text and fills)", have && cr(softPink, [0, 0, 100]) >= 3 && cr(softPink, cream) >= 3, have ? `${cr(softPink, [0, 0, 100]).toFixed(2)} / ${cr(softPink, cream).toFixed(2)}` : "token missing");
+  check("pink: --primary-text is 4.5:1 or better on white and on cream (small text), and white text on it too", have && cr(textPink, [0, 0, 100]) >= 4.5 && cr(textPink, cream) >= 4.5, have ? `${cr(textPink, [0, 0, 100]).toFixed(2)} / ${cr(textPink, cream).toFixed(2)}` : "token missing");
+  check("pink: white text on --primary-text-hover (the button under the mouse) is 4.5:1 or better", have && cr([0, 0, 100], hoverPink) >= 4.5, have ? cr([0, 0, 100], hoverPink).toFixed(2) : "token missing");
+  const parseRules = (src) => [...stripComments(src).matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim().replace(/\s+/g, " "), body: m[2] }));
+  const FILL_OK = new Set([".reading-progress__bar", ".hero__badge::before", '.tag-chip[aria-pressed="true"]::before', ".timeline__dot"]);
+  const softText = [], softFill = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((n) => n.endsWith(".css") && !n.startsWith("admin"))) {
+    for (const { sel, body } of parseRules(css(f))) {
+      if (/(?:^|[;\s])color:\s*hsl\(var\(--primary\)\)/.test(body) && !(/(^|\s)em$/.test(sel) || sel === ".about-stat__number")) softText.push(`${f}: ${sel}`);
+      if (/background(?:-color)?:\s*hsl\(var\(--primary\)(?:\s*\/\s*0\.9)?\)/.test(body) && !FILL_OK.has(sel)) softFill.push(`${f}: ${sel}`);
+    }
+  }
+  check("pink: small text uses --primary-text; the soft --primary is only a heading accent (`em`) or the big numeral", softText.length === 0, softText.slice(0, 4).join(" | "));
+  check("pink: a fill under white text uses --primary-text (the soft --primary is a fill only for the four decorative bits)", softFill.length === 0, softFill.slice(0, 4).join(" | "));
   const adminPages = fs.readdirSync(path.join(ROOT, "public")).filter((f) => /^admin-.*\.html$/.test(f));
   const adminOrder = adminPages.filter((f) => { const h = fs.readFileSync(path.join(ROOT, "public", f), "utf8"); return h.indexOf("css/style.css") >= 0 && h.indexOf("css/admin.css") > h.indexOf("css/style.css"); });
   check("page cross-fade: admin.css opts out (navigation: none) and every admin page loads it after style.css, so the later rule wins", /@view-transition\s*\{\s*navigation:\s*none;?\s*\}/.test(fadeAdmin) && adminPages.length >= 14 && adminOrder.length === adminPages.length, `${adminOrder.length}/${adminPages.length}`);

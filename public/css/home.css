@@ -70,7 +70,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-bottom: 24px;
 }
 
@@ -230,7 +230,7 @@
 }
 
 .category-nav__item:hover span {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 /* ---- Featured products ---- */
@@ -258,7 +258,7 @@
 }
 
 .featured__view-all:hover {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 /* .product-grid and .product-card__image / __name / __price now live in
@@ -296,7 +296,7 @@
   height: 56px;
   border-radius: 16px;
   background-color: hsl(var(--primary) / 0.12);
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -338,7 +338,7 @@
 }
 
 .testimonial-card__stars {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   font-size: 0.9rem;
   margin-bottom: 16px;
 }
@@ -430,7 +430,7 @@
 }
 
 .testimonial-card__role a {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   text-decoration: underline;
 }
 

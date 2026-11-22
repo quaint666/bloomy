@@ -16,7 +16,7 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-bottom: 12px;
 }
 
@@ -258,7 +258,7 @@
 
 .pagination__btn[aria-current="page"] {
   color: hsl(var(--primary-foreground));
-  background-color: hsl(var(--primary));
+  background-color: hsl(var(--primary-text));
   border-color: hsl(var(--primary));
 }
 
@@ -451,7 +451,7 @@
   padding: 0;
   border: none;
   background: none;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   font: inherit;
   font-weight: 600;
   text-decoration: underline;

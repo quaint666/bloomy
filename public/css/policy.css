@@ -54,7 +54,7 @@
 }
 
 .policy-section a {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .policy-section a:hover {

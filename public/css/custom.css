@@ -25,7 +25,7 @@
 }
 
 .custom-hero__lead a {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   font-weight: 600;
 }
 
@@ -68,7 +68,7 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background-color: hsl(var(--primary));
+  background-color: hsl(var(--primary-text));
   color: hsl(var(--primary-foreground));
   font-size: 0.8rem;
   font-weight: 700;
@@ -281,7 +281,7 @@
 .custom-added {
   margin-top: 12px;
   font-size: 0.9rem;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .custom-added a {
