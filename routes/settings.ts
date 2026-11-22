@@ -14,11 +14,15 @@
 //                            back from /api/orders/quote once a ward is picked.
 
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
+import { SITE_LIMIT } from "./site-limit";
 import pool = require("../db");
 import type { PublicSettings, Ward } from "../shared/api-types";
 
 
 const router = Router();
+// The site-wide cap, here as well as in server.ts: CodeQL cannot follow this file's `export = Object.assign(router, ...)` to the app-wide one.
+router.use(rateLimit(SITE_LIMIT));
 
 // The one query behind both GET /api/settings and the rendered pages
 // (render.js), so the two can never disagree.
