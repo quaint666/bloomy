@@ -1,6 +1,7 @@
 // The quality-of-life changes, checked as far as a DOM can:
 //   A. the stylesheet rules (nothing to run: the CSS files are read)
 //        - the motion block is scoped to customer pages, short, and does not override reduced-motion
+//        - every duration is a --motion-* token (a typed number in a customer stylesheet fails); the page cross-fade rules
 //        - the category filter bar is see-through like the header, its underline is 3px
 //   A2. no customer stylesheet has a bare `fr` grid column (it cannot shrink: sideways scroll on a phone)
 //   B. the cart badge pops only when the count goes UP; the add buttons pop (product page, landing page)
@@ -66,8 +67,81 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "");
   check("the only unscoped rules are the sticky-header scroll padding, nothing that animates", unscopedHtml.length === 0);
   const keyframes = rules.filter((r) => r.startsWith("@keyframes")).length;
   check("three keyframes (rise, pop, badge)", keyframes === 3, String(keyframes));
-  const secs = [...block.matchAll(/(?:animation|transition)(?:-duration)?:[^;]*?(\d*\.?\d+)(ms|s)\b/g)].map((m) => (m[2] === "ms" ? Number(m[1]) / 1000 : Number(m[1])));
+  // The durations are tokens (--motion-* in :root); read them, then look at what each rule resolves to.
+  const tokens = Object.fromEntries([...stripComments(style).matchAll(/--(motion-[a-z]+):\s*(\d+)ms/g)].map((m) => [m[1], Number(m[2]) / 1000]));
+  check("the motion tokens exist (press, fast, base, slow, enter, page, stagger)", ["motion-press", "motion-fast", "motion-base", "motion-slow", "motion-enter", "motion-page", "motion-stagger"].every((n) => n in tokens), JSON.stringify(tokens));
+  const resolved = block.replace(/var\(--(motion-[a-z]+)\)/g, (_m, n) => `${tokens[n] ?? "NaN"}s`);
+  const secs = [...resolved.matchAll(/(?:animation|transition)(?:-duration)?:[^;]*?(\d*\.?\d+)(ms|s)\b/g)].map((m) => (m[2] === "ms" ? Number(m[1]) / 1000 : Number(m[1])));
   check("every duration in the motion block is half a second or less", secs.length >= 6 && secs.every((s) => s <= 0.5), JSON.stringify(secs));
+  // Enforced: a customer stylesheet never types a duration; it uses a token. Exempt: the loading shimmer (a loop, not an
+  // interaction), the footer failsafe (a timer, not motion) and the reduced-motion rule's 0.01ms. Admin stylesheets are exempt.
+  const rawDurations = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((n) => n.endsWith(".css") && !n.startsWith("admin"))) {
+    stripComments(css(f)).split("\n").forEach((line, i) => {
+      if (/(?:^|[\s{;])(?:transition|animation)(?:-duration|-delay)?\s*:/.test(line) && /\d(?:ms|s)\b/.test(line) && !/shimmer|failsafe|0\.01ms/.test(line)) rawDurations.push(`${f}:${i + 1}`);
+    });
+  }
+  check("no customer stylesheet types a duration: every transition and animation uses a --motion-* token", rawDurations.length === 0, rawDurations.join(", "));
+  // The page cross-fade: on for customer pages without reduce-motion, short, the header stays put, admin pages opt out.
+  const fadeStyle = stripComments(style), fadeAdmin = stripComments(css("admin.css"));
+  check("page cross-fade: opted into only under no-preference, over --motion-page (group, old and new: the group alone otherwise holds the fade open for 250 ms), with the header named so it stays put", /@media \(prefers-reduced-motion: no-preference\)\s*\{\s*@view-transition\s*\{\s*navigation:\s*auto;?\s*\}[^@]*::view-transition-group\(\*\),\s*::view-transition-old\(\*\),\s*::view-transition-new\(\*\)\s*\{\s*animation-duration:\s*var\(--motion-page\);?\s*\}\s*\.site-nav\s*\{\s*view-transition-name:\s*site-nav;?\s*\}/.test(fadeStyle) && (fadeStyle.match(/@view-transition/g) || []).length === 1);
+  check("page cross-fade: it is short (the page ignores clicks while it plays): --motion-page is 200 ms or less", tokens["motion-page"] <= 0.2, String(tokens["motion-page"]));
+  // ---- The pink. --primary (the soft one) is for fills and LARGE text; --primary-text (deeper) is for small text and for a button
+  // with white text. The token values are checked against WCAG AA here (computed from the stylesheet itself), and a rule that sets
+  // the soft pink as a small-text colour or as a fill under white text fails. Heading accents (`... em`) and the one big numeral
+  // are the large-text exceptions; the four fills below carry no text.
+  const hslTok = (name) => { const m = stripComments(style).match(new RegExp(`--${name}:\\s*(\\d+(?:\\.\\d+)?) (\\d+(?:\\.\\d+)?)% (\\d+(?:\\.\\d+)?)%`)); return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null; };
+  const toRgb = ([h, sat, l]) => { sat /= 100; l /= 100; const k = (n) => (n + h / 30) % 12, a = sat * Math.min(l, 1 - l); const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1)); return [f(0), f(8), f(4)].map((v) => Math.round(v * 255)); };
+  const relLum = (c) => { const [r, g, b] = c.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const contrast = (a, b) => { const x = relLum(a), y = relLum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const white = [255, 255, 255], softPink = hslTok("primary"), textPink = hslTok("primary-text"), hoverPink = hslTok("primary-text-hover"), cream = hslTok("secondary");
+  const have = softPink && textPink && hoverPink && cream;
+  const cr = (fg, bg) => (have ? contrast(toRgb(fg), toRgb(bg)) : 0);
+  check("pink: --primary is 3:1 or better on white and on the cream sections (large text and fills)", have && cr(softPink, [0, 0, 100]) >= 3 && cr(softPink, cream) >= 3, have ? `${cr(softPink, [0, 0, 100]).toFixed(2)} / ${cr(softPink, cream).toFixed(2)}` : "token missing");
+  check("pink: --primary-text is 4.5:1 or better on white and on cream (small text), and white text on it too", have && cr(textPink, [0, 0, 100]) >= 4.5 && cr(textPink, cream) >= 4.5, have ? `${cr(textPink, [0, 0, 100]).toFixed(2)} / ${cr(textPink, cream).toFixed(2)}` : "token missing");
+  check("pink: white text on --primary-text-hover (the button under the mouse) is 4.5:1 or better", have && cr([0, 0, 100], hoverPink) >= 4.5, have ? cr([0, 0, 100], hoverPink).toFixed(2) : "token missing");
+  const parseRules = (src) => [...stripComments(src).matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim().replace(/\s+/g, " "), body: m[2] }));
+  const FILL_OK = new Set([".reading-progress__bar", ".hero__badge::before", '.tag-chip[aria-pressed="true"]::before', ".timeline__dot"]);
+  const softText = [], softFill = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((n) => n.endsWith(".css") && !n.startsWith("admin"))) {
+    for (const { sel, body } of parseRules(css(f))) {
+      if (/(?:^|[;\s])color:\s*hsl\(var\(--primary\)\)/.test(body) && !(/(^|\s)em$/.test(sel) || sel === ".about-stat__number")) softText.push(`${f}: ${sel}`);
+      if (/background(?:-color)?:\s*hsl\(var\(--primary\)(?:\s*\/\s*0\.9)?\)/.test(body) && !FILL_OK.has(sel)) softFill.push(`${f}: ${sel}`);
+    }
+  }
+  check("pink: small text uses --primary-text; the soft --primary is only a heading accent (`em`) or the big numeral", softText.length === 0, softText.slice(0, 4).join(" | "));
+  check("pink: a fill under white text uses --primary-text (the soft --primary is a fill only for the four decorative bits)", softFill.length === 0, softFill.slice(0, 4).join(" | "));
+  // ---- The home hero: the photo in an arch beside the text, on a blush-to-peach wash. The text never sits on the photo, so its
+  // contrast is a calculation from the two ends of the wash (not a guess about a picture).
+  const publicFile = (f) => fs.readFileSync(path.join(ROOT, "public", f), "utf8");
+  const heroDoc = new JSDOM(publicFile("index.html")).window.document;
+  const heroArch = heroDoc.querySelector(".hero__arch"), heroNote = heroDoc.querySelector(".hero__note");
+  check("hero: the photo has alt text and its size (the page does not jump while it loads), and no scrim is left over it", !!heroArch && (heroArch.getAttribute("alt") || "").length > 0 && heroArch.hasAttribute("width") && heroArch.hasAttribute("height") && !heroDoc.querySelector(".hero__scrim, .hero__bg"));
+  check("hero: the note is a link to the custom bouquet page, and that page does have the message step the note promises", !!heroNote && heroNote.getAttribute("href") === "custom-bouquet.html" && /Lời nhắn/.test(publicFile("custom-bouquet.html")) && /lời nhắn/i.test(heroNote.textContent || ""));
+  const homeCss = stripComments(css("home.css"));
+  const heroTok = (n) => { const m = homeCss.match(new RegExp(`--${n}:\\s*(\\d+(?:\\.\\d+)?) (\\d+(?:\\.\\d+)?)% (\\d+(?:\\.\\d+)?)%`)); return m ? m.slice(1, 4).map(Number) : null; };
+  const blush = heroTok("hero-blush"), peach = heroTok("hero-peach"), mutedFg = hslTok("muted-foreground");
+  const heroOk = !!(blush && peach && mutedFg && textPink && [blush, peach].every((bg) => cr(textPink, bg) >= 4.5 && cr(mutedFg, bg) >= 4.5));
+  check("hero: the pink small text and the muted text pass AA (4.5:1) on both ends of the wash", heroOk, heroOk ? "" : "token missing or too light");
+  check("hero: the text column is never wider than the page: its grid columns are minmax(0, ...) and the arch has a fixed aspect ratio", /\.hero__grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,/.test(homeCss) && /\.hero__arch\s*\{[^}]*aspect-ratio:\s*460\s*\/\s*524/.test(homeCss));
+  // ---- The heading accent (the pink italic words) is ONE rule in style.css, and every <em> in a customer heading is covered by it.
+  const accentRule = parseRules(style).find((r) => /(^|[,\s])\.hero__heading em\b/.test(r.sel) && /color:\s*hsl\(var\(--primary\)\)/.test(r.body) && /font-style:\s*italic/.test(r.body));
+  const accentSels = accentRule ? accentRule.sel.split(",").map((x) => x.trim()) : [];
+  const accentElsewhere = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public", "css")).filter((n) => n.endsWith(".css") && !n.startsWith("admin") && n !== "style.css")) {
+    for (const { sel, body } of parseRules(css(f))) if (/(^|\s)em$/.test(sel) && /color:/.test(body)) accentElsewhere.push(`${f}: ${sel}`);
+  }
+  check("heading accent: one shared rule in style.css (pink, italic, 10+ headings), no other stylesheet colours an `em`", accentSels.length >= 10 && accentElsewhere.length === 0, accentElsewhere.join(" | ") || `${accentSels.length} selectors`);
+  const uncovered = [];
+  for (const f of fs.readdirSync(path.join(ROOT, "public")).filter((n) => n.endsWith(".html") && !n.startsWith("admin-"))) {
+    const d = new JSDOM(publicFile(f)).window.document;
+    d.querySelectorAll("h1 em, h2 em").forEach((em) => { if (!accentSels.some((sel) => em.matches(sel))) uncovered.push(`${f}: <${em.parentElement.tagName.toLowerCase()} class="${em.parentElement.className}">`); });
+  }
+  check("heading accent: every <em> inside a customer page's h1 or h2 is covered by the shared rule", accentSels.length > 0 && uncovered.length === 0, uncovered.slice(0, 3).join(" | "));
+  check("header: a 3px pink line above it (the site's mark; the measured --nav-height includes it)", /\.site-nav\s*\{[^}]*border-top:\s*3px solid hsl\(var\(--primary\)\)/.test(stripComments(style)));
+  const adminPages = fs.readdirSync(path.join(ROOT, "public")).filter((f) => /^admin-.*\.html$/.test(f));
+  const adminOrder = adminPages.filter((f) => { const h = fs.readFileSync(path.join(ROOT, "public", f), "utf8"); return h.indexOf("css/style.css") >= 0 && h.indexOf("css/admin.css") > h.indexOf("css/style.css"); });
+  check("page cross-fade: admin.css opts out (navigation: none) and every admin page loads it after style.css, so the later rule wins", /@view-transition\s*\{\s*navigation:\s*none;?\s*\}/.test(fadeAdmin) && adminPages.length >= 14 && adminOrder.length === adminPages.length, `${adminOrder.length}/${adminPages.length}`);
   check("cards rise from 40% opacity, never from 0 (an element at opacity 0 delays the page's Largest Contentful Paint)", /@keyframes bloomy-rise\s*\{\s*from\s*\{[^}]*opacity:\s*0\.4/.test(block) && !/@keyframes bloomy-rise\s*\{\s*from\s*\{[^}]*opacity:\s*0[;\s]/.test(block));
   const reduced = style.slice(0, style.indexOf(marker));
   check("the site-wide reduced-motion rule is still there and still zeroes every animation and transition", /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?animation-duration:\s*0\.01ms !important[\s\S]*?transition-duration:\s*0\.01ms !important/.test(reduced));

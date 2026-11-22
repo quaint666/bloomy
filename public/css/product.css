@@ -86,7 +86,7 @@
   color: hsl(var(--foreground));
   font: inherit;
   cursor: pointer;
-  transition: border-color 0.15s, background-color 0.15s;
+  transition: border-color var(--motion-fast), background-color var(--motion-fast);
 }
 
 .size-picker__option:hover {
@@ -141,7 +141,7 @@
 .product-detail__price {
   font-family: var(--font-display);
   font-size: 2rem;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-bottom: 16px;
 }
 
@@ -335,7 +335,7 @@
 }
 
 .product-tabs__list-text a {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   text-decoration: underline;
 }
 
@@ -356,7 +356,7 @@
 }
 
 .product-attributes a {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 /* ---- Reviews ---- */
@@ -385,7 +385,7 @@
 }
 
 .review__stars {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   letter-spacing: 0.1em;
 }
 
@@ -453,7 +453,7 @@
 }
 
 .review-star.is-on {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .review-star:focus-within {
@@ -466,7 +466,7 @@
 }
 
 .review-form__msg.is-ok {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .review-form__msg.is-error {
@@ -573,7 +573,7 @@
 }
 
 .recent-viewed__link:hover .recent-viewed__name {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 /* The placeholder shown until the product arrives (shapes and shimmer come from the shared skeleton in style.css). */

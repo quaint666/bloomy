@@ -1,3 +1,8 @@
+/* Admin pages stay plain: no fade between pages (style.css opts the customer pages in; both pages must). */
+@view-transition {
+  navigation: none;
+}
+
 /* ==========================================================================
    Bloomy — Admin stylesheet
    Shared across all admin pages (login, products, orders, stats, cutoffs),

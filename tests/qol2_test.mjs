@@ -484,7 +484,7 @@ try {
   check("skeleton cards: a square image box and two lines, with a shimmer", /\.skeleton-card__image\s*\{[^}]*aspect-ratio:\s*1 \/ 1/.test(style) && /@keyframes bloomy-shimmer/.test(style));
   check("the same focus ring covers inputs, textareas, summaries and anything given a tabindex", /textarea:focus-visible/.test(style) && /summary:focus-visible/.test(style) && /\[tabindex\]:not\(\[tabindex="-1"\]\):focus-visible/.test(style));
   const vt = style.slice(style.lastIndexOf("@media (prefers-reduced-motion: no-preference)"));
-  check("page transitions: gone for good (a page that fades out and in made navigation feel slower, so it was removed)", !/@view-transition/.test(style) && !/view-transition-name/.test(style));
+  check("page transitions: back, as a short fade (the old one felt slow: see docs/00-HANDOFF.md); only without reduce-motion, the header stays put, admin pages opt out", /@view-transition\s*\{\s*navigation:\s*auto/.test(vt) && /view-transition-name:\s*site-nav/.test(vt) && /@view-transition\s*\{\s*navigation:\s*none/.test(strip(css("admin.css"))));
   const raw = css("style.css"); // with its comments: the markers are comments
   const sharedAt = raw.indexOf("/* ==== Shared pieces"), motionAt = raw.indexOf("/* ==== Motion (customer pages only)");
   check("the shared pieces (toast, back to top, skeleton, copy button) sit before the motion block, so its customer-only scoping check stays meaningful", sharedAt > 0 && motionAt > sharedAt && /\.toast\s*\{/.test(raw.slice(sharedAt, motionAt)) && !/\.toast\s*\{/.test(raw.slice(motionAt)));

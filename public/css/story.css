@@ -30,7 +30,7 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-bottom: 12px;
 }
 
@@ -40,11 +40,6 @@
   font-weight: 500;
   line-height: 1.15;
   margin-bottom: 20px;
-}
-
-.story-hero__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
 }
 
 .story-hero__desc {
@@ -100,7 +95,7 @@
   display: block;
   font-family: var(--font-display);
   font-size: 1.1rem;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
   margin-bottom: 4px;
 }
 
@@ -150,11 +145,6 @@
   font-size: 2rem;
   font-weight: 500;
   margin-bottom: 28px;
-}
-
-.story-cta__heading em {
-  color: hsl(var(--primary));
-  font-style: italic;
 }
 
 /* ---- Responsive ---- */

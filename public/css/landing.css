@@ -110,7 +110,7 @@
 }
 
 .landing-card__name a:hover {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-text));
 }
 
 .landing-card__price {
@@ -146,7 +146,7 @@
 }
 
 .landing-size span {
-  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.12s ease;
+  transition: border-color var(--motion-fast) ease, background-color var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .landing-size:active span {
