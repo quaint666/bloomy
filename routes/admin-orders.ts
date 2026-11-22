@@ -114,7 +114,7 @@ router.get("/delivery-sheet", requireAdmin, async (req, res, next) => {
     const { rows: pendingRows } = await pool.query<{ count: number }>(
       `SELECT COUNT(*)::int AS count FROM orders
        WHERE delivery_date = $1 AND channel = 'web' AND payment_method = 'zalopay'
-         AND payment_status != 'paid' AND fulfillment_status != 'cancelled'`,
+         AND payment_status IN ('pending', 'failed') AND fulfillment_status != 'cancelled'`,
       [date]
     );
 
@@ -396,24 +396,43 @@ router.patch("/:id/fulfillment", requireAdmin, async (req, res, next) => {
 // with the customer over Zalo/hotline; this just records that it happened.
 // Only allowed from 'paid', so an order can't be marked refunded twice or
 // refunded before it was ever paid.
+// Refunding an order that is still "new" also cancels it and returns its stems to the stock (one transaction; a refunded
+// order has no next status, so it could not be cancelled afterwards). One already out for delivery or delivered keeps its status.
 // ---------------------------------------------------------------------------
 router.patch("/:id/refund", requireAdmin, async (req, res, next) => {
-  try {
-    const id = parseInt(String(req.params.id), 10);
-    if (isNaN(id)) return res.status(400).json({ error: "invalid_id" });
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) return res.status(400).json({ error: "invalid_id" });
 
-    const { rows } = await pool.query<{ id: number; payment_status: PaymentStatus }>(
-      `UPDATE orders SET payment_status = 'refunded'
-       WHERE id = $1 AND payment_status = 'paid'
-       RETURNING id, payment_status`,
+  // An order that was refunded before it went out is over: it is cancelled in the same step and the stems it took go back
+  // to the stock (once: the row is locked and the change only happens from 'paid'). Without this it stayed "new" for ever,
+  // could not be cancelled any more (a refunded order has no next status) and kept its stems. One that is already out for
+  // delivery (the bouquet is made) or delivered keeps its fulfillment status and its stems, as cancelling would.
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query<{ id: number; payment_status: PaymentStatus; fulfillment_status: FulfillmentStatus; was: FulfillmentStatus }>(
+      `WITH old AS (SELECT id, fulfillment_status FROM orders WHERE id = $1 AND payment_status = 'paid' FOR UPDATE)
+       UPDATE orders o
+       SET payment_status = 'refunded',
+           fulfillment_status = CASE WHEN old.fulfillment_status = 'new' THEN 'cancelled'::fulfillment_status ELSE o.fulfillment_status END
+       FROM old WHERE o.id = old.id
+       RETURNING o.id, o.payment_status, o.fulfillment_status, old.fulfillment_status AS was`,
       [id]
     );
-    if (rows.length === 0) {
+    const done = rows[0];
+    if (!done) {
+      await client.query("ROLLBACK");
       return res.status(409).json({ error: "not_eligible_for_refund" });
     }
-    res.json(rows[0]);
+    if (done.was === "new") await ordersRouter.returnOrderStock(client, id);
+    await client.query("COMMIT");
+    const body: PaymentStatusBody = { payment_status: done.payment_status, fulfillment_status: done.fulfillment_status };
+    res.json(body);
   } catch (err) {
+    await client.query("ROLLBACK").catch(() => {});
     next(err);
+  } finally {
+    client.release();
   }
 });
 

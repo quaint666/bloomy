@@ -117,7 +117,7 @@ export type AdminOrdersResponse = Wire<AdminOrder[]>;
 export interface DeliverySheetBody { date: string; windows: Record<TimeWindow, AdminOrder[]>; pending_zalopay_count: number }
 export type DeliverySheetResponse = Wire<DeliverySheetBody>;
 // POST .../reverify answers the payment status ZaloPay confirmed (or the one the order already had).
-export interface PaymentStatusBody { payment_status: PaymentStatus }
+export interface PaymentStatusBody { payment_status: PaymentStatus; fulfillment_status?: FulfillmentStatus }
 
 // The owner's two-factor login (routes/admin-auth.ts, /api/admin/me/2fa): its state, the first step's secret and QR code,
 // and the one-time recovery codes. Every other answer is { success: true } or an ApiErrorBody.

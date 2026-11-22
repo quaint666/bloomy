@@ -102,6 +102,7 @@ function buildActionButtons(order: Order): HTMLButtonElement[] {
     const refundBtn = el("button", "btn btn-outline admin-table__action-btn", "Hoàn tiền");
     refundBtn.dataset.orderId = String(order.id);
     refundBtn.dataset.action = "refund";
+    refundBtn.dataset.fulfillment = order.fulfillment_status;
     buttons.push(refundBtn);
   }
 
@@ -360,7 +361,9 @@ byId("admin-orders-body").addEventListener("click", async (e) => {
   if (!button) return;
 
   const action = button.dataset.action;
-  if (action === "refund" && !confirm("Xác nhận đã hoàn tiền cho đơn này? Thao tác này không thể hoàn tác.")) {
+  // An order not yet out for delivery is cancelled by the refund and its flowers go back to the stock: say so before it is done.
+  const refundNote = button.dataset.fulfillment === "new" ? " Đơn chưa giao sẽ được hủy và hoa trả về kho." : "";
+  if (action === "refund" && !confirm(`Xác nhận đã hoàn tiền cho đơn này? Thao tác này không thể hoàn tác.${refundNote}`)) {
     return;
   }
 
