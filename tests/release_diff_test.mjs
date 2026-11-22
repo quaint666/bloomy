@@ -4,7 +4,7 @@
 // matches what the script reads, which is how the script went stale when server.js became server.ts) and builds a throwaway git
 // repository with revisions made from it.
 //
-// Run from the repo root:  node tests/release_diff_test.mjs        (needs git and bash; CI installs both for this suite)
+// Run from the repo root:  node tests/release_diff_test.mjs        (needs git and bash; without them it skips itself)
 //
 // Proves: the script reads REQUIRED_ENV from server.ts (the array and the EMAIL_MODE=send additions), exits 0 and prints
 // "required env added:   none" / "required env removed: none" (three spaces after "added:") for identical revisions; a name added
@@ -22,9 +22,14 @@ const SCRIPT = path.join(ROOT, "deploy", "scripts", "release_diff.sh");
 let passed = 0, failed = 0;
 function check(name, cond, extra = "") { if (cond) passed++; else { failed++; console.log(`FAIL ${name}${extra ? " :: " + extra : ""}`); } }
 
-const probe = spawnSync("git", ["--version"], { encoding: "utf8" });
-check("the git command is available", probe.status === 0, "install git (CI: apk add git)");
-if (probe.status !== 0) { console.log(`${passed} passed, ${failed} failed`); process.exit(1); }
+// The node alpine container the other suites run in has neither git nor bash: CI runs this suite in its own step on the runner
+// (build.yml), and here it says so and counts nothing. On a machine that has both (yours, the runner) it always runs.
+const has = (cmd) => spawnSync(cmd, ["--version"], { encoding: "utf8" }).status === 0;
+if (!has("git") || !has("bash")) {
+  console.log("skipped: this machine has no git or bash (CI runs this suite on the runner, in its own step)");
+  console.log("0 passed, 0 failed");
+  process.exit(0);
+}
 
 const real = fs.readFileSync(path.join(ROOT, "server.ts"), "utf8");
 const schema = fs.readFileSync(path.join(ROOT, "schema.sql"), "utf8");
