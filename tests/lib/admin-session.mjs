@@ -22,5 +22,5 @@ export async function makeAdmin(pool, BASE, suite, role) {
     try { data = await res.json(); } catch { /* not JSON (a CSV, an empty answer) */ }
     return { status: res.status, data, res };
   };
-  return { id, name, api, cleanup: () => pool.query("DELETE FROM admin_users WHERE id = $1", [id]) };
+  return { id, name, cookie, api, cleanup: () => pool.query("DELETE FROM admin_users WHERE id = $1", [id]) };
 }
