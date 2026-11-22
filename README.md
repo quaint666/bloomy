@@ -1,6 +1,6 @@
 # Bloomy
 
-A flower shop web app: storefront, checkout, and a back office for staff. Node, Express 5, PostgreSQL, a TypeScript server, and a plain HTML/CSS/JS front end with no framework. The site's text is in Vietnamese. It was built for a university e-commerce course.
+A flower shop web app: storefront, checkout, and a back office for staff. Node, Express 5, PostgreSQL, TypeScript on the server and in the browser, and plain HTML and CSS with no framework. The site's text is in Vietnamese. It was built for a university e-commerce course.
 
 Live: https://bloomy.quaintshomelabdomain.uk
 
@@ -10,19 +10,19 @@ Live: https://bloomy.quaintshomelabdomain.uk
 
 ## What it does
 
-**Customers:** browse by category, tag and search; product pages with stock status; a custom bouquet builder; one-page checkout with delivery date and time window; occasion landing pages with coupons; reviews; a blog. Payment is cash on delivery or ZaloPay (sandbox only).
+**Customers:** browse by category, tag and search; product pages with stock status; a custom bouquet builder; one-page checkout with delivery date and time window; occasion campaigns (Tết, Valentine, 20/10, Trung thu, 20/11, Giáng sinh; one landing page on at a time) with coupons; reviews; a blog. Payment is cash on delivery or ZaloPay (sandbox only).
 
 **Staff:** orders and refunds, a point-of-sale screen for counter sales, products, flower stock, coupons, campaigns, delivery cut-offs, review moderation, an SEO panel, settings, statistics. Accounts have three roles (owner, manager, employee); owners can turn on two-factor login (TOTP).
 
 ## How it is built
 
 - **The server prices everything.** `POST /api/orders/quote` returns every amount; the browser never computes money. Prices are tax-inclusive.
-- **TypeScript on the server only.** `tsc` compiles next to the sources; the browser files are plain JavaScript. Database enums and row shapes live in `types.ts`.
+- **TypeScript on both sides.** `tsc` compiles the server next to the sources; each page script is a `web/*.ts` file that esbuild bundles into `public/js/` (classic `<script defer>`, no framework). Types the server and the browser both read live in `shared/`; database enums and row shapes in `types.ts`.
 - **Declarative schema.** `schema.sql` is the only schema source and is applied with [pgschema](https://github.com/pgplex/pgschema); nothing is hand-altered.
 - **Strict Content-Security-Policy.** No inline scripts or styles; customer text goes through `textContent` or an escape helper.
 - **Pages are rendered on the server** from shared partials, with asset fingerprinting (`?v=<hash>`) and an esbuild minify stage in the Dockerfile.
 - **Sessions in PostgreSQL** (`connect-pg-simple`), bcrypt passwords, rate-limited login.
-- **29 test suites, 1,732 checks** against a real server and database, using jsdom for the pages.
+- **29 test suites, 1,779 checks** against a real server and database, using jsdom for the pages.
 - **CI on GitHub Actions** builds the images, checks the schema against a throwaway PostgreSQL, runs the suites, and publishes to GHCR from `main`.
 
 Architecture, the API table and the locked design decisions are in [`docs/00-HANDOFF.md`](docs/00-HANDOFF.md).
@@ -41,7 +41,7 @@ docker run --rm --network bloomy-local -e PGHOST=bloomy-local-pg -e PGUSER=quain
 export DB_HOST=127.0.0.1 DB_PORT=5433 DB_USER=quaint DB_NAME=bloomy DB_PASSWORD=dev SESSION_SECRET=local-dev-only BLOOMY_BASE_URL=http://localhost:3000 ZALOPAY_APP_ID=1 ZALOPAY_KEY1=dummy ZALOPAY_KEY2=dummy ZALOPAY_ENDPOINT=https://sb-openapi.zalopay.vn EMAIL_MODE=log RESEND_API_KEY= NODE_ENV=development PORT=3000 BASE=http://localhost:3000
 export TOTP_ENCRYPTION_KEY="$(openssl rand -base64 32)"
 npm ci && (cd tests && npm ci)    # app deps, then jsdom for the suites
-npm run build    # compile the .ts to .js next to it; again after every server edit
+npm run build    # compile the server .ts and bundle web/*.ts into public/js; again after every server or web edit
 node server.js &    # check: curl -sf localhost:3000/healthz
 ```
 
@@ -64,7 +64,8 @@ Only `DB_HOST`, `DB_PORT`, `DB_USER` and `DB_PASSWORD` of a local Postgres are n
 server.ts, routes/        Express app and the API (one file per area)
 pricing.ts, render.ts     quote engine; server-side page rendering
 db.ts, types.ts, seo.ts, totp.ts, email.ts, blog.ts
-public/                   pages, css, js, images (served as is)
+public/                   pages, css, images (served as is); public/js is built from web/
+web/, shared/             page scripts (TypeScript); types and rules both sides use
 partials/, content/       shared page parts; blog posts
 schema.sql, seed-*.sql    the schema and the seed data
 Dockerfile, Dockerfile.schema   app image; schema and seed tools

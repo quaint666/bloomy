@@ -1,6 +1,6 @@
 {
   "name": "production",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Bloomy: a Vietnamese flower shop (Node, Express 5, PostgreSQL, TypeScript server, plain HTML/CSS/JS front end)",
   "main": "index.js",
   "scripts": {
