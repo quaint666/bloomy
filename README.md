@@ -70,7 +70,8 @@ partials/, content/       shared page parts; blog posts
 schema.sql, seed-*.sql    the schema and the seed data
 Dockerfile, Dockerfile.schema   app image; schema and seed tools
 tests/                    the suites
-docs/00-HANDOFF.md        architecture and decisions
+docs/01-ARCHITECTURE.md   how it works, in short
+docs/00-HANDOFF.md        architecture detail, the API table and decisions
 ```
 
 ## Notes
